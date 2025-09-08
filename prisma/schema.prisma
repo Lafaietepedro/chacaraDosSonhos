@@ -1,0 +1,193 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  phone     String?
+  role      UserRole @default(GUEST)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  bookings Booking[]
+  reviews  Review[]
+
+  @@map("users")
+}
+
+model Property {
+  id          String  @id @default(cuid())
+  name        String
+  description String
+  capacity    Int
+  basePrice   Float
+  address     String
+  rules       String?
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  photos     Photo[]
+  bookings   Booking[]
+  blockedDates BlockedDate[]
+  extras     Extra[]
+  reviews    Review[]
+
+  @@map("properties")
+}
+
+model Photo {
+  id         String   @id @default(cuid())
+  url        String
+  alt        String?
+  order      Int
+  propertyId String
+  createdAt  DateTime @default(now())
+
+  // Relations
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("photos")
+}
+
+model Extra {
+  id         String  @id @default(cuid())
+  name       String
+  description String?
+  price      Float
+  isActive   Boolean @default(true)
+  propertyId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bookingExtras BookingExtra[]
+
+  @@map("extras")
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  startDate   DateTime
+  endDate     DateTime
+  guests      Int
+  totalPrice  Float
+  status      BookingStatus @default(PENDING)
+  notes       String?
+  contractUrl String?
+  signature   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  userId     String
+  propertyId String
+  user       User           @relation(fields: [userId], references: [id])
+  property   Property       @relation(fields: [propertyId], references: [id])
+  payments   Payment[]
+  bookingExtras BookingExtra[]
+
+  @@map("bookings")
+}
+
+model BookingExtra {
+  id       String @id @default(cuid())
+  quantity Int    @default(1)
+
+  // Relations
+  bookingId String
+  extraId   String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  extra     Extra   @relation(fields: [extraId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, extraId])
+  @@map("booking_extras")
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  amount        Float
+  status        PaymentStatus @default(PENDING)
+  method        PaymentMethod
+  transactionId String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model BlockedDate {
+  id         String   @id @default(cuid())
+  startDate  DateTime
+  endDate    DateTime
+  reason     String?
+  propertyId String
+  createdAt  DateTime @default(now())
+
+  // Relations
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("blocked_dates")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  isVisible Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  userId     String
+  propertyId String
+  user       User     @relation(fields: [userId], references: [id])
+  property   Property @relation(fields: [propertyId], references: [id])
+
+  @@unique([userId, propertyId])
+  @@map("reviews")
+}
+
+enum UserRole {
+  GUEST
+  HOST
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+}
