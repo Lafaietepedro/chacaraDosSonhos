@@ -1,25 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Calendar, Users, Plus, Minus, Check } from 'lucide-react'
+import { Calendar, Users, Check } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 export default function BookingPage() {
+  const router = useRouter()
   const [step, setStep] = useState(1)
   const [selectedDate, setSelectedDate] = useState('')
+  const [dateError, setDateError] = useState('')
   const [guests, setGuests] = useState(50)
   const [selectedPackage, setSelectedPackage] = useState('completo')
-  const [selectedExtras, setSelectedExtras] = useState<string[]>([])
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
     phone: '',
     notes: ''
   })
+  const [showSuccess, setShowSuccess] = useState(false)
 
   const packages = [
     {
@@ -28,6 +31,7 @@ export default function BookingPage() {
       price: 800,
       duration: '8 horas',
       capacity: 50,
+      extraPerGuest: 20,
       features: ['Acesso à chácara', 'Churrasqueira', 'Estacionamento', 'Wi-Fi']
     },
     {
@@ -36,6 +40,7 @@ export default function BookingPage() {
       price: 1200,
       duration: '12 horas',
       capacity: 100,
+      extraPerGuest: 18,
       features: ['Acesso à chácara', 'Churrasqueira', 'Estacionamento', 'Wi-Fi', 'Limpeza incluída', 'Som básico']
     },
     {
@@ -44,34 +49,29 @@ export default function BookingPage() {
       price: 1800,
       duration: '24 horas',
       capacity: 150,
-      features: ['Acesso à chácara', 'Churrasqueira', 'Estacionamento', 'Wi-Fi', 'Limpeza incluída', 'Som profissional', 'Decoração básica']
+      extraPerGuest: 15,
+      features: ['Acesso à chácara', 'Churrasqueira', 'Estacionamento', 'Wi-Fi', 'Limpeza incluída', 'Som ambiente', 'Decoração básica']
     }
   ]
 
-  const extras = [
-    { id: 'limpeza', name: 'Limpeza pós-evento', price: 150 },
-    { id: 'decoracao', name: 'Decoração básica', price: 200 },
-    { id: 'som', name: 'Sistema de som profissional', price: 300 },
-    { id: 'piscina', name: 'Piscina (temporada)', price: 100 },
-    { id: 'seguranca', name: 'Segurança adicional', price: 250 },
-    { id: 'cozinheiro', name: 'Cozinheiro/Churrasqueiro', price: 400 }
-  ]
+  const CLEANING_FEE = 150
 
   const currentPackage = packages.find(pkg => pkg.id === selectedPackage)!
-  const selectedExtrasData = extras.filter(extra => selectedExtras.includes(extra.id))
-  const extrasTotal = selectedExtrasData.reduce((sum, extra) => sum + extra.price, 0)
-  const totalPrice = currentPackage.price + extrasTotal
+  const extraGuests = Math.max(0, guests - currentPackage.capacity)
+  const extraGuestsCost = extraGuests * (currentPackage as any).extraPerGuest
+  const totalPrice = currentPackage.price + CLEANING_FEE + extraGuestsCost
 
-  const handleExtraToggle = (extraId: string) => {
-    setSelectedExtras(prev => 
-      prev.includes(extraId) 
-        ? prev.filter(id => id !== extraId)
-        : [...prev, extraId]
-    )
-  }
+  // No extras toggling anymore
 
   const handleNext = () => {
-    if (step < 4) setStep(step + 1)
+    if (step === 1) {
+      if (!selectedDate) {
+        setDateError('Por favor, selecione a data do evento para continuar.')
+        return
+      }
+      setDateError('')
+    }
+    if (step < 3) setStep(step + 1)
   }
 
   const handlePrev = () => {
@@ -79,22 +79,57 @@ export default function BookingPage() {
   }
 
   const handleSubmit = () => {
-    // Aqui você implementaria o envio da reserva
-    console.log('Booking submitted:', {
+    const payload = {
       date: selectedDate,
       guests,
-      package: selectedPackage,
-      extras: selectedExtras,
-      customerInfo,
-      totalPrice
+      packageId: selectedPackage,
+      customer: {
+        name: customerInfo.name,
+        email: customerInfo.email,
+        phone: customerInfo.phone,
+        notes: customerInfo.notes,
+      },
+      totalPrice,
+    }
+
+    fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     })
-    alert('Reserva enviada com sucesso! Entraremos em contato para confirmação.')
+      .then(async (res) => {
+        if (!res.ok) {
+          let detail = ''
+          try {
+            const data = await res.json()
+            detail = data?.error || JSON.stringify(data)
+          } catch (_) {}
+          throw new Error(detail || 'Falha ao registrar a reserva')
+        }
+        setShowSuccess(true)
+        setTimeout(() => router.push('/'), 2500)
+      })
+      .catch((err) => {
+        console.error(err)
+        alert(`Ocorreu um erro ao enviar sua reserva. ${err?.message || ''}`)
+      })
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
+          {showSuccess && (
+            <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-green-900 shadow-sm">
+              <div className="flex items-start">
+                <div className="mr-3 mt-0.5 h-4 w-4 rounded-full bg-green-500" />
+                <div>
+                  <p className="font-semibold">Reserva enviada com sucesso!</p>
+                  <p className="text-sm opacity-90">Entraremos em contato para confirmação. Você será redirecionado para a página inicial em instantes.</p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Fazer Reserva
@@ -107,7 +142,7 @@ export default function BookingPage() {
           {/* Progress Steps */}
           <div className="flex justify-center mb-8">
             <div className="flex items-center space-x-4">
-              {[1, 2, 3, 4].map((stepNumber) => (
+              {[1, 2, 3].map((stepNumber) => (
                 <div key={stepNumber} className="flex items-center">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                     step >= stepNumber 
@@ -116,7 +151,7 @@ export default function BookingPage() {
                   }`}>
                     {stepNumber}
                   </div>
-                  {stepNumber < 4 && (
+                  {stepNumber < 3 && (
                     <div className={`w-16 h-1 mx-2 ${
                       step > stepNumber ? 'bg-primary' : 'bg-gray-200'
                     }`} />
@@ -134,8 +169,7 @@ export default function BookingPage() {
                   <CardTitle>
                     {step === 1 && 'Selecione a Data e Número de Convidados'}
                     {step === 2 && 'Escolha o Pacote'}
-                    {step === 3 && 'Adicione Extras (Opcional)'}
-                    {step === 4 && 'Informações do Cliente'}
+                    {step === 3 && 'Informações do Cliente'}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -148,33 +182,41 @@ export default function BookingPage() {
                           id="date"
                           type="date"
                           value={selectedDate}
-                          onChange={(e) => setSelectedDate(e.target.value)}
+                          onChange={(e) => {
+                            setSelectedDate(e.target.value)
+                            if (e.target.value) setDateError('')
+                          }}
                           min={new Date().toISOString().split('T')[0]}
                           required
                         />
+                        {dateError && (
+                          <p className="mt-1 text-sm text-red-600">{dateError}</p>
+                        )}
                       </div>
                       <div>
-                        <Label>Número de Convidados *</Label>
-                        <div className="flex items-center space-x-4 mt-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setGuests(Math.max(10, guests - 10))}
-                          >
-                            <Minus className="w-4 h-4" />
-                          </Button>
-                          <div className="flex items-center space-x-2">
-                            <Users className="w-5 h-5 text-gray-500" />
-                            <span className="text-lg font-medium">{guests} pessoas</span>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setGuests(Math.min(150, guests + 10))}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </Button>
+                        <Label htmlFor="guests">Número de Convidados *</Label>
+                        <div className="mt-2 flex items-center space-x-3">
+                          <Users className="w-5 h-5 text-gray-500" />
+                          <Input
+                            id="guests"
+                            type="number"
+                            min={1}
+                            max={500}
+                            value={guests}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value || '0', 10)
+                              if (Number.isNaN(value)) {
+                                setGuests(1)
+                              } else {
+                                const clamped = Math.max(1, Math.min(500, value))
+                                setGuests(clamped)
+                              }
+                            }}
+                          />
                         </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                          Até {currentPackage.capacity} pessoas incluídas no pacote {currentPackage.name}. Convidados extras: {formatCurrency((currentPackage as any).extraPerGuest)} por pessoa.
+                        </p>
                       </div>
                     </>
                   )}
@@ -217,41 +259,10 @@ export default function BookingPage() {
                   )}
 
                   {/* Step 3: Extras */}
-                  {step === 3 && (
-                    <div className="space-y-4">
-                      <p className="text-gray-600">
-                        Adicione serviços extras para tornar seu evento ainda mais especial:
-                      </p>
-                      {extras.map((extra) => (
-                        <div
-                          key={extra.id}
-                          className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                            selectedExtras.includes(extra.id)
-                              ? 'border-primary bg-primary/5'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                          onClick={() => handleExtraToggle(extra.id)}
-                        >
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <h3 className="font-medium">{extra.name}</h3>
-                            </div>
-                            <div className="flex items-center space-x-3">
-                              <span className="font-semibold text-primary">
-                                {formatCurrency(extra.price)}
-                              </span>
-                              {selectedExtras.includes(extra.id) && (
-                                <Check className="w-5 h-5 text-primary" />
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {/* No extras step anymore */}
 
                   {/* Step 4: Customer Info */}
-                  {step === 4 && (
+                  {step === 3 && (
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -306,8 +317,8 @@ export default function BookingPage() {
                     >
                       Voltar
                     </Button>
-                    {step < 4 ? (
-                      <Button onClick={handleNext}>
+                    {step < 3 ? (
+                      <Button onClick={handleNext} disabled={step === 1 && !selectedDate}>
                         Próximo
                       </Button>
                     ) : (
@@ -346,19 +357,23 @@ export default function BookingPage() {
                       <h4 className="font-medium text-gray-900">Pacote</h4>
                       <p className="text-gray-600">{currentPackage.name}</p>
                       <p className="text-sm text-gray-500">{currentPackage.duration}</p>
+                      <p className="text-xs text-gray-500">Até {currentPackage.capacity} pessoas • {formatCurrency((currentPackage as any).extraPerGuest)} por convidado extra</p>
                     </div>
                   )}
 
-                  {selectedExtras.length > 0 && (
+                  {/* No extras list in summary */}
+
+                  <div>
+                    <h4 className="font-medium text-gray-900">Taxa de Limpeza</h4>
+                    <p className="text-sm text-gray-600">{formatCurrency(CLEANING_FEE)} (obrigatória)</p>
+                  </div>
+
+                  {extraGuests > 0 && (
                     <div>
-                      <h4 className="font-medium text-gray-900">Extras</h4>
-                      <ul className="space-y-1">
-                        {selectedExtrasData.map((extra) => (
-                          <li key={extra.id} className="text-sm text-gray-600">
-                            {extra.name}
-                          </li>
-                        ))}
-                      </ul>
+                      <h4 className="font-medium text-gray-900">Convidados Extras</h4>
+                      <p className="text-sm text-gray-600">
+                        {extraGuests} x {formatCurrency((currentPackage as any).extraPerGuest)} = {formatCurrency(extraGuestsCost)}
+                      </p>
                     </div>
                   )}
 

@@ -10,6 +10,8 @@ export function Pricing() {
       name: 'Básico',
       price: 800,
       duration: '8 horas',
+      capacity: 50,
+      extraPerGuest: 20,
       description: 'Perfeito para eventos menores e mais íntimos',
       features: [
         'Acesso à chácara por 8 horas',
@@ -17,12 +19,12 @@ export function Pricing() {
         'Churrasqueira e geladeira',
         'Estacionamento para 15 veículos',
         'Wi-Fi gratuito',
-        'Área verde para atividades'
+        'Área verde para atividades',
+        'Piscina inclusa'
       ],
       notIncluded: [
-        'Limpeza pós-evento',
-        'Decoração',
-        'Sistema de som profissional'
+        // taxa de limpeza obrigatória, mostrada abaixo
+        'Decoração'
       ],
       popular: false
     },
@@ -30,6 +32,8 @@ export function Pricing() {
       name: 'Completo',
       price: 1200,
       duration: '12 horas',
+      capacity: 100,
+      extraPerGuest: 18,
       description: 'O mais escolhido para eventos especiais',
       features: [
         'Acesso à chácara por 12 horas',
@@ -38,12 +42,11 @@ export function Pricing() {
         'Estacionamento para 25 veículos',
         'Wi-Fi gratuito',
         'Sistema de som básico',
-        'Limpeza pós-evento incluída',
-        'Área verde para atividades'
+        'Área verde para atividades',
+        'Piscina inclusa'
       ],
       notIncluded: [
-        'Decoração personalizada',
-        'Sistema de som profissional'
+        'Decoração personalizada'
       ],
       popular: true
     },
@@ -51,6 +54,8 @@ export function Pricing() {
       name: 'Premium',
       price: 1800,
       duration: '24 horas',
+      capacity: 150,
+      extraPerGuest: 15,
       description: 'Para eventos grandiosos e inesquecíveis',
       features: [
         'Acesso à chácara por 24 horas',
@@ -58,10 +63,10 @@ export function Pricing() {
         'Churrasqueira e geladeira',
         'Estacionamento para 30 veículos',
         'Wi-Fi gratuito',
-        'Sistema de som profissional',
-        'Limpeza pós-evento incluída',
+        'Som ambiente',
         'Decoração básica incluída',
         'Área verde para atividades',
+        'Piscina inclusa',
         'Suporte durante o evento'
       ],
       notIncluded: [
@@ -71,14 +76,7 @@ export function Pricing() {
     }
   ]
 
-  const extras = [
-    { name: 'Limpeza pós-evento', price: 150 },
-    { name: 'Decoração básica', price: 200 },
-    { name: 'Sistema de som profissional', price: 300 },
-    { name: 'Piscina (temporada)', price: 100 },
-    { name: 'Segurança adicional', price: 250 },
-    { name: 'Cozinheiro/Churrasqueiro', price: 400 }
-  ]
+  const CLEANING_FEE = 150
 
   return (
     <section id="pricing" className="py-20 bg-white">
@@ -114,6 +112,11 @@ export function Pricing() {
                   {formatCurrency(pkg.price)}
                 </div>
                 <div className="text-gray-600">{pkg.duration}</div>
+                {('capacity' in pkg) && (
+                  <div className="text-sm text-gray-500 mt-1">
+                    Até {(pkg as any).capacity} pessoas • {formatCurrency((pkg as any).extraPerGuest)} por convidado extra
+                  </div>
+                )}
                 <p className="text-sm text-gray-500 mt-2">{pkg.description}</p>
               </CardHeader>
               
@@ -147,25 +150,11 @@ export function Pricing() {
           ))}
         </div>
 
-        {/* Extras */}
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-2xl font-bold text-center text-gray-900 mb-8">
-            Extras Disponíveis
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {extras.map((extra, index) => (
-              <Card key={index} className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="font-medium text-gray-900">{extra.name}</h4>
-                  </div>
-                  <div className="text-primary font-semibold">
-                    {formatCurrency(extra.price)}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+        {/* Cleaning fee note */}
+        <div className="max-w-3xl mx-auto text-center mt-4">
+          <p className="text-sm text-gray-600">
+            Taxa de limpeza obrigatória: <span className="font-medium">{formatCurrency(CLEANING_FEE)}</span> (aplicada em todos os pacotes). Piscina inclusa.
+          </p>
         </div>
 
         {/* Note */}

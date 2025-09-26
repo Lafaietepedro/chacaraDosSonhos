@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,44 +26,25 @@ export default function DashboardPage() {
   const [blockedDates, setBlockedDates] = useState<Date[]>([])
 
   // Mock data - em produção viria do banco de dados
-  const stats = {
-    totalBookings: 24,
-    pendingBookings: 3,
-    confirmedBookings: 18,
-    cancelledBookings: 3,
-    monthlyRevenue: 14400,
-    occupancyRate: 75
-  }
+  const [recentBookings, setRecentBookings] = useState<any[]>([])
+  const [stats, setStats] = useState({
+    totalBookings: 0,
+    pendingBookings: 0,
+    confirmedBookings: 0,
+    cancelledBookings: 0,
+    monthlyRevenue: 0,
+    occupancyRate: 0,
+  })
 
-  const recentBookings = [
-    {
-      id: 'CHC-001',
-      customer: 'Maria Silva',
-      date: '2024-02-15',
-      guests: 80,
-      package: 'Completo',
-      status: 'pending',
-      total: 1200
-    },
-    {
-      id: 'CHC-002',
-      customer: 'João Santos',
-      date: '2024-02-20',
-      guests: 120,
-      package: 'Premium',
-      status: 'confirmed',
-      total: 1800
-    },
-    {
-      id: 'CHC-003',
-      customer: 'Ana Costa',
-      date: '2024-02-25',
-      guests: 60,
-      package: 'Básico',
-      status: 'confirmed',
-      total: 800
-    }
-  ]
+  useEffect(() => {
+    fetch('/api/dashboard')
+      .then((res) => res.ok ? res.json() : Promise.reject('erro'))
+      .then((data) => {
+        setRecentBookings(data.recentBookings)
+        setStats(data.stats)
+      })
+      .catch(() => {})
+  }, [])
 
   const handleBlockDate = () => {
     if (selectedDate) {
@@ -99,6 +80,24 @@ export default function DashboardPage() {
         return 'Cancelado'
       default:
         return 'Desconhecido'
+    }
+  }
+
+  const updateStatus = async (id: string, status: 'CONFIRMED' | 'CANCELLED') => {
+    try {
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      })
+      if (!res.ok) throw new Error('Falha ao atualizar')
+      // Refresh list
+      const dash = await fetch('/api/dashboard').then(r => r.json())
+      setRecentBookings(dash.recentBookings)
+      setStats(dash.stats)
+    } catch (e) {
+      console.error(e)
+      alert('Não foi possível atualizar o status. Tente novamente.')
     }
   }
 
@@ -211,20 +210,30 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentBookings.map((booking) => (
+                {recentBookings.map((booking) => (
                     <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
                         {getStatusIcon(booking.status)}
                         <div>
-                          <p className="font-medium">{booking.customer}</p>
+                        <p className="font-medium">{booking.customer}</p>
                           <p className="text-sm text-gray-600">
                             {booking.id} • {formatDate(new Date(booking.date))} • {booking.guests} pessoas
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right space-y-2">
                         <p className="font-semibold">{formatCurrency(booking.total)}</p>
                         <p className="text-sm text-gray-600">{getStatusText(booking.status)}</p>
+                        {booking.status === 'pending' && (
+                          <div className="flex items-center justify-end gap-2">
+                            <Button size="sm" variant="outline" onClick={() => updateStatus(booking.id, 'CANCELLED')}>
+                              Recusar
+                            </Button>
+                            <Button size="sm" onClick={() => updateStatus(booking.id, 'CONFIRMED')}>
+                              Aprovar
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

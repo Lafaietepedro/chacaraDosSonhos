@@ -29,10 +29,8 @@ export function Footer() {
           {/* Logo e Descrição */}
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">CS</span>
-              </div>
-              <span className="font-bold text-xl">Chácara dos Sonhos</span>
+              <img src="/gallery/logo.jpg" alt="Espaço Vip JR" className="h-8 w-auto rounded" />
+              <span className="font-bold text-xl">Espaço Vip JR</span>
             </div>
             <p className="text-gray-300 mb-6 leading-relaxed">
               O local perfeito para seus momentos especiais. 
@@ -94,19 +92,19 @@ export function Footer() {
                 <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
                 <span className="text-gray-300 text-sm">
                   Estrada da Chácara, 123<br />
-                  São Paulo - SP
+                  Brasília - DF
                 </span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-primary flex-shrink-0" />
                 <span className="text-gray-300 text-sm">
-                  (11) 99999-9999
+                  (61) 99999-9999
                 </span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-primary flex-shrink-0" />
                 <span className="text-gray-300 text-sm">
-                  contato@chacaradossonhos.com
+                  contato@espacovipjr.com
                 </span>
               </div>
             </div>
@@ -117,7 +115,7 @@ export function Footer() {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © {currentYear} Chácara dos Sonhos. Todos os direitos reservados.
+              © {currentYear} Espaço Vip JR. Todos os direitos reservados.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">

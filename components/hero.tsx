@@ -1,8 +1,11 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Calendar, Users, MapPin, Star } from 'lucide-react'
+import { Calendar, Users, MapPin, Star, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
+import { Playfair_Display } from 'next/font/google'
+
+const playfair = Playfair_Display({ subsets: ['latin'], weight: ['700', '800', '900'] })
 
 export function Hero() {
   return (
@@ -17,8 +20,8 @@ export function Hero() {
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6">
-            Chácara dos <span className="text-primary">Sonhos</span>
+          <h1 className={`${playfair.className} text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 tracking-tight`}>
+            Espaço Vip <span className="text-primary">JR</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">
             O local perfeito para seus momentos especiais. Aniversários, casamentos, 
@@ -47,13 +50,19 @@ export function Hero() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" asChild>
+            <Button className="h-12 md:h-14 px-6 md:px-8 text-base md:text-lg" asChild>
               <Link href="/booking">
-                <Calendar className="w-5 h-5 mr-2" />
+                <Calendar className="w-6 h-6 mr-2" />
                 Fazer Reserva
               </Link>
             </Button>
-            <Button variant="outline" size="lg" asChild>
+            <Button variant="outline" className="h-12 md:h-14 px-6 md:px-8 text-base md:text-lg" asChild>
+              <a href="https://wa.me/5511999999999?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20o%20Espaço%20Vip%20JR." target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="w-6 h-6 mr-2" />
+                WhatsApp
+              </a>
+            </Button>
+            <Button variant="outline" className="h-12 md:h-14 px-6 md:px-8 text-base md:text-lg" asChild>
               <Link href="#gallery">
                 Ver Galeria
               </Link>

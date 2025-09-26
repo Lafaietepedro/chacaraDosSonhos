@@ -25,8 +25,8 @@ export function About() {
     },
     {
       icon: Music,
-      title: 'Sistema de Som',
-      description: 'Sistema de som profissional com caixas distribuídas pela área de eventos.'
+      title: 'Som Ambiente',
+      description: 'Som ambiente para trilha sonora leve durante o evento.'
     },
     {
       icon: Wifi,

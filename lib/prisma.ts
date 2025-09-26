@@ -4,6 +4,15 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+let client: PrismaClient | undefined
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+// Only initialize Prisma if DATABASE_URL is configured
+if (process.env.DATABASE_URL) {
+  client = globalForPrisma.prisma
+  if (!client) {
+    client = new PrismaClient()
+    if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = client
+  }
+}
+
+export const prisma = client

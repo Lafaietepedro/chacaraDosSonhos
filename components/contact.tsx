@@ -18,7 +18,6 @@ export function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Aqui você implementaria o envio do formulário
     console.log('Form submitted:', formData)
     alert('Mensagem enviada com sucesso! Entraremos em contato em breve.')
     setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
@@ -35,20 +34,20 @@ export function Contact() {
     {
       icon: Phone,
       title: 'Telefone',
-      info: '(11) 99999-9999',
+      info: '(61) 99999-9999',
       description: 'WhatsApp disponível'
     },
     {
       icon: Mail,
       title: 'Email',
-      info: 'contato@chacaradossonhos.com',
+      info: 'contato@espacovipjr.com',
       description: 'Resposta em até 24h'
     },
     {
       icon: MapPin,
       title: 'Endereço',
       info: 'Estrada da Chácara, 123',
-      description: 'São Paulo - SP'
+      description: 'Brasília - DF'
     },
     {
       icon: Clock,

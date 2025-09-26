@@ -5,13 +5,13 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Chácara dos Sonhos - Aluguel para Eventos',
-  description: 'Chácara perfeita para seus eventos especiais. Aniversários, casamentos, confraternizações e muito mais.',
-  keywords: 'chácara, aluguel, eventos, aniversário, casamento, confraternização',
-  authors: [{ name: 'Chácara dos Sonhos' }],
+  title: 'Espaço Vip JR - Aluguel para Eventos',
+  description: 'Espaço perfeito para seus eventos especiais. Aniversários, casamentos, confraternizações e muito mais.',
+  keywords: 'espaço, chácara, aluguel, eventos, aniversário, casamento, confraternização',
+  authors: [{ name: 'Espaço Vip JR' }],
   openGraph: {
-    title: 'Chácara dos Sonhos - Aluguel para Eventos',
-    description: 'Chácara perfeita para seus eventos especiais. Aniversários, casamentos, confraternizações e muito mais.',
+    title: 'Espaço Vip JR - Aluguel para Eventos',
+    description: 'Espaço perfeito para seus eventos especiais. Aniversários, casamentos, confraternizações e muito mais.',
     type: 'website',
     locale: 'pt_BR',
   },

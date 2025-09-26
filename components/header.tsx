@@ -3,7 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Calendar, Phone, Mail } from 'lucide-react'
+import { Menu, X, Calendar, Phone, Mail, MessageCircle } from 'lucide-react'
+import { Playfair_Display } from 'next/font/google'
+
+const playfair = Playfair_Display({ subsets: ['latin'], weight: ['700', '800', '900'] })
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -23,10 +26,8 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">CS</span>
-            </div>
-            <span className="font-bold text-xl text-gray-900">Chácara dos Sonhos</span>
+            <img src="/gallery/logo.jpg" alt="Espaço Vip JR" className="h-8 w-auto rounded" />
+            <span className={`${playfair.className} text-xl md:text-xl font-extrabold text-gray-900 mb-1 tracking-tight`}>Espaço Vip JR</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -49,6 +50,12 @@ export function Header() {
                 <Phone className="w-4 h-4 mr-2" />
                 Contato
               </Link>
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <a href="https://wa.me/5511999999999?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20o%20Espaço%20Vip%20JR." target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="w-4 h-4 mr-2" />
+                WhatsApp
+              </a>
             </Button>
             <Button size="sm" asChild>
               <Link href="/booking">
@@ -87,6 +94,12 @@ export function Header() {
                     <Phone className="w-4 h-4 mr-2" />
                     Contato
                   </Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <a href="https://wa.me/5511999999999?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20o%20Espaço%20Vip%20JR." target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    WhatsApp
+                  </a>
                 </Button>
                 <Button size="sm" asChild>
                   <Link href="/booking">
