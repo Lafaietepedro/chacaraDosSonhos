@@ -7,15 +7,20 @@ const globalForPrisma = globalThis as unknown as {
 // Always initialize Prisma with SQLite
 let client: PrismaClient | undefined
 
-if (process.env.NODE_ENV !== 'production') {
-  if (globalForPrisma.prisma) {
-    client = globalForPrisma.prisma
+try {
+  if (process.env.NODE_ENV !== 'production') {
+    if (globalForPrisma.prisma) {
+      client = globalForPrisma.prisma
+    } else {
+      client = new PrismaClient()
+      globalForPrisma.prisma = client
+    }
   } else {
     client = new PrismaClient()
-    globalForPrisma.prisma = client
   }
-} else {
-  client = new PrismaClient()
+} catch (error) {
+  console.warn('Prisma client initialization failed:', error)
+  client = undefined
 }
 
 export const prisma = client

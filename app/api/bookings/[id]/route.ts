@@ -12,9 +12,11 @@ export async function PATCH(
     if (!authResult.success) {
       return NextResponse.json({ error: authResult.error }, { status: 401 })
     }
+    
     if (!prisma) {
-      return NextResponse.json({ error: 'Database not configured' }, { status: 200 })
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
     }
+    
     const id = params.id
     const body = await request.json()
     const { status } = body as { status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' }
@@ -30,7 +32,7 @@ export async function PATCH(
 
     return NextResponse.json({ ok: true, booking })
   } catch (e) {
-    console.error(e)
+    console.error('PATCH /api/bookings/[id] error:', e)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
@@ -45,8 +47,9 @@ export async function DELETE(
     if (!authResult.success) {
       return NextResponse.json({ error: authResult.error }, { status: 401 })
     }
+    
     if (!prisma) {
-      return NextResponse.json({ error: 'Database not configured' }, { status: 200 })
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
     }
     
     const id = params.id
@@ -87,9 +90,7 @@ export async function DELETE(
       }
     })
   } catch (e) {
-    console.error('Erro ao excluir reserva:', e)
+    console.error('DELETE /api/bookings/[id] error:', e)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }
-
-
