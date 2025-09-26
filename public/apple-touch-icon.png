@@ -1,0 +1,29 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo circular com gradiente verde -->
+  <circle cx="90" cy="90" r="90" fill="url(#gradient)"/>
+  
+  <!-- Ícone de casa/chácara estilizada -->
+  <path d="M45 112.5V67.5C45 61.2 50.2 56 56.5 56H123.5C129.8 56 135 61.2 135 67.5V112.5" stroke="white" stroke-width="8" fill="none"/>
+  
+  <!-- Telhado -->
+  <path d="M33.75 67.5L90 33.75L146.25 67.5" stroke="white" stroke-width="8" fill="none"/>
+  
+  <!-- Porta -->
+  <rect x="78.75" y="90" width="22.5" height="22.5" fill="white"/>
+  
+  <!-- Janelas -->
+  <rect x="56.25" y="78.75" width="11.25" height="11.25" fill="white"/>
+  <rect x="112.5" y="78.75" width="11.25" height="11.25" fill="white"/>
+  
+  <!-- Árvore decorativa -->
+  <circle cx="22.5" cy="123.75" r="11.25" fill="white"/>
+  <rect x="20.25" y="135" width="4.5" height="9" fill="white"/>
+  
+  <!-- Gradiente -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16a34a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
