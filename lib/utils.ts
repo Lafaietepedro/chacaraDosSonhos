@@ -13,6 +13,11 @@ export function formatCurrency(value: number): string {
 }
 
 export function formatDate(date: Date): string {
+  // Verificar se a data é inválida ou não
+  if (!date || isNaN(date.getTime())) {
+    return 'Data inválida'
+  }
+  
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -21,6 +26,11 @@ export function formatDate(date: Date): string {
 }
 
 export function formatDateTime(date: Date): string {
+  // Verificar se a data é inválida ou não
+  if (!date || isNaN(date.getTime())) {
+    return 'Data inválida'
+  }
+  
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: '2-digit',
@@ -28,6 +38,11 @@ export function formatDateTime(date: Date): string {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date)
+}
+
+export function parseLocalDate(dateString: string): Date {
+  // Corrige problema de timezone criando data em meio-dia UTC
+  return new Date(dateString + 'T12:00:00.000Z')
 }
 
 export function addDays(date: Date, days: number): Date {

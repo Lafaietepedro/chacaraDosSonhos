@@ -16,16 +16,51 @@ import {
   AlertCircle,
   Plus,
   Settings,
-  BarChart3
+  BarChart3,
+  Eye,
+  User,
+  Mail,
+  Phone,
+  MessageSquare,
+  X
 } from 'lucide-react'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, parseLocalDate } from '@/lib/utils'
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedDate, setSelectedDate] = useState<Date | undefined>()
   const [blockedDates, setBlockedDates] = useState<Date[]>([])
+  const [selectedBooking, setSelectedBooking] = useState<any | null>(null)
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
-  // Mock data - em produção viria do banco de dados
+  // Função para converter data recebida de string do JSON para Date object
+  const parseBookingDate = (date: any): Date => {
+    try {
+      if (!date) return new Date()
+      
+      if (typeof date === 'string') {
+        // Se é uma string, garantir formato ISO 
+        let dateStr = date
+        if (!date.includes('T')) {
+          dateStr = date + 'T12:00:00.000Z'
+        }
+        const parsed = new Date(dateStr)
+        return isNaN(parsed.getTime()) ? new Date() : parsed
+      } else if (date instanceof Date) {
+        return isNaN(date.getTime()) ? new Date() : date
+      } else if (date && typeof date === 'object' && date.toISOString) {
+        // Se é um objeto com método toISOString (como vem do Prisma)
+        return isNaN(new Date(date).getTime()) ? new Date() : new Date(date)
+      } else {
+        const parsed = new Date(date)
+        return isNaN(parsed.getTime()) ? new Date() : parsed
+      }
+    } catch (error) {
+      console.error('Error parsing date:', date, error)
+      return new Date()
+    }
+  }
+
   const [recentBookings, setRecentBookings] = useState<any[]>([])
   const [stats, setStats] = useState({
     totalBookings: 0,
@@ -36,14 +71,20 @@ export default function DashboardPage() {
     occupancyRate: 0,
   })
 
+  const fetchDashboardData = async () => {
+    try {
+      const res = await fetch('/api/dashboard')
+      if (!res.ok) throw new Error('Erro ao carregar dados')
+      const data = await res.json()
+      setRecentBookings(data.recentBookings)
+      setStats(data.stats)
+    } catch (err) {
+      console.error('Erro ao carregar dashboard:', err)
+    }
+  }
+
   useEffect(() => {
-    fetch('/api/dashboard')
-      .then((res) => res.ok ? res.json() : Promise.reject('erro'))
-      .then((data) => {
-        setRecentBookings(data.recentBookings)
-        setStats(data.stats)
-      })
-      .catch(() => {})
+    fetchDashboardData()
   }, [])
 
   const handleBlockDate = () => {
@@ -83,6 +124,11 @@ export default function DashboardPage() {
     }
   }
 
+  const showBookingDetails = (booking: any) => {
+    setSelectedBooking(booking)
+    setIsDetailsModalOpen(true)
+  }
+
   const updateStatus = async (id: string, status: 'CONFIRMED' | 'CANCELLED') => {
     try {
       const res = await fetch(`/api/bookings/${id}`, {
@@ -91,10 +137,10 @@ export default function DashboardPage() {
         body: JSON.stringify({ status }),
       })
       if (!res.ok) throw new Error('Falha ao atualizar')
-      // Refresh list
-      const dash = await fetch('/api/dashboard').then(r => r.json())
-      setRecentBookings(dash.recentBookings)
-      setStats(dash.stats)
+      
+      // Recarregar dados do dashboard
+      await fetchDashboardData()
+      setIsDetailsModalOpen(false)
     } catch (e) {
       console.error(e)
       alert('Não foi possível atualizar o status. Tente novamente.')
@@ -216,24 +262,24 @@ export default function DashboardPage() {
                         {getStatusIcon(booking.status)}
                         <div>
                         <p className="font-medium">{booking.customer}</p>
-                          <p className="text-sm text-gray-600">
-                            {booking.id} • {formatDate(new Date(booking.date))} • {booking.guests} pessoas
-                          </p>
+                      <p className="text-sm text-gray-600">
+                        {booking.date ? formatDate(parseBookingDate(booking.date)) : 'Data não disponível'} • {booking.guests} pessoas
+                      </p>
                         </div>
                       </div>
                       <div className="text-right space-y-2">
                         <p className="font-semibold">{formatCurrency(booking.total)}</p>
                         <p className="text-sm text-gray-600">{getStatusText(booking.status)}</p>
-                        {booking.status === 'pending' && (
-                          <div className="flex items-center justify-end gap-2">
-                            <Button size="sm" variant="outline" onClick={() => updateStatus(booking.id, 'CANCELLED')}>
-                              Recusar
-                            </Button>
-                            <Button size="sm" onClick={() => updateStatus(booking.id, 'CONFIRMED')}>
-                              Aprovar
-                            </Button>
-                          </div>
-                        )}
+                        <div className="flex items-center justify-end gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => showBookingDetails(booking)}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Ver Detalhes
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -257,7 +303,7 @@ export default function DashboardPage() {
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h3 className="text-lg font-semibold">{booking.customer}</h3>
-                          <p className="text-gray-600">{booking.id}</p>
+                          <p className="text-sm text-gray-500">{booking.email}</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(booking.status)}
@@ -268,7 +314,7 @@ export default function DashboardPage() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
                           <p className="text-sm text-gray-600">Data</p>
-                          <p className="font-medium">{formatDate(new Date(booking.date))}</p>
+                          <p className="font-medium">{booking.date ? formatDate(parseBookingDate(booking.date)) : 'Data não disponível'}</p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Convidados</p>
@@ -276,7 +322,7 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Pacote</p>
-                          <p className="font-medium">{booking.package}</p>
+                          <p className="font-medium">{booking.packageId}</p>
                         </div>
                       </div>
 
@@ -285,21 +331,35 @@ export default function DashboardPage() {
                           {formatCurrency(booking.total)}
                         </div>
                         <div className="flex space-x-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => showBookingDetails(booking)}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Ver Detalhes
+                          </Button>
                           {booking.status === 'pending' && (
                             <>
-                              <Button size="sm" variant="outline">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => updateStatus(booking.id, 'CANCELLED')}
+                                className="text-red-600 hover:text-red-700"
+                              >
                                 <XCircle className="w-4 h-4 mr-2" />
                                 Recusar
                               </Button>
-                              <Button size="sm">
+                              <Button 
+                                size="sm"
+                                onClick={() => updateStatus(booking.id, 'CONFIRMED')}
+                                className="text-green-600 hover:text-green-700"
+                              >
                                 <CheckCircle className="w-4 h-4 mr-2" />
                                 Aprovar
                               </Button>
                             </>
                           )}
-                          <Button size="sm" variant="outline">
-                            Ver Detalhes
-                          </Button>
                         </div>
                       </div>
                     </div>
@@ -318,11 +378,14 @@ export default function DashboardPage() {
                 onDateSelect={setSelectedDate}
                 selectedDate={selectedDate}
                 blockedDates={blockedDates}
-                bookings={recentBookings.map(booking => ({
-                  startDate: new Date(booking.date),
-                  endDate: new Date(booking.date),
-                  status: booking.status as 'confirmed' | 'pending' | 'blocked'
-                }))}
+                bookings={recentBookings
+                  .filter(booking => booking.status === 'confirmed' || booking.status === 'pending')
+                  .map(booking => ({
+                    startDate: booking.date ? parseBookingDate(booking.date) : new Date(),
+                    endDate: booking.date ? parseBookingDate(booking.date) : new Date(),
+                    status: booking.status === 'confirmed' ? 'confirmed' as const : 
+                            booking.status === 'pending' ? 'pending' as const : 'blocked' as const
+                  }))}
               />
             </div>
             
@@ -410,6 +473,126 @@ export default function DashboardPage() {
                 </div>
                 
                 <Button>Salvar Configurações</Button>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Modal de Detalhes da Reserva */}
+        {isDetailsModalOpen && selectedBooking && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Card className="max-w-md w-full mx-4">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center">
+                    <User className="w-5 h-5 mr-2" />
+                    Detalhes da Reserva
+                  </CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setIsDetailsModalOpen(false)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Cliente */}
+                <div className="border-b pb-4">
+                  <div className="flex items-center text-lg font-semibold mb-2">
+                    <User className="w-5 h-5 mr-2 text-primary" />
+                    {selectedBooking.customer}
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <Mail className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>{selectedBooking.email || 'Email não informado'}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Phone className="w-4 h-4 mr-2 text-gray-500" />
+                      <span>{selectedBooking.phone || 'Telefone não informado'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detalhes do Evento */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-gray-900">Informações do Evento</h4>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center">
+                        <CalendarIcon className="w-4 h-4 mr-2 text-gray-500" />
+                        Data:
+                      </span>
+                      <span className="font-medium">
+                        {selectedBooking.date ? formatDate(parseBookingDate(selectedBooking.date)) : 'Data não disponível'}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center">
+                        <Users className="w-4 h-4 mr-2 text-gray-500" />
+                        Convidados:
+                      </span>
+                      <span className="font-medium">{selectedBooking.guests} pessoas</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center">
+                        <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
+                        Valor:
+                      </span>
+                      <span className="font-medium">{formatCurrency(selectedBooking.total)}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span>Status:</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        selectedBooking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                        selectedBooking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {getStatusText(selectedBooking.status)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Observações */}
+                {selectedBooking.notes && selectedBooking.notes.trim() && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 mb-2">Observações</h4>
+                    <div className="flex items-start text-sm">
+                      <MessageSquare className="w-4 h-4 mr-2 text-gray-500 mt-0.5" />
+                      <span className="text-gray-600">{selectedBooking.notes}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Botões de Ação */}
+                {selectedBooking.status === 'pending' && (
+                  <div className="flex space-x-2 pt-4">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => updateStatus(selectedBooking.id, 'CANCELLED')}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Recusar
+                    </Button>
+                    <Button 
+                      size="sm"
+                      onClick={() => updateStatus(selectedBooking.id, 'CONFIRMED')}
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Aprovar
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

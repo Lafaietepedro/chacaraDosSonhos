@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -15,7 +15,7 @@ model User {
   email     String   @unique
   name      String
   phone     String?
-  role      UserRole @default(GUEST)
+  role      String   @default("GUEST")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -80,17 +80,17 @@ model Extra {
 }
 
 model Booking {
-  id          String        @id @default(cuid())
+  id          String   @id @default(cuid())
   startDate   DateTime
   endDate     DateTime
   guests      Int
   totalPrice  Float
-  status      BookingStatus @default(PENDING)
+  status      String   @default("PENDING")
   notes       String?
   contractUrl String?
   signature   String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
   userId     String
@@ -118,13 +118,13 @@ model BookingExtra {
 }
 
 model Payment {
-  id            String        @id @default(cuid())
+  id            String   @id @default(cuid())
   amount        Float
-  status        PaymentStatus @default(PENDING)
-  method        PaymentMethod
+  status        String   @default("PENDING")
+  method        String
   transactionId String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
   bookingId String
@@ -165,29 +165,8 @@ model Review {
   @@map("reviews")
 }
 
-enum UserRole {
-  GUEST
-  HOST
-  ADMIN
-}
-
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-  COMPLETED
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
-}
-
-enum PaymentMethod {
-  PIX
-  CREDIT_CARD
-  DEBIT_CARD
-  BANK_TRANSFER
-}
+// Enums converted to strings for SQLite compatibility:
+// UserRole: GUEST, HOST, ADMIN
+// BookingStatus: PENDING, CONFIRMED, CANCELLED, COMPLETED  
+// PaymentStatus: PENDING, COMPLETED, FAILED, REFUNDED
+// PaymentMethod: PIX, CREDIT_CARD, DEBIT_CARD, BANK_TRANSFER

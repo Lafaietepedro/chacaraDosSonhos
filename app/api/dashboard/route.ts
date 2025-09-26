@@ -31,11 +31,15 @@ export async function GET() {
     const recentBookings = bookings.map((b) => ({
       id: b.id,
       customer: b.user?.name ?? 'Cliente',
-      date: b.startDate,
+      email: b.user?.email ?? '',
+      phone: b.user?.phone ?? '',
+      date: b.startDate ? new Date(b.startDate).toISOString() : null,
       guests: b.guests,
-      package: '—',
+      packageId: '—', // Adicionar campo package se necessário
       status: b.status.toLowerCase(),
       total: b.totalPrice,
+      createdAt: b.createdAt,
+      notes: b.notes || null
     }))
 
     const totals = await prisma.booking.groupBy({

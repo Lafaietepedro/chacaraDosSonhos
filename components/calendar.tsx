@@ -44,9 +44,16 @@ export function Calendar({ onDateSelect, selectedDate, blockedDates = [], bookin
   }
 
   const isDateBooked = (date: Date) => {
-    return bookings.some(booking => 
-      date >= booking.startDate && date <= booking.endDate
-    )
+    return bookings.some(booking => {
+      try {
+        // Usar formato de data para comparação sem timezone
+        const bookingDateStr = format(new Date(booking.startDate), 'yyyy-MM-dd')
+        const inputDateStr = format(date, 'yyyy-MM-dd')
+        return bookingDateStr === inputDateStr
+      } catch {
+        return false
+      }
+    })
   }
 
   const getDateStatus = (date: Date) => {

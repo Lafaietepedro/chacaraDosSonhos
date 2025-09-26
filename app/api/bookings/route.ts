@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { notifyWhatsAppHost } from '@/lib/notify'
+import { parseLocalDate } from '@/lib/utils'
 
 export async function POST(request: Request) {
   try {
@@ -25,40 +26,43 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
-    const hasDb = Boolean(process.env.DATABASE_URL)
     let bookingId: string | undefined
-    if (hasDb && prisma) {
-      // Ensure a property exists (create one default if not)
-      let property = await prisma.property.findFirst()
-      if (!property) {
-        property = await prisma.property.create({
-          data: {
-            name: 'Espaço Vip JR',
-            description: 'Espaço para eventos',
-            capacity: 150,
-            basePrice: 800,
-            address: 'Estrada da Chácara, 123 - SP',
-          },
-        })
-      }
 
-      // Find or create customer user
-      let user = await prisma.user.findUnique({ where: { email: customer.email } })
-      if (!user) {
-        user = await prisma.user.create({
-          data: {
-            email: customer.email,
-            name: customer.name,
-            phone: customer.phone,
-            role: 'GUEST',
-          },
-        })
-      }
+    // Ensure a property exists (create one default if not)
+    let property = await prisma?.property.findFirst()
+    if (!property && prisma) {
+      property = await prisma.property.create({
+        data: {
+          name: 'Espaço Vip JR',
+          description: 'Espaço para eventos',
+          capacity: 150,
+          basePrice: 800,
+          address: 'Estrada da Chácara, 123 - SP',
+        },
+      })
+    }
 
+    // Find or create customer user
+    let user = await prisma?.user.findUnique({ where: { email: customer.email } })
+    if (!user && prisma) {
+      user = await prisma.user.create({
+        data: {
+          email: customer.email,
+          name: customer.name,
+          phone: customer.phone,
+          role: 'GUEST',
+        },
+      })
+    }
+
+    if (prisma && property && user) {
+      // Criar data corrigindo problema de timezone
+      const bookingDate = parseLocalDate(date)
+      
       const booking = await prisma.booking.create({
         data: {
-          startDate: new Date(date),
-          endDate: new Date(date),
+          startDate: bookingDate,
+          endDate: bookingDate,
           guests,
           totalPrice,
           status: 'PENDING',
@@ -70,10 +74,28 @@ export async function POST(request: Request) {
       bookingId = booking.id
     }
 
-    const msg = `Nova reserva recebida!\nData: ${new Date(date).toLocaleDateString('pt-BR')}\nConvidados: ${guests}\nValor: R$ ${totalPrice.toFixed(2)}\nCliente: ${customer.name} (${customer.phone})`
-    await notifyWhatsAppHost(msg)
+    // Enviar notificação WhatsApp para a proprietária
+    const bookingDisplayDate = parseLocalDate(date)
+    const msg = `🏡 *Nova reserva - Espaço Vip JR*
 
-    return NextResponse.json({ ok: true, bookingId: bookingId ?? null })
+📅 Data: ${bookingDisplayDate.toLocaleDateString('pt-BR')}
+👥 Convidados: ${guests}
+💰 Valor: R$ ${totalPrice.toFixed(2)}
+📦 Pacote: ${packageId}
+👤 Cliente: ${customer.name}
+📱 Telefone: ${customer.phone}
+📧 Email: ${customer.email}
+${customer.notes ? `📝 Observações: ${customer.notes}` : ''}
+
+Reserva ${bookingId ? `criada no sistema!` : 'processada com sucesso!'}`
+
+    const whatsappSent = await notifyWhatsAppHost(msg)
+    
+    return NextResponse.json({ 
+      ok: true, 
+      bookingId: bookingId ?? null,
+      whatsappSent 
+    })
   } catch (e) {
     console.error('POST /api/bookings error:', e)
     const message = e instanceof Error ? e.message : 'Server error'
