@@ -9,6 +9,8 @@ import { Calendar, Users, Check } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
+import { Header } from '@/components/header'
+
 export default function BookingPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)

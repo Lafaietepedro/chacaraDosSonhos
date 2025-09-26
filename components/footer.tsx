@@ -124,6 +124,9 @@ export function Footer() {
               <Link href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">
                 Termos de Uso
               </Link>
+              <Link href="/dashboard" className="text-gray-400 hover:text-white text-sm transition-colors">
+                Área Administrativa
+              </Link>
             </div>
           </div>
         </div>

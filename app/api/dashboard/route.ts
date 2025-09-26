@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { verifyAuth } from '@/lib/api-auth'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    // Verificar autenticação
+    const authResult = verifyAuth(request)
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: 401 })
+    }
     if (!prisma) {
       return NextResponse.json({ recentBookings: [], stats: {
         totalBookings: 0,
@@ -16,17 +22,20 @@ export async function GET() {
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-    const [bookings, monthly] = await Promise.all([
-      prisma.booking.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 10,
-        include: { user: true },
-      }),
-      prisma.booking.aggregate({
-        _sum: { totalPrice: true },
-        where: { createdAt: { gte: startOfMonth } },
-      }),
-    ])
+        const [bookings, monthly] = await Promise.all([
+          prisma.booking.findMany({
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+            include: { user: true },
+          }),
+          prisma.booking.aggregate({
+            _sum: { totalPrice: true },
+            where: { 
+              createdAt: { gte: startOfMonth },
+              status: 'CONFIRMED' // Só contar reservas aprovadas
+            },
+          }),
+        ])
 
     const recentBookings = bookings.map((b) => ({
       id: b.id,

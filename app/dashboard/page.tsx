@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Calendar } from '@/components/calendar'
+import { LoginForm } from '@/components/auth/login-form'
+import { useAuth } from '@/lib/auth'
 import { 
   Calendar as CalendarIcon, 
   Users, 
@@ -22,11 +24,13 @@ import {
   Mail,
   Phone,
   MessageSquare,
-  X
+  X,
+  LogOut
 } from 'lucide-react'
 import { formatCurrency, formatDate, parseLocalDate } from '@/lib/utils'
 
 export default function DashboardPage() {
+  const { isAuthenticated, isLoading, login, logout, getToken } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedDate, setSelectedDate] = useState<Date | undefined>()
   const [blockedDates, setBlockedDates] = useState<Date[]>([])
@@ -73,8 +77,20 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const res = await fetch('/api/dashboard')
-      if (!res.ok) throw new Error('Erro ao carregar dados')
+      const token = getToken()
+      const res = await fetch('/api/dashboard', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      if (!res.ok) {
+        if (res.status === 401) {
+          logout() // Deslogar se token inválido
+          return
+        }
+        throw new Error('Erro ao carregar dados')
+      }
       const data = await res.json()
       setRecentBookings(data.recentBookings)
       setStats(data.stats)
@@ -84,8 +100,29 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [])
+    if (isAuthenticated) {
+      fetchDashboardData()
+    }
+  }, [isAuthenticated])
+
+  // Mostrar tela de loading enquanto verifica autenticação
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando autenticação...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Mostrar formulário de login se não autenticado
+  if (!isAuthenticated) {
+    return <LoginForm onLogin={login} />
+  }
+
+  // Dashboard principal (apenas se autenticado)
 
   const handleBlockDate = () => {
     if (selectedDate) {
@@ -129,23 +166,60 @@ export default function DashboardPage() {
     setIsDetailsModalOpen(true)
   }
 
-  const updateStatus = async (id: string, status: 'CONFIRMED' | 'CANCELLED') => {
-    try {
-      const res = await fetch(`/api/bookings/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      })
-      if (!res.ok) throw new Error('Falha ao atualizar')
-      
-      // Recarregar dados do dashboard
-      await fetchDashboardData()
-      setIsDetailsModalOpen(false)
-    } catch (e) {
-      console.error(e)
-      alert('Não foi possível atualizar o status. Tente novamente.')
-    }
-  }
+      const updateStatus = async (id: string, status: 'CONFIRMED' | 'CANCELLED') => {
+        try {
+          const token = getToken()
+          const res = await fetch(`/api/bookings/${id}`, {
+            method: 'PATCH',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ status }),
+          })
+          if (!res.ok) throw new Error('Falha ao atualizar')
+          
+          // Recarregar dados do dashboard
+          await fetchDashboardData()
+          setIsDetailsModalOpen(false)
+        } catch (e) {
+          console.error(e)
+          alert('Não foi possível atualizar o status. Tente novamente.')
+        }
+      }
+
+      const deleteBooking = async (id: string, customerName: string) => {
+        if (!confirm(`Tem certeza que deseja excluir a reserva de ${customerName}? Esta ação não pode ser desfeita.`)) {
+          return
+        }
+
+        try {
+          const token = getToken()
+          const res = await fetch(`/api/bookings/${id}`, {
+            method: 'DELETE',
+            headers: { 
+              'Authorization': `Bearer ${token}`
+            },
+          })
+          
+          if (!res.ok) {
+            const errorData = await res.json()
+            throw new Error(errorData.error || 'Falha ao excluir')
+          }
+          
+          const result = await res.json()
+          console.log('Reserva excluída:', result.deletedBooking)
+          
+          // Recarregar dados do dashboard
+          await fetchDashboardData()
+          setIsDetailsModalOpen(false)
+          
+          alert('Reserva excluída com sucesso!')
+        } catch (e) {
+          console.error(e)
+          alert(`Não foi possível excluir a reserva. ${e instanceof Error ? e.message : 'Tente novamente.'}`)
+        }
+      }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -165,6 +239,10 @@ export default function DashboardPage() {
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
                 Nova Reserva
+              </Button>
+              <Button variant="outline" onClick={logout} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
               </Button>
             </div>
           </div>
@@ -330,37 +408,46 @@ export default function DashboardPage() {
                         <div className="text-2xl font-bold text-primary">
                           {formatCurrency(booking.total)}
                         </div>
-                        <div className="flex space-x-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => showBookingDetails(booking)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Ver Detalhes
-                          </Button>
-                          {booking.status === 'pending' && (
-                            <>
+                            <div className="flex space-x-2">
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => updateStatus(booking.id, 'CANCELLED')}
-                                className="text-red-600 hover:text-red-700"
+                                onClick={() => showBookingDetails(booking)}
                               >
-                                <XCircle className="w-4 h-4 mr-2" />
-                                Recusar
+                                <Eye className="w-4 h-4 mr-2" />
+                                Ver Detalhes
                               </Button>
+                              {booking.status === 'pending' && (
+                                <>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => updateStatus(booking.id, 'CANCELLED')}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <XCircle className="w-4 h-4 mr-2" />
+                                    Recusar
+                                  </Button>
+                                  <Button 
+                                    size="sm"
+                                    onClick={() => updateStatus(booking.id, 'CONFIRMED')}
+                                    className="text-green-600 hover:text-green-700"
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                    Aprovar
+                                  </Button>
+                                </>
+                              )}
                               <Button 
-                                size="sm"
-                                onClick={() => updateStatus(booking.id, 'CONFIRMED')}
-                                className="text-green-600 hover:text-green-700"
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => deleteBooking(booking.id, booking.customer)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
                               >
-                                <CheckCircle className="w-4 h-4 mr-2" />
-                                Aprovar
+                                <X className="w-4 h-4 mr-2" />
+                                Excluir
                               </Button>
-                            </>
-                          )}
-                        </div>
+                            </div>
                       </div>
                     </div>
                   ))}
@@ -571,28 +658,39 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* Botões de Ação */}
-                {selectedBooking.status === 'pending' && (
-                  <div className="flex space-x-2 pt-4">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => updateStatus(selectedBooking.id, 'CANCELLED')}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <XCircle className="w-4 h-4 mr-2" />
-                      Recusar
-                    </Button>
-                    <Button 
-                      size="sm"
-                      onClick={() => updateStatus(selectedBooking.id, 'CONFIRMED')}
-                      className="text-green-600 hover:text-green-700"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Aprovar
-                    </Button>
-                  </div>
-                )}
+                    {/* Botões de Ação */}
+                    <div className="flex space-x-2 pt-4">
+                      {selectedBooking.status === 'pending' && (
+                        <>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => updateStatus(selectedBooking.id, 'CANCELLED')}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Recusar
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={() => updateStatus(selectedBooking.id, 'CONFIRMED')}
+                            className="text-green-600 hover:text-green-700"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Aprovar
+                          </Button>
+                        </>
+                      )}
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => deleteBooking(selectedBooking.id, selectedBooking.customer)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Excluir Reserva
+                      </Button>
+                    </div>
               </CardContent>
             </Card>
           </div>

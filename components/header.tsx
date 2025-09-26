@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Calendar, Phone, Mail, MessageCircle } from 'lucide-react'
+import { Menu, X, Calendar, Phone, Mail, MessageCircle, Settings } from 'lucide-react'
 import { Playfair_Display } from 'next/font/google'
 
 const playfair = Playfair_Display({ subsets: ['latin'], weight: ['700', '800', '900'] })
@@ -57,6 +57,12 @@ export function Header() {
                 WhatsApp
               </a>
             </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/dashboard">
+                <Settings className="w-4 h-4 mr-2" />
+                Admin
+              </Link>
+            </Button>
             <Button size="sm" asChild>
               <Link href="/booking">
                 <Calendar className="w-4 h-4 mr-2" />
@@ -100,6 +106,12 @@ export function Header() {
                     <MessageCircle className="w-4 h-4 mr-2" />
                     WhatsApp
                   </a>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/dashboard">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Admin
+                  </Link>
                 </Button>
                 <Button size="sm" asChild>
                   <Link href="/booking">
