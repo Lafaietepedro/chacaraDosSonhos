@@ -215,21 +215,5 @@ chacaraDosSonhos/
 - Use um serviço gerenciado como Supabase, PlanetScale ou Railway
 - Configure as variáveis de conexão
 
-## Contribuição
 
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
-## Contato
-
-Para dúvidas ou sugestões, entre em contato:
-- Email: contato@chacaradossonhos.com
-- WhatsApp: (11) 99999-9999
 
