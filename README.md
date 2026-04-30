@@ -33,7 +33,7 @@ Funcionalidades que existem hoje:
 - Calendário visual no dashboard com reservas pendentes/confirmadas e bloqueios persistidos.
 - Configurações básicas do espaço editáveis no dashboard: nome, descrição, capacidade, taxa operacional, contato e endereço.
 - Pacotes editáveis no dashboard: nome, preço, duração, capacidade, valor por convidado extra, itens incluídos, destaque e ativação.
-- Usuário administrativo persistido no banco, com bootstrap inicial por variáveis de ambiente.
+- Usuário administrativo persistido no banco, com bootstrap inicial por variáveis de ambiente e troca de senha pelo painel.
 - Configuração centralizada de marca/contato em `lib/site.ts`, usada como fallback e seed inicial.
 
 ## Diferença Para o README Antigo
@@ -53,7 +53,7 @@ O README antigo descrevia uma visão maior do que o código implementado. Estes 
 - Multiunidade/multitenancy.
 - Backend Express separado.
 - PostgreSQL como banco padrão local.
-- Refresh token, troca de senha no painel e papéis/permissões granulares.
+- Refresh token, gestão de múltiplos administradores e papéis/permissões granulares.
 
 ## Viabilidade Das Funcionalidades
 
@@ -159,7 +159,7 @@ scripts/
 Prioridade 1:
 
 - Completar a remoção de `any` em telas administrativas futuras.
-- Criar tela de troca de senha administrativa e rotação de `AUTH_SECRET`.
+- Criar rotação de `AUTH_SECRET` e gestão de sessões ativas.
 - Criar fluxo de seed/migration mais formal para ambientes novos.
 
 Prioridade 2:
@@ -209,7 +209,7 @@ Funcionalidades implementadas:
 
 Funcionalidades desejadas, mas ainda não implementadas:
 - Pagamento de sinal via PIX/cartão.
-- Tela de troca de senha e gestão de administradores.
+- Gestão de múltiplos administradores.
 - Gestão real de fotos.
 - Email transacional.
 - Contrato PDF.

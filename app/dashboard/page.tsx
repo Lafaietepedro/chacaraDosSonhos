@@ -158,8 +158,14 @@ export default function DashboardPage() {
   const [packageForm, setPackageForm] = useState<PackageSettingsInput>(emptyPackageForm)
   const [bookingFilters, setBookingFilters] = useState<BookingFilterState>(emptyBookingFilters)
   const [filterDraft, setFilterDraft] = useState<BookingFilterState>(emptyBookingFilters)
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  })
   const [isSavingSettings, setIsSavingSettings] = useState(false)
   const [isSavingPackage, setIsSavingPackage] = useState(false)
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   useEffect(() => {
     authRef.current = { getToken, logout }
@@ -441,6 +447,46 @@ export default function DashboardPage() {
       alert(error instanceof Error ? error.message : 'Não foi possível salvar o pacote.')
     } finally {
       setIsSavingPackage(false)
+    }
+  }
+
+  const handleChangePassword = async () => {
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      alert('A confirmação precisa ser igual à nova senha.')
+      return
+    }
+
+    try {
+      setIsChangingPassword(true)
+      const token = getToken()
+      const res = await fetch('/api/dashboard/admin-password', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Falha ao alterar senha')
+      }
+
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      })
+      alert('Senha alterada com sucesso!')
+    } catch (error) {
+      console.error(error)
+      alert(error instanceof Error ? error.message : 'Não foi possível alterar a senha.')
+    } finally {
+      setIsChangingPassword(false)
     }
   }
 
@@ -1009,6 +1055,68 @@ export default function DashboardPage() {
                 
                 <Button onClick={handleSaveSettings} disabled={isSavingSettings}>
                   {isSavingSettings ? 'Salvando...' : 'Salvar Configurações'}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Segurança do Administrador</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="current-password">Senha atual</Label>
+                    <Input
+                      id="current-password"
+                      type="password"
+                      value={passwordForm.currentPassword}
+                      onChange={(event) => setPasswordForm((current) => ({
+                        ...current,
+                        currentPassword: event.target.value,
+                      }))}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="new-password">Nova senha</Label>
+                    <Input
+                      id="new-password"
+                      type="password"
+                      minLength={8}
+                      value={passwordForm.newPassword}
+                      onChange={(event) => setPasswordForm((current) => ({
+                        ...current,
+                        newPassword: event.target.value,
+                      }))}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="confirm-password">Confirmar senha</Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      minLength={8}
+                      value={passwordForm.confirmPassword}
+                      onChange={(event) => setPasswordForm((current) => ({
+                        ...current,
+                        confirmPassword: event.target.value,
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleChangePassword}
+                  disabled={
+                    isChangingPassword ||
+                    !passwordForm.currentPassword ||
+                    !passwordForm.newPassword ||
+                    !passwordForm.confirmPassword
+                  }
+                >
+                  {isChangingPassword ? 'Alterando...' : 'Alterar Senha'}
                 </Button>
               </CardContent>
             </Card>
