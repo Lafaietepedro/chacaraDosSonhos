@@ -1,5 +1,6 @@
 export const siteConfig = {
   appName: 'Venue Eventos',
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   appDescription:
     'Plataforma operacional para divulgar espaços de eventos, receber reservas qualificadas e acompanhar a agenda do anfitrião.',
   venueName: 'Venue Eventos',

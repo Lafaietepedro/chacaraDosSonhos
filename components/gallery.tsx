@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -113,10 +114,12 @@ export function Gallery() {
             >
               <CardContent className="p-0">
                 <div className="aspect-square relative overflow-hidden">
-                  <img
+                  <Image
                     src={image.src}
                     alt={image.alt}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    fill
+                    sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-300 hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
                     <div className="opacity-0 hover:opacity-100 transition-opacity">
@@ -135,10 +138,14 @@ export function Gallery() {
         {selectedImage !== null && (
           <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
             <div className="relative max-w-4xl max-h-full">
-              <img
+              <Image
                 src={filteredImages[selectedImage].src}
                 alt={filteredImages[selectedImage].alt}
-                className="max-w-full max-h-full object-contain"
+                width={1200}
+                height={900}
+                sizes="100vw"
+                className="max-h-[88vh] w-auto max-w-full object-contain"
+                priority
               />
               
               {/* Close button */}

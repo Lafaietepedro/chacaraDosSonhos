@@ -3,6 +3,7 @@ import './globals.css'
 import { siteConfig } from '@/lib/site'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.siteUrl),
   title: `${siteConfig.appName} - Reservas para espaços de eventos`,
   description: siteConfig.appDescription,
   keywords: siteConfig.keywords,
@@ -20,8 +21,15 @@ export const metadata: Metadata = {
   openGraph: {
     title: `${siteConfig.appName} - Reservas para espaços de eventos`,
     description: siteConfig.appDescription,
+    url: siteConfig.siteUrl,
+    siteName: siteConfig.appName,
     type: 'website',
     locale: 'pt_BR',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${siteConfig.appName} - Reservas para espaços de eventos`,
+    description: siteConfig.appDescription,
   },
 }
 
