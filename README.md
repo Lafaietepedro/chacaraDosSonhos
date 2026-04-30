@@ -22,6 +22,7 @@ Stack real do repositório:
 Funcionalidades que existem hoje:
 
 - Página pública responsiva com hero, proposta de valor, galeria demonstrativa, pacotes, FAQ e contato.
+- Formulário de contato persistido no banco, com notificação opcional para o anfitrião.
 - Fluxo de solicitação de reserva em 3 etapas: data/convidados, pacote e dados do cliente.
 - Cálculo automático de valor com pacote, taxa operacional e convidados extras.
 - Persistência de reservas no Prisma.
@@ -133,6 +134,7 @@ A aplicação abre em `http://localhost:3000`.
 app/
   api/                  Rotas de autenticação, dashboard e reservas
   api/catalog           Catálogo público de propriedade e pacotes
+  api/contact           Recebimento de mensagens do formulário público
   api/dashboard/packages Pacotes editáveis pelo painel
   booking/              Fluxo público de solicitação de reserva
   dashboard/            Painel administrativo

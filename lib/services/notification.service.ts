@@ -124,3 +124,36 @@ O anfitrião vai analisar a solicitação e retornar com a confirmação.`
     whatsappSent,
   }
 }
+
+export async function notifyContactMessage(input: {
+  name: string
+  email: string
+  phone?: string | null
+  subject?: string | null
+  message: string
+  venueName: string
+  hostEmail?: string | null
+}) {
+  const hostEmail = input.hostEmail || siteConfig.email
+  const subject = input.subject?.trim() || 'Novo contato pelo site'
+  const text = `Nova mensagem de contato - ${siteConfig.appName}
+
+Espaço: ${input.venueName}
+Nome: ${input.name}
+Email: ${input.email}
+Telefone: ${input.phone || 'Não informado'}
+Assunto: ${subject}
+
+Mensagem:
+${input.message}`
+
+  const [hostEmailSent, whatsappSent] = await Promise.all([
+    sendEmail(hostEmail, `Contato pelo site - ${subject}`, text),
+    notifyWhatsAppHost(text),
+  ])
+
+  return {
+    hostEmailSent,
+    whatsappSent,
+  }
+}

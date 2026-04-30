@@ -16,12 +16,34 @@ export function Contact() {
     subject: '',
     message: ''
   })
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
+  const [feedback, setFeedback] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Form submitted:', formData)
-    alert('Mensagem enviada com sucesso! Entraremos em contato em breve.')
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
+
+    try {
+      setStatus('sending')
+      setFeedback('')
+
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json().catch(() => null)
+      if (!response.ok) {
+        throw new Error(data?.error || 'Não foi possível enviar a mensagem')
+      }
+
+      setStatus('success')
+      setFeedback('Mensagem enviada com sucesso. Entraremos em contato em breve.')
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
+    } catch (error) {
+      setStatus('error')
+      setFeedback(error instanceof Error ? error.message : 'Não foi possível enviar a mensagem.')
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -139,8 +161,20 @@ export function Contact() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full">
-                  Enviar Mensagem
+                {feedback && (
+                  <div
+                    className={`rounded-md border px-3 py-2 text-sm ${
+                      status === 'success'
+                        ? 'border-green-200 bg-green-50 text-green-700'
+                        : 'border-red-200 bg-red-50 text-red-700'
+                    }`}
+                  >
+                    {feedback}
+                  </div>
+                )}
+
+                <Button type="submit" className="w-full" disabled={status === 'sending'}>
+                  {status === 'sending' ? 'Enviando...' : 'Enviar Mensagem'}
                 </Button>
               </form>
             </CardContent>

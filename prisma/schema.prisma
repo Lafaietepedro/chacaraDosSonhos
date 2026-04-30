@@ -62,6 +62,7 @@ model Property {
   extras       Extra[]
   packages     BookingPackage[]
   reviews      Review[]
+  contactMessages ContactMessage[]
 
   @@map("properties")
 }
@@ -214,6 +215,24 @@ model Review {
 
   @@unique([userId, propertyId])
   @@map("reviews")
+}
+
+model ContactMessage {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  phone      String?
+  subject    String?
+  message    String
+  status     String   @default("NEW")
+  propertyId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("contact_messages")
 }
 
 // Enums converted to strings for SQLite compatibility:
