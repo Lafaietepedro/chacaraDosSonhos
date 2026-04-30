@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
-import { notifyWhatsAppHost } from '@/lib/notify'
-import { siteConfig } from '@/lib/site'
 import { createBookingRequest, BookingServiceError } from '@/lib/services/booking.service'
+import { notifyBookingCreated } from '@/lib/services/notification.service'
 
 export async function POST(request: Request) {
   try {
@@ -29,27 +28,17 @@ export async function POST(request: Request) {
       customer,
     })
 
-    // Enviar notificação WhatsApp para o anfitrião
-    const msg = `Nova solicitação de reserva - ${siteConfig.appName}
-
-Data: ${booking.startDate.toLocaleDateString('pt-BR')}
-Convidados: ${guests}
-Valor: R$ ${quote.totalAmount.toFixed(2)}
-Pacote: ${selectedPackage.name}
-Cliente: ${customer.name}
-Telefone: ${customer.phone}
-Email: ${customer.email}
-${customer.notes ? `Observações: ${customer.notes}` : ''}
-
-Reserva criada no sistema!`
-
-    const whatsappSent = await notifyWhatsAppHost(msg)
+    const notifications = await notifyBookingCreated({
+      booking,
+      packageName: selectedPackage.name,
+      totalAmount: quote.totalAmount,
+    })
     
     return NextResponse.json({ 
       ok: true, 
       bookingId: booking.id,
       totalPrice: quote.totalAmount,
-      whatsappSent 
+      notifications,
     })
   } catch (e) {
     console.error('POST /api/bookings error:', e)

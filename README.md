@@ -16,6 +16,7 @@ Stack real do repositório:
 - API routes do próprio Next.js
 - Autenticação administrativa com `AdminUser`, senha hasheada por `scrypt` e token assinado por HMAC
 - Helper de notificação por WhatsApp via webhook ou CallMeBot
+- Email transacional opcional via Resend
 - Node 24 LTS recomendado. Node 25 é uma release Current e apresentou falha silenciosa ao gerar Prisma Client neste ambiente.
 
 Funcionalidades que existem hoje:
@@ -34,6 +35,7 @@ Funcionalidades que existem hoje:
 - Configurações básicas do espaço editáveis no dashboard: nome, descrição, capacidade, taxa operacional, contato e endereço.
 - Pacotes editáveis no dashboard: nome, preço, duração, capacidade, valor por convidado extra, itens incluídos, destaque e ativação.
 - Usuário administrativo persistido no banco, com bootstrap inicial por variáveis de ambiente e troca de senha pelo painel.
+- Notificação de nova reserva para cliente e anfitrião por email quando `RESEND_API_KEY` estiver configurada.
 - Configuração centralizada de marca/contato em `lib/site.ts`, usada como fallback e seed inicial.
 
 ## Diferença Para o README Antigo
@@ -43,7 +45,6 @@ O README antigo descrevia uma visão maior do que o código implementado. Estes 
 - Pagamento online com Stripe, PIX ou PayPal.
 - Cobrança de sinal integrada ao fluxo.
 - Emissão de recibo ou fatura.
-- Envio real de email transacional.
 - WhatsApp Business API oficial.
 - Geração de contrato PDF.
 - Assinatura eletrônica.
@@ -95,6 +96,8 @@ DATABASE_URL="file:./dev.db"
 DASHBOARD_USERNAME="admin"
 DASHBOARD_PASSWORD="troque-esta-senha"
 AUTH_SECRET="gere-uma-string-longa-e-aleatoria"
+RESEND_API_KEY=""
+RESEND_FROM_EMAIL="Venue Eventos <reservas@seudominio.com.br>"
 WHATSAPP_PHONE="5561999999999"
 WHATSAPP_WEBHOOK_URL=""
 CALLMEBOT_API_KEY=""
@@ -166,8 +169,8 @@ Prioridade 2:
 
 - Criar camada de serviço para reservas, separando regra de negócio das API routes.
 - Criar testes para cálculo de preço, disponibilidade e transição de status.
-- Adicionar email transacional para cliente e anfitrião.
-- Adicionar filtros no dashboard por status, período e cliente.
+- Criar templates HTML para os emails transacionais e histórico de envio.
+- Expandir filtros do dashboard com ordenação e paginação.
 - Melhorar tratamento de loading/erro nas telas.
 
 Prioridade 3:
@@ -204,6 +207,7 @@ Funcionalidades implementadas:
 - Validação de disponibilidade no backend.
 - Datas bloqueadas persistidas.
 - Pacotes e configurações do espaço editáveis pelo painel.
+- Email transacional opcional para cliente e anfitrião via Resend.
 - Dashboard com login, estatísticas básicas, listagem, detalhes, aprovação, recusa e exclusão.
 - Calendário visual.
 
@@ -211,7 +215,6 @@ Funcionalidades desejadas, mas ainda não implementadas:
 - Pagamento de sinal via PIX/cartão.
 - Gestão de múltiplos administradores.
 - Gestão real de fotos.
-- Email transacional.
 - Contrato PDF.
 - Assinatura eletrônica.
 - Relatórios melhores.
