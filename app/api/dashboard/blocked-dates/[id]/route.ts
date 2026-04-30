@@ -4,7 +4,7 @@ import { verifyAuth } from '@/lib/api-auth'
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const authResult = verifyAuth(request)
   if (!authResult.success) {
@@ -15,8 +15,10 @@ export async function DELETE(
     return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
   }
 
+  const { id } = await params
+
   await prisma.blockedDate.delete({
-    where: { id: params.id },
+    where: { id },
   })
 
   return NextResponse.json({ ok: true })

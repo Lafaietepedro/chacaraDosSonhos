@@ -1,4 +1,3 @@
-import { Resend } from 'resend'
 import type { Booking, BookingPackage, Property, User } from '@prisma/client'
 import { notifyWhatsAppHost } from '@/lib/notify'
 import { siteConfig } from '@/lib/site'
@@ -19,11 +18,6 @@ type NotificationResult = {
   clientEmailSent: boolean
   hostEmailSent: boolean
   whatsappSent: boolean
-}
-
-function getResendClient() {
-  const apiKey = process.env.RESEND_API_KEY
-  return apiKey ? new Resend(apiKey) : null
 }
 
 function getFromAddress() {
@@ -60,19 +54,28 @@ function buildBookingSummary({ booking, packageName, totalAmount }: BookingNotif
 }
 
 async function sendEmail(to: string | null | undefined, subject: string, text: string) {
-  const resend = getResendClient()
-  if (!resend || !to) return false
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey || !to) return false
 
   try {
-    const response = await resend.emails.send({
-      from: getFromAddress(),
-      to,
-      subject,
-      text,
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: getFromAddress(),
+        to,
+        subject,
+        text,
+      }),
+      cache: 'no-store',
     })
 
-    if (response.error) {
-      console.error('Erro ao enviar email transacional:', response.error)
+    if (!response.ok) {
+      const error = await response.text().catch(() => response.statusText)
+      console.error('Erro ao enviar email transacional:', error)
       return false
     }
 

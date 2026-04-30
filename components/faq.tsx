@@ -18,7 +18,7 @@ export function FAQ() {
     },
     {
       question: 'Existe pagamento online implementado?',
-      answer: 'Ainda não. A base possui dependências de Stripe, mas o fluxo atual registra a solicitação e deixa pagamento como item de roadmap.'
+      answer: 'Ainda não. O fluxo atual registra a solicitação e deixa pagamento de sinal como item de roadmap.'
     },
     {
       question: 'O painel é protegido?',

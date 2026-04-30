@@ -6,7 +6,7 @@ import type { PackageSettingsInput } from '@/types/booking'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const authResult = verifyAuth(request)
   if (!authResult.success) {
@@ -18,8 +18,9 @@ export async function PATCH(
   }
 
   try {
+    const { id } = await params
     const body = (await request.json()) as PackageSettingsInput
-    const packageOption = await upsertPackage(prisma, body, params.id)
+    const packageOption = await upsertPackage(prisma, body, id)
     return NextResponse.json({ package: packageOption })
   } catch (error) {
     return NextResponse.json(

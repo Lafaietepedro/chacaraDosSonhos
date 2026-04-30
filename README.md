@@ -8,12 +8,13 @@ O projeto nasceu como uma página específica de uma propriedade, mas foi reposi
 
 Stack real do repositório:
 
-- Next.js 14 com App Router
+- Next.js 16 com App Router
 - TypeScript
 - Tailwind CSS
 - Prisma ORM
 - SQLite local em desenvolvimento
 - API routes do próprio Next.js
+- ESLint 9 com configuração flat e regras do Next
 - Autenticação administrativa com `AdminUser`, senha hasheada por `scrypt` e token assinado por HMAC
 - Helper de notificação por WhatsApp via webhook ou CallMeBot
 - Email transacional opcional via Resend
@@ -43,7 +44,7 @@ Funcionalidades que existem hoje:
 
 O README antigo descrevia uma visão maior do que o código implementado. Estes pontos ainda não estão prontos para produção:
 
-- Pagamento online com Stripe, PIX ou PayPal.
+- Pagamento online com PIX, cartão ou provedor dedicado.
 - Cobrança de sinal integrada ao fluxo.
 - Emissão de recibo ou fatura.
 - WhatsApp Business API oficial.
@@ -67,7 +68,7 @@ Alta viabilidade:
 
 Viabilidade média:
 
-- Pagamento de sinal por Stripe Checkout ou Mercado Pago.
+- Pagamento de sinal por Mercado Pago, Stripe Checkout ou provedor equivalente.
 - PIX com confirmação por webhook.
 - Geração de PDF com dados da reserva.
 - Upload de fotos com Cloudinary ou Supabase Storage.
@@ -193,7 +194,7 @@ Analise este projeto como se fosse um produto real chamado Venue Eventos.
 Contexto: ele começou como um site específico para aluguel de uma propriedade, mas foi renomeado e reposicionado para virar uma base profissional de gestão de reservas para espaços de eventos. Quero remover qualquer traço de projeto pessoal antigo e decidir se vale manter esta arquitetura ou fazer uma refatoração maior.
 
 Stack atual:
-- Next.js 14 App Router
+- Next.js 16 App Router
 - TypeScript
 - Tailwind CSS
 - Prisma

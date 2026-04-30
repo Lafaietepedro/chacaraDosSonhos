@@ -6,7 +6,7 @@ const allowedStatuses = ['NEW', 'READ', 'ARCHIVED'] as const
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = verifyAuth(request)
@@ -18,6 +18,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Banco de dados indisponível' }, { status: 503 })
     }
 
+    const { id } = await params
     const body = await request.json() as { status?: string }
     const status = body.status?.toUpperCase()
 
@@ -26,7 +27,7 @@ export async function PATCH(
     }
 
     const contactMessage = await prisma.contactMessage.update({
-      where: { id: params.id },
+      where: { id },
       data: { status },
     })
 

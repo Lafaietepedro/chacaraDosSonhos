@@ -4,7 +4,7 @@ import { verifyAuth } from '@/lib/api-auth'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verificar autenticação
@@ -17,7 +17,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
     }
     
-    const id = params.id
+    const { id } = await params
     const body = await request.json()
     const { status } = body as { status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REJECTED' }
 
@@ -39,7 +39,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verificar autenticação
@@ -52,7 +52,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
     }
     
-    const id = params.id
+    const { id } = await params
 
     if (!id) {
       return NextResponse.json({ error: 'Invalid booking ID' }, { status: 400 })

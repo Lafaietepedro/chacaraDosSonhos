@@ -4,7 +4,7 @@ import { verifyAuthorizationHeader } from '@/lib/services/admin-auth.service'
 
 export async function GET() {
   try {
-    const headersList = headers()
+    const headersList = await headers()
     const authResult = verifyAuthorizationHeader(headersList.get('authorization'))
 
     if (!authResult.success) {
