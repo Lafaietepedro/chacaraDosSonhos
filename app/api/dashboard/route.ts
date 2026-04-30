@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     if (!prisma) {
       return NextResponse.json({ recentBookings: [], stats: emptyStats })
     }
-    await ensureDefaultProperty(prisma)
+    const property = await ensureDefaultProperty(prisma)
 
     const { searchParams } = new URL(request.url)
     const statusParam = searchParams.get('status')?.toLowerCase()
@@ -75,8 +75,10 @@ export async function GET(request: Request) {
 
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+    const daysInMonth = endOfMonth.getDate()
 
-    const [bookings, monthly, totals, totalBookings] = await Promise.all([
+    const [bookings, monthly, monthlyConfirmedBookings, totals, totalBookings] = await Promise.all([
       prisma.booking.findMany({
         where: bookingWhere,
         orderBy: { createdAt: 'desc' },
@@ -86,8 +88,17 @@ export async function GET(request: Request) {
       prisma.booking.aggregate({
         _sum: { totalPrice: true },
         where: { 
-          createdAt: { gte: startOfMonth },
-          status: 'CONFIRMED'
+          propertyId: property.id,
+          startDate: { gte: startOfMonth, lte: endOfMonth },
+          status: 'CONFIRMED',
+        },
+      }),
+      prisma.booking.findMany({
+        select: { startDate: true },
+        where: {
+          propertyId: property.id,
+          startDate: { gte: startOfMonth, lte: endOfMonth },
+          status: 'CONFIRMED',
         },
       }),
       prisma.booking.groupBy({
@@ -96,6 +107,11 @@ export async function GET(request: Request) {
       }),
       prisma.booking.count(),
     ])
+
+    const occupiedDays = new Set(
+      monthlyConfirmedBookings.map((booking) => booking.startDate.toISOString().slice(0, 10))
+    ).size
+    const occupancyRate = Math.round((occupiedDays / daysInMonth) * 100)
 
     const recentBookings = bookings.map((b) => ({
       id: b.id,
@@ -121,7 +137,7 @@ export async function GET(request: Request) {
         (totals.find((t) => t.status === 'CANCELLED')?._count.status ?? 0) +
         (totals.find((t) => t.status === 'REJECTED')?._count.status ?? 0),
       monthlyRevenue: monthly._sum.totalPrice ?? 0,
-      occupancyRate: 0,
+      occupancyRate,
     }
 
     return NextResponse.json({ recentBookings, stats })
