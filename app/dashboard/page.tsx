@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -685,13 +686,15 @@ export default function DashboardPage() {
               <p className="text-gray-600">Acompanhe solicitações, agenda e indicadores do espaço</p>
             </div>
             <div className="flex space-x-4">
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => setActiveTab('settings')}>
                 <Settings className="w-4 h-4 mr-2" />
                 Configurações
               </Button>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Nova Reserva
+              <Button asChild>
+                <Link href="/booking">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nova Reserva
+                </Link>
               </Button>
               <Button variant="outline" onClick={logout} className="text-red-600 hover:text-red-700 hover:bg-red-50">
                 <LogOut className="w-4 h-4 mr-2" />
