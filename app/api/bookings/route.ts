@@ -1,9 +1,23 @@
 import { NextResponse } from 'next/server'
 import { createBookingRequest, BookingServiceError } from '@/lib/services/booking.service'
 import { notifyBookingCreated } from '@/lib/services/notification.service'
+import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   try {
+    const rateLimit = checkRateLimit({
+      key: `booking:${getClientIp(request)}`,
+      limit: 8,
+      windowMs: 10 * 60 * 1000,
+    })
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Muitas solicitações em pouco tempo. Tente novamente em alguns minutos.' },
+        { status: 429, headers: rateLimitHeaders(rateLimit) }
+      )
+    }
+
     const body = await request.json()
     const {
       date,

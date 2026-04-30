@@ -25,6 +25,7 @@ Funcionalidades que existem hoje:
 - Página pública responsiva com hero, proposta de valor, galeria demonstrativa, pacotes, FAQ e contato.
 - Formulário de contato persistido no banco, com notificação opcional para o anfitrião.
 - Fluxo de solicitação de reserva em 3 etapas: data/convidados, pacote e dados do cliente.
+- Rate limiting em memória nos endpoints públicos de contato e reserva.
 - Cálculo automático de valor com pacote, taxa operacional e convidados extras.
 - Persistência de reservas no Prisma.
 - Criação automática de usuário cliente e propriedade padrão quando necessário.

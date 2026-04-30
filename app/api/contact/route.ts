@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ensureDefaultProperty } from '@/lib/services/property.service'
 import { notifyContactMessage } from '@/lib/services/notification.service'
+import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rate-limit'
 
 type ContactPayload = {
   name?: string
@@ -17,6 +18,19 @@ function clean(value?: string) {
 
 export async function POST(request: Request) {
   try {
+    const rateLimit = checkRateLimit({
+      key: `contact:${getClientIp(request)}`,
+      limit: 5,
+      windowMs: 10 * 60 * 1000,
+    })
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Muitas mensagens em pouco tempo. Tente novamente em alguns minutos.' },
+        { status: 429, headers: rateLimitHeaders(rateLimit) }
+      )
+    }
+
     if (!prisma) {
       return NextResponse.json({ error: 'Banco de dados indisponível' }, { status: 503 })
     }
