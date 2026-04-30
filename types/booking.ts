@@ -61,6 +61,17 @@ export type DashboardBlockedDate = {
   reason: string | null
 }
 
+export type DashboardContactMessage = {
+  id: string
+  name: string
+  email: string
+  phone: string | null
+  subject: string | null
+  message: string
+  status: 'NEW' | 'READ' | 'ARCHIVED'
+  createdAt: string
+}
+
 export type PropertySettingsInput = {
   name: string
   description: string

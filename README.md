@@ -31,7 +31,7 @@ Funcionalidades que existem hoje:
 - Snapshot de pacote e preço gravado na reserva.
 - Validação de disponibilidade no backend para impedir reserva em data bloqueada ou já pendente/confirmada.
 - Bloqueios de data persistidos no banco e conectados ao calendário do dashboard.
-- Painel administrativo com login, indicadores básicos, lista de reservas, detalhes, aprovação, recusa e exclusão.
+- Painel administrativo com login, indicadores básicos, lista de reservas, mensagens de contato, detalhes, aprovação, recusa e exclusão.
 - Calendário visual no dashboard com reservas pendentes/confirmadas e bloqueios persistidos.
 - Configurações básicas do espaço editáveis no dashboard: nome, descrição, capacidade, taxa operacional, contato e endereço.
 - Pacotes editáveis no dashboard: nome, preço, duração, capacidade, valor por convidado extra, itens incluídos, destaque e ativação.

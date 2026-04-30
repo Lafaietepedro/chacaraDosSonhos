@@ -34,6 +34,7 @@ import type {
   CatalogResponse,
   DashboardBlockedDate,
   DashboardBooking,
+  DashboardContactMessage,
   DashboardStats,
   PackageOption,
   PackageSettingsInput,
@@ -151,6 +152,7 @@ export default function DashboardPage() {
   }
 
   const [recentBookings, setRecentBookings] = useState<DashboardBooking[]>([])
+  const [contactMessages, setContactMessages] = useState<DashboardContactMessage[]>([])
   const [stats, setStats] = useState<DashboardStats>(emptyStats)
   const [propertySettings, setPropertySettings] = useState<PropertySettingsInput>(defaultPropertySettings)
   const [packages, setPackages] = useState<PackageOption[]>([])
@@ -222,6 +224,25 @@ export default function DashboardPage() {
     }
   }, [])
 
+  const fetchContactMessages = useCallback(async () => {
+    try {
+      const token = authRef.current.getToken()
+      const res = await fetch('/api/dashboard/contact-messages', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+      if (!res.ok) {
+        if (res.status === 401) authRef.current.logout()
+        return
+      }
+      const data = await res.json() as { contactMessages: DashboardContactMessage[] }
+      setContactMessages(data.contactMessages)
+    } catch (err) {
+      console.error('Erro ao carregar mensagens de contato:', err)
+    }
+  }, [])
+
   const fetchPropertySettings = useCallback(async () => {
     try {
       const token = authRef.current.getToken()
@@ -262,9 +283,10 @@ export default function DashboardPage() {
     if (isAuthenticated) {
       fetchDashboardData()
       fetchBlockedDates()
+      fetchContactMessages()
       fetchPropertySettings()
     }
-  }, [fetchBlockedDates, fetchDashboardData, fetchPropertySettings, isAuthenticated])
+  }, [fetchBlockedDates, fetchContactMessages, fetchDashboardData, fetchPropertySettings, isAuthenticated])
 
   // Mostrar tela de loading enquanto verifica autenticação
   if (isLoading) {
@@ -490,6 +512,32 @@ export default function DashboardPage() {
     }
   }
 
+  const updateContactMessageStatus = async (
+    id: string,
+    status: DashboardContactMessage['status']
+  ) => {
+    try {
+      const token = getToken()
+      const res = await fetch(`/api/dashboard/contact-messages/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      })
+
+      if (!res.ok) throw new Error('Falha ao atualizar mensagem')
+
+      setContactMessages((current) =>
+        current.map((message) => message.id === id ? { ...message, status } : message)
+      )
+    } catch (error) {
+      console.error(error)
+      alert('Não foi possível atualizar a mensagem. Tente novamente.')
+    }
+  }
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'confirmed':
@@ -629,6 +677,7 @@ export default function DashboardPage() {
           {[
             { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
             { id: 'bookings', label: 'Reservas', icon: CalendarIcon },
+            { id: 'contacts', label: 'Contatos', icon: Mail },
             { id: 'calendar', label: 'Calendário', icon: CalendarIcon },
             { id: 'settings', label: 'Configurações', icon: Settings }
           ].map((tab) => (
@@ -895,6 +944,94 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Contacts Tab */}
+        {activeTab === 'contacts' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mensagens de Contato</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {contactMessages.length === 0 ? (
+                  <div className="rounded-lg border border-dashed p-8 text-center text-gray-500">
+                    Nenhuma mensagem recebida pelo formulário público.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {contactMessages.map((contactMessage) => (
+                      <div key={contactMessage.id} className="rounded-lg border p-5">
+                        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-semibold text-gray-900">{contactMessage.name}</h3>
+                              <span className={`rounded-full px-2 py-1 text-xs font-medium ${
+                                contactMessage.status === 'NEW'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : contactMessage.status === 'READ'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-gray-100 text-gray-600'
+                              }`}>
+                                {contactMessage.status === 'NEW'
+                                  ? 'Nova'
+                                  : contactMessage.status === 'READ'
+                                    ? 'Lida'
+                                    : 'Arquivada'}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-500">
+                              {new Date(contactMessage.createdAt).toLocaleString('pt-BR')}
+                            </p>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            {contactMessage.status !== 'READ' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateContactMessageStatus(contactMessage.id, 'READ')}
+                              >
+                                Marcar como lida
+                              </Button>
+                            )}
+                            {contactMessage.status !== 'ARCHIVED' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateContactMessageStatus(contactMessage.id, 'ARCHIVED')}
+                              >
+                                Arquivar
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="mb-4 grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
+                          <div>
+                            <p className="text-gray-500">Email</p>
+                            <p className="font-medium">{contactMessage.email}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Telefone</p>
+                            <p className="font-medium">{contactMessage.phone || 'Não informado'}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Assunto</p>
+                            <p className="font-medium">{contactMessage.subject || 'Sem assunto'}</p>
+                          </div>
+                        </div>
+
+                        <p className="whitespace-pre-wrap rounded-md bg-gray-50 p-4 text-sm leading-6 text-gray-700">
+                          {contactMessage.message}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
