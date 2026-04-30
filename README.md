@@ -112,7 +112,10 @@ Prepare o Prisma:
 ```bash
 npm run db:generate
 npm run db:push
+npm run db:seed
 ```
+
+O seed é idempotente: cria a propriedade padrão, garante os pacotes iniciais e cria o primeiro administrador apenas se ainda não existir. Em bases que já foram usadas pelo painel, ele preserva configurações e pacotes existentes.
 
 Se estiver usando Node 25 e o Prisma Client não regenerar, use Node 24 LTS para os comandos Prisma:
 
@@ -155,6 +158,7 @@ lib/
 prisma/
   schema.prisma         Schema SQLite local com pacotes e snapshots de reserva
   schema-production.prisma Schema alternativa para PostgreSQL
+  seed.js               Bootstrap idempotente de propriedade, pacotes e admin
 scripts/
   quick-bookings.js     Consulta rápida de reservas
   view-bookings.js      Consulta detalhada de reservas
