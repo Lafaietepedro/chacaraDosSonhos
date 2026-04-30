@@ -30,6 +30,8 @@ export default function BookingPage() {
     notes: ''
   })
   const [showSuccess, setShowSuccess] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     fetch('/api/catalog')
@@ -71,7 +73,10 @@ export default function BookingPage() {
     if (step > 1) setStep(step - 1)
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setSubmitError('')
+    setIsSubmitting(true)
+
     const payload = {
       date: selectedDate,
       guests,
@@ -84,27 +89,26 @@ export default function BookingPage() {
       },
     }
 
-    fetch('/api/bookings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          let detail = ''
-          try {
-            const data = await res.json()
-            detail = data?.error || JSON.stringify(data)
-          } catch (_) {}
-          throw new Error(detail || 'Falha ao registrar a reserva')
-        }
-        setShowSuccess(true)
-        setTimeout(() => router.push('/'), 2500)
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       })
-      .catch((err) => {
-        console.error(err)
-        alert(`Ocorreu um erro ao enviar sua reserva. ${err?.message || ''}`)
-      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Falha ao registrar a reserva')
+      }
+
+      setShowSuccess(true)
+      setTimeout(() => router.push('/'), 2500)
+    } catch (err) {
+      console.error(err)
+      setSubmitError(`Ocorreu um erro ao enviar sua reserva. ${err instanceof Error ? err.message : ''}`)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -120,6 +124,21 @@ export default function BookingPage() {
                   <p className="font-semibold">Reserva enviada com sucesso!</p>
                   <p className="text-sm opacity-90">Entraremos em contato para confirmação. Você será redirecionado para a página inicial em instantes.</p>
                 </div>
+              </div>
+            </div>
+          )}
+          {submitError && (
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-800 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-sm">{submitError}</p>
+                <button
+                  type="button"
+                  onClick={() => setSubmitError('')}
+                  className="text-red-700 opacity-70 transition-opacity hover:opacity-100"
+                  aria-label="Fechar erro"
+                >
+                  ×
+                </button>
               </div>
             </div>
           )}
@@ -315,8 +334,8 @@ export default function BookingPage() {
                         Próximo
                       </Button>
                     ) : (
-                      <Button onClick={handleSubmit}>
-                        Finalizar Reserva
+                      <Button onClick={handleSubmit} disabled={isSubmitting}>
+                        {isSubmitting ? 'Enviando...' : 'Finalizar Reserva'}
                       </Button>
                     )}
                   </div>

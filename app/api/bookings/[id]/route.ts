@@ -77,8 +77,6 @@ export async function DELETE(
       where: { id }
     })
 
-    console.log(`Reserva excluída: ${id} - Cliente: ${existingBooking.user.name}`)
-
     return NextResponse.json({ 
       ok: true, 
       message: 'Reserva excluída com sucesso',

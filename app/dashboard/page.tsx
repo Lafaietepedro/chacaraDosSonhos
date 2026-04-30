@@ -82,6 +82,11 @@ type BookingFilterState = {
   to: string
 }
 
+type DashboardNotice = {
+  type: 'success' | 'error'
+  message: string
+}
+
 const emptyBookingFilters: BookingFilterState = {
   search: '',
   status: 'all',
@@ -125,6 +130,8 @@ export default function DashboardPage() {
   const [blockedDates, setBlockedDates] = useState<DashboardBlockedDate[]>([])
   const [selectedBooking, setSelectedBooking] = useState<DashboardBooking | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const [bookingToDelete, setBookingToDelete] = useState<DashboardBooking | null>(null)
+  const [notice, setNotice] = useState<DashboardNotice | null>(null)
 
   // Função para converter data recebida de string do JSON para Date object
   const parseBookingDate = (date: string | Date | null): Date => {
@@ -169,9 +176,23 @@ export default function DashboardPage() {
   const [isSavingPackage, setIsSavingPackage] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
 
+  const showNotice = useCallback((nextNotice: DashboardNotice) => {
+    setNotice(nextNotice)
+  }, [])
+
   useEffect(() => {
     authRef.current = { getToken, logout }
   }, [getToken, logout])
+
+  useEffect(() => {
+    if (!notice) return
+
+    const timeoutId = window.setTimeout(() => {
+      setNotice(null)
+    }, 4500)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [notice])
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -328,9 +349,10 @@ export default function DashboardPage() {
 
       await fetchBlockedDates()
       setSelectedDate(undefined)
+      showNotice({ type: 'success', message: 'Data bloqueada com sucesso.' })
     } catch (error) {
       console.error(error)
-      alert('Não foi possível bloquear a data. Tente novamente.')
+      showNotice({ type: 'error', message: 'Não foi possível bloquear a data. Tente novamente.' })
     }
   }
 
@@ -347,9 +369,10 @@ export default function DashboardPage() {
       if (!res.ok) throw new Error('Falha ao desbloquear data')
 
       await fetchBlockedDates()
+      showNotice({ type: 'success', message: 'Data desbloqueada com sucesso.' })
     } catch (error) {
       console.error(error)
-      alert('Não foi possível desbloquear a data. Tente novamente.')
+      showNotice({ type: 'error', message: 'Não foi possível desbloquear a data. Tente novamente.' })
     }
   }
 
@@ -389,10 +412,13 @@ export default function DashboardPage() {
         address: data.property.address,
       })
       setPackages(data.packages)
-      alert('Configurações salvas com sucesso!')
+      showNotice({ type: 'success', message: 'Configurações salvas com sucesso.' })
     } catch (error) {
       console.error(error)
-      alert(error instanceof Error ? error.message : 'Não foi possível salvar as configurações.')
+      showNotice({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Não foi possível salvar as configurações.',
+      })
     } finally {
       setIsSavingSettings(false)
     }
@@ -463,10 +489,13 @@ export default function DashboardPage() {
       const updatedPackages = await fetchPackages()
       setSelectedPackageId(data.package.id)
       setPackageForm(packageToForm(updatedPackages.find((pkg) => pkg.id === data.package.id) ?? data.package))
-      alert('Pacote salvo com sucesso!')
+      showNotice({ type: 'success', message: 'Pacote salvo com sucesso.' })
     } catch (error) {
       console.error(error)
-      alert(error instanceof Error ? error.message : 'Não foi possível salvar o pacote.')
+      showNotice({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Não foi possível salvar o pacote.',
+      })
     } finally {
       setIsSavingPackage(false)
     }
@@ -474,7 +503,7 @@ export default function DashboardPage() {
 
   const handleChangePassword = async () => {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      alert('A confirmação precisa ser igual à nova senha.')
+      showNotice({ type: 'error', message: 'A confirmação precisa ser igual à nova senha.' })
       return
     }
 
@@ -503,10 +532,13 @@ export default function DashboardPage() {
         newPassword: '',
         confirmPassword: '',
       })
-      alert('Senha alterada com sucesso!')
+      showNotice({ type: 'success', message: 'Senha alterada com sucesso.' })
     } catch (error) {
       console.error(error)
-      alert(error instanceof Error ? error.message : 'Não foi possível alterar a senha.')
+      showNotice({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Não foi possível alterar a senha.',
+      })
     } finally {
       setIsChangingPassword(false)
     }
@@ -532,9 +564,10 @@ export default function DashboardPage() {
       setContactMessages((current) =>
         current.map((message) => message.id === id ? { ...message, status } : message)
       )
+      showNotice({ type: 'success', message: 'Mensagem atualizada.' })
     } catch (error) {
       console.error(error)
-      alert('Não foi possível atualizar a mensagem. Tente novamente.')
+      showNotice({ type: 'error', message: 'Não foi possível atualizar a mensagem. Tente novamente.' })
     }
   }
 
@@ -588,60 +621,58 @@ export default function DashboardPage() {
     setBookingFilters(emptyBookingFilters)
   }
 
-      const updateStatus = async (id: string, status: 'CONFIRMED' | 'REJECTED') => {
-        try {
-          const token = getToken()
-          const res = await fetch(`/api/bookings/${id}`, {
-            method: 'PATCH',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ status }),
-          })
-          if (!res.ok) throw new Error('Falha ao atualizar')
-          
-          // Recarregar dados do dashboard
-          await fetchDashboardData()
-          setIsDetailsModalOpen(false)
-        } catch (e) {
-          console.error(e)
-          alert('Não foi possível atualizar o status. Tente novamente.')
-        }
-      }
+  const updateStatus = async (id: string, status: 'CONFIRMED' | 'REJECTED') => {
+    try {
+      const token = getToken()
+      const res = await fetch(`/api/bookings/${id}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status }),
+      })
+      if (!res.ok) throw new Error('Falha ao atualizar')
+      
+      await fetchDashboardData()
+      setIsDetailsModalOpen(false)
+      showNotice({
+        type: 'success',
+        message: status === 'CONFIRMED' ? 'Reserva aprovada com sucesso.' : 'Reserva recusada com sucesso.',
+      })
+    } catch (e) {
+      console.error(e)
+      showNotice({ type: 'error', message: 'Não foi possível atualizar o status. Tente novamente.' })
+    }
+  }
 
-      const deleteBooking = async (id: string, customerName: string) => {
-        if (!confirm(`Tem certeza que deseja excluir a reserva de ${customerName}? Esta ação não pode ser desfeita.`)) {
-          return
-        }
-
-        try {
-          const token = getToken()
-          const res = await fetch(`/api/bookings/${id}`, {
-            method: 'DELETE',
-            headers: { 
-              'Authorization': `Bearer ${token}`
-            },
-          })
-          
-          if (!res.ok) {
-            const errorData = await res.json()
-            throw new Error(errorData.error || 'Falha ao excluir')
-          }
-          
-          const result = await res.json()
-          console.log('Reserva excluída:', result.deletedBooking)
-          
-          // Recarregar dados do dashboard
-          await fetchDashboardData()
-          setIsDetailsModalOpen(false)
-          
-          alert('Reserva excluída com sucesso!')
-        } catch (e) {
-          console.error(e)
-          alert(`Não foi possível excluir a reserva. ${e instanceof Error ? e.message : 'Tente novamente.'}`)
-        }
+  const deleteBooking = async (booking: DashboardBooking) => {
+    try {
+      const token = getToken()
+      const res = await fetch(`/api/bookings/${booking.id}`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${token}`
+        },
+      })
+      
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Falha ao excluir')
       }
+      
+      await fetchDashboardData()
+      setIsDetailsModalOpen(false)
+      setBookingToDelete(null)
+      showNotice({ type: 'success', message: `Reserva de ${booking.customer} excluída com sucesso.` })
+    } catch (e) {
+      console.error(e)
+      showNotice({
+        type: 'error',
+        message: `Não foi possível excluir a reserva. ${e instanceof Error ? e.message : 'Tente novamente.'}`,
+      })
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -672,6 +703,26 @@ export default function DashboardPage() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {notice && (
+          <div
+            className={`mb-6 flex items-start justify-between rounded-lg border px-4 py-3 text-sm ${
+              notice.type === 'success'
+                ? 'border-green-200 bg-green-50 text-green-800'
+                : 'border-red-200 bg-red-50 text-red-800'
+            }`}
+          >
+            <span>{notice.message}</span>
+            <button
+              type="button"
+              onClick={() => setNotice(null)}
+              className="ml-4 rounded-sm opacity-70 transition-opacity hover:opacity-100"
+              aria-label="Fechar aviso"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
         {/* Navigation Tabs */}
         <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg w-fit">
           {[
@@ -933,7 +984,7 @@ export default function DashboardPage() {
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => deleteBooking(booking.id, booking.customer)}
+                                onClick={() => setBookingToDelete(booking)}
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
                               >
                                 <X className="w-4 h-4 mr-2" />
@@ -1432,6 +1483,51 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Modal de confirmação de exclusão */}
+        {bookingToDelete && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Card className="max-w-md w-full mx-4">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center text-red-700">
+                    <XCircle className="w-5 h-5 mr-2" />
+                    Excluir Reserva
+                  </CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setBookingToDelete(null)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Esta ação remove permanentemente a reserva de <strong>{bookingToDelete.customer}</strong>.
+                </p>
+                <div className="rounded-lg bg-gray-50 p-4 text-sm">
+                  <p><strong>Data:</strong> {bookingToDelete.date ? formatDate(parseBookingDate(bookingToDelete.date)) : 'Data não disponível'}</p>
+                  <p><strong>Pacote:</strong> {bookingToDelete.packageName}</p>
+                  <p><strong>Valor:</strong> {formatCurrency(bookingToDelete.total)}</p>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setBookingToDelete(null)}>
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => deleteBooking(bookingToDelete)}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    Excluir definitivamente
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Modal de Detalhes da Reserva */}
         {isDetailsModalOpen && selectedBooking && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1556,7 +1652,7 @@ export default function DashboardPage() {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => deleteBooking(selectedBooking.id, selectedBooking.customer)}
+                        onClick={() => setBookingToDelete(selectedBooking)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
                         <X className="w-4 h-4 mr-2" />

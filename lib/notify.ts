@@ -13,7 +13,7 @@ export async function notifyWhatsAppHost(message: string): Promise<boolean> {
       return false
     }
 
-    console.log(`Tentando enviar WhatsApp para: ${phone}`)
+    console.info(`Tentando enviar WhatsApp para: ${phone}`)
 
     // Opção 1: Webhook personalizado (recomendado para produção)
     if (webhookUrl) {
@@ -27,7 +27,7 @@ export async function notifyWhatsAppHost(message: string): Promise<boolean> {
         })
 
         if (response.ok) {
-          console.log('WhatsApp enviado via webhook')
+          console.info('WhatsApp enviado via webhook')
           return true
         } else {
           console.error('Erro no webhook WhatsApp:', response.status)
@@ -53,7 +53,7 @@ export async function notifyWhatsAppHost(message: string): Promise<boolean> {
         })
         
         if (response.ok) {
-          console.log('WhatsApp enviado via CallMeBot')
+          console.info('WhatsApp enviado via CallMeBot')
           return true
         } else {
           console.error('Erro CallMeBot:', response.status)
@@ -73,4 +73,3 @@ export async function notifyWhatsAppHost(message: string): Promise<boolean> {
     return false
   }
 }
-
