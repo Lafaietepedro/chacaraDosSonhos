@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Calendar, Users, Check } from 'lucide-react'
+import { Users, Check } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import { siteConfig } from '@/lib/site'
+import { fallbackPackageOptions } from '@/lib/catalog'
+import type { CatalogResponse, PackageOption } from '@/types/booking'
 
 import { Header } from '@/components/header'
 
@@ -17,7 +20,9 @@ export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState('')
   const [dateError, setDateError] = useState('')
   const [guests, setGuests] = useState(50)
-  const [selectedPackage, setSelectedPackage] = useState('completo')
+  const [packages, setPackages] = useState<PackageOption[]>(fallbackPackageOptions)
+  const [operationalFee, setOperationalFee] = useState(siteConfig.cleaningFee)
+  const [selectedPackage, setSelectedPackage] = useState<string>(fallbackPackageOptions[1].id)
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
@@ -26,42 +31,28 @@ export default function BookingPage() {
   })
   const [showSuccess, setShowSuccess] = useState(false)
 
-  const packages = [
-    {
-      id: 'basico',
-      name: 'Básico',
-      price: 800,
-      duration: '8 horas',
-      capacity: 50,
-      extraPerGuest: 20,
-      features: ['Acesso à chácara', 'Churrasqueira', 'Estacionamento', 'Wi-Fi']
-    },
-    {
-      id: 'completo',
-      name: 'Completo',
-      price: 1200,
-      duration: '12 horas',
-      capacity: 100,
-      extraPerGuest: 18,
-      features: ['Acesso à chácara', 'Churrasqueira', 'Estacionamento', 'Wi-Fi', 'Limpeza incluída', 'Som básico']
-    },
-    {
-      id: 'premium',
-      name: 'Premium',
-      price: 1800,
-      duration: '24 horas',
-      capacity: 150,
-      extraPerGuest: 15,
-      features: ['Acesso à chácara', 'Churrasqueira', 'Estacionamento', 'Wi-Fi', 'Limpeza incluída', 'Som ambiente', 'Decoração básica']
-    }
-  ]
+  useEffect(() => {
+    fetch('/api/catalog')
+      .then(async (res) => {
+        if (!res.ok) return
+        const data = (await res.json()) as CatalogResponse
+        if (data.packages.length > 0) {
+          setPackages(data.packages)
+          setOperationalFee(data.property.operationalFee)
+          setSelectedPackage((current) =>
+            data.packages.some((pkg) => pkg.id === current) ? current : data.packages[0].id
+          )
+        }
+      })
+      .catch((error) => {
+        console.warn('Não foi possível carregar catálogo do banco:', error)
+      })
+  }, [])
 
-  const CLEANING_FEE = 150
-
-  const currentPackage = packages.find(pkg => pkg.id === selectedPackage)!
+  const currentPackage = packages.find(pkg => pkg.id === selectedPackage) ?? packages[0]
   const extraGuests = Math.max(0, guests - currentPackage.capacity)
-  const extraGuestsCost = extraGuests * (currentPackage as any).extraPerGuest
-  const totalPrice = currentPackage.price + CLEANING_FEE + extraGuestsCost
+  const extraGuestsCost = extraGuests * currentPackage.extraPerGuest
+  const totalPrice = currentPackage.price + operationalFee + extraGuestsCost
 
   // No extras toggling anymore
 
@@ -91,7 +82,6 @@ export default function BookingPage() {
         phone: customerInfo.phone,
         notes: customerInfo.notes,
       },
-      totalPrice,
     }
 
     fetch('/api/bookings', {
@@ -118,7 +108,8 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+      <Header />
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           {showSuccess && (
@@ -134,10 +125,10 @@ export default function BookingPage() {
           )}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Fazer Reserva
+              Solicitar Reserva
             </h1>
             <p className="text-xl text-gray-600">
-              Preencha as informações abaixo para reservar sua data
+              Envie uma solicitação completa para análise do anfitrião
             </p>
           </div>
 
@@ -217,7 +208,7 @@ export default function BookingPage() {
                           />
                         </div>
                         <p className="text-xs text-gray-500 mt-2">
-                          Até {currentPackage.capacity} pessoas incluídas no pacote {currentPackage.name}. Convidados extras: {formatCurrency((currentPackage as any).extraPerGuest)} por pessoa.
+                          Até {currentPackage.capacity} pessoas incluídas no pacote {currentPackage.name}. Convidados extras: {formatCurrency(currentPackage.extraPerGuest)} por pessoa.
                         </p>
                       </div>
                     </>
@@ -359,22 +350,22 @@ export default function BookingPage() {
                       <h4 className="font-medium text-gray-900">Pacote</h4>
                       <p className="text-gray-600">{currentPackage.name}</p>
                       <p className="text-sm text-gray-500">{currentPackage.duration}</p>
-                      <p className="text-xs text-gray-500">Até {currentPackage.capacity} pessoas • {formatCurrency((currentPackage as any).extraPerGuest)} por convidado extra</p>
+                      <p className="text-xs text-gray-500">Até {currentPackage.capacity} pessoas • {formatCurrency(currentPackage.extraPerGuest)} por convidado extra</p>
                     </div>
                   )}
 
                   {/* No extras list in summary */}
 
                   <div>
-                    <h4 className="font-medium text-gray-900">Taxa de Limpeza</h4>
-                    <p className="text-sm text-gray-600">{formatCurrency(CLEANING_FEE)} (obrigatória)</p>
+                    <h4 className="font-medium text-gray-900">Taxa operacional</h4>
+                    <p className="text-sm text-gray-600">{formatCurrency(operationalFee)} (aplicada em todos os pacotes)</p>
                   </div>
 
                   {extraGuests > 0 && (
                     <div>
                       <h4 className="font-medium text-gray-900">Convidados Extras</h4>
                       <p className="text-sm text-gray-600">
-                        {extraGuests} x {formatCurrency((currentPackage as any).extraPerGuest)} = {formatCurrency(extraGuestsCost)}
+                        {extraGuests} x {formatCurrency(currentPackage.extraPerGuest)} = {formatCurrency(extraGuestsCost)}
                       </p>
                     </div>
                   )}

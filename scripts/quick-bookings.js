@@ -4,7 +4,7 @@ const prisma = new PrismaClient()
 
 async function quickView() {
   try {
-    console.log('🔍 Reservas recentes:\n')
+    console.log('Reservas recentes:\n')
 
     const bookings = await prisma.booking.findMany({
       select: {
@@ -29,12 +29,12 @@ async function quickView() {
     })
 
     if (bookings.length === 0) {
-      console.log('❌ Nenhuma reserva encontrada.')
+      console.log('Nenhuma reserva encontrada.')
       return
     }
 
     console.log('ID'.padEnd(12) + 'Data'.padEnd(12) + 'Cliente'.padEnd(20) + 'Convidados'.padEnd(10) + 'Valor'.padEnd(10) + 'Status')
-    console.log('─'.repeat(80))
+    console.log('-'.repeat(80))
 
     bookings.forEach(booking => {
       const date = booking.startDate.toLocaleDateString('pt-BR')
@@ -52,7 +52,7 @@ async function quickView() {
     })
 
   } catch (error) {
-    console.error('❌ Erro:', error.message)
+    console.error('Erro:', error.message)
   } finally {
     await prisma.$disconnect()
   }

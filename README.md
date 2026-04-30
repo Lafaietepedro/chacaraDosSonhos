@@ -1,219 +1,230 @@
-# Espaço Vip JR
+# Venue Eventos
 
-## Sobre o Projeto
+Venue Eventos é uma base web para operadores de espaços de eventos que precisam divulgar o local, receber solicitações de reserva e acompanhar a agenda pelo painel administrativo.
 
-Este é um aplicativo web responsivo para gerenciar e alugar uma chácara para eventos. O sistema foi desenvolvido para automatizar reservas, pagamentos, contratos e comunicação, reduzindo o trabalho manual.
+O projeto nasceu como uma página específica de uma propriedade, mas foi reposicionado para não depender de nomes, pessoas ou contexto anterior. A direção recomendada agora é tratar o código como um produto reaproveitável para salões, espaços ao ar livre, áreas de lazer e pequenas operações de eventos.
 
-## Funcionalidades
+## Estado Atual
 
-### Prioridade Alta (MVP)
-- ✅ Página pública da chácara com galeria, descrição, capacidade, tabela de preços e FAQ
-- ✅ Calendário de disponibilidade visual (bloquear datas manualmente)
-- ✅ Fluxo de reserva: seleção de data, número de convidados, extras, resumo preço
-- ✅ Confirmação provisória + solicitação de sinal (pagamento mínimo)
-- ✅ Painel do host: ver reservas, aprovar/recusar, bloquear datas, editar preço/extras
-- ✅ Notificações por e-mail + integração com WhatsApp (link ou API) para confirmação rápida
-- ✅ Contrato padrão em PDF gerado automaticamente com opção de assinatura eletrônica simples
-- ✅ Gestão de fotos (upload, ordem), e campo para "regras da casa"
+Stack real do repositório:
 
-### Prioridade Média (próximas versões)
-- 🔄 Pagamento online (Stripe + PIX / PayPal) e emissão de recibo/fatura
-- 🔄 Integração com Google Calendar (para exportar reservas)
-- 🔄 Sistema simples de avaliações/reviews pós-evento
-- 🔄 Relatórios básicos (reservas por mês, receita)
+- Next.js 14 com App Router
+- TypeScript
+- Tailwind CSS
+- Prisma ORM
+- SQLite local em desenvolvimento
+- API routes do próprio Next.js
+- Autenticação administrativa com `AdminUser`, senha hasheada por `scrypt` e token assinado por HMAC
+- Helper de notificação por WhatsApp via webhook ou CallMeBot
+- Node 24 LTS recomendado. Node 25 é uma release Current e apresentou falha silenciosa ao gerar Prisma Client neste ambiente.
 
-## Stack Tecnológica
+Funcionalidades que existem hoje:
 
-- **Frontend**: Next.js 14 + TypeScript + Tailwind CSS
-- **Backend**: Node.js + TypeScript + Express
-- **Banco de Dados**: PostgreSQL + Prisma ORM
-- **Autenticação**: JWT + refresh tokens
-- **Pagamentos**: Stripe (cartão) + PIX
-- **Hospedagem**: Vercel (frontend) + Render (backend)
+- Página pública responsiva com hero, proposta de valor, galeria demonstrativa, pacotes, FAQ e contato.
+- Fluxo de solicitação de reserva em 3 etapas: data/convidados, pacote e dados do cliente.
+- Cálculo automático de valor com pacote, taxa operacional e convidados extras.
+- Persistência de reservas no Prisma.
+- Criação automática de usuário cliente e propriedade padrão quando necessário.
+- Catálogo de pacotes persistido no banco via modelo `BookingPackage`, com fallback inicial a partir de `lib/site.ts`.
+- Snapshot de pacote e preço gravado na reserva.
+- Validação de disponibilidade no backend para impedir reserva em data bloqueada ou já pendente/confirmada.
+- Bloqueios de data persistidos no banco e conectados ao calendário do dashboard.
+- Painel administrativo com login, indicadores básicos, lista de reservas, detalhes, aprovação, recusa e exclusão.
+- Calendário visual no dashboard com reservas pendentes/confirmadas e bloqueios persistidos.
+- Configurações básicas do espaço editáveis no dashboard: nome, descrição, capacidade, taxa operacional, contato e endereço.
+- Pacotes editáveis no dashboard: nome, preço, duração, capacidade, valor por convidado extra, itens incluídos, destaque e ativação.
+- Usuário administrativo persistido no banco, com bootstrap inicial por variáveis de ambiente.
+- Configuração centralizada de marca/contato em `lib/site.ts`, usada como fallback e seed inicial.
 
-## Instalação
+## Diferença Para o README Antigo
 
-### Pré-requisitos
-- Node.js 18+ 
-- PostgreSQL
-- npm ou yarn
+O README antigo descrevia uma visão maior do que o código implementado. Estes pontos ainda não estão prontos para produção:
 
-### Passos
+- Pagamento online com Stripe, PIX ou PayPal.
+- Cobrança de sinal integrada ao fluxo.
+- Emissão de recibo ou fatura.
+- Envio real de email transacional.
+- WhatsApp Business API oficial.
+- Geração de contrato PDF.
+- Assinatura eletrônica.
+- Upload e gestão de fotos.
+- Reviews pós-evento.
+- Relatórios avançados.
+- Multiunidade/multitenancy.
+- Backend Express separado.
+- PostgreSQL como banco padrão local.
+- Refresh token, troca de senha no painel e papéis/permissões granulares.
 
-1. **Clone o repositório**
-```bash
-git clone <url-do-repositorio>
-cd chacaraDosSonhos
-```
+## Viabilidade Das Funcionalidades
 
-2. **Instale as dependências**
+Alta viabilidade:
+
+- Enviar emails com Resend, SendGrid ou outro provedor.
+- Melhorar dashboard com filtros e busca.
+- Criar páginas de termos, privacidade e contrato base.
+
+Viabilidade média:
+
+- Pagamento de sinal por Stripe Checkout ou Mercado Pago.
+- PIX com confirmação por webhook.
+- Geração de PDF com dados da reserva.
+- Upload de fotos com Cloudinary ou Supabase Storage.
+- Exportação para Google Calendar.
+- Relatórios mensais de receita e ocupação.
+
+Maior complexidade:
+
+- Assinatura eletrônica com validade jurídica forte.
+- WhatsApp Business API oficial.
+- SaaS multitenant com várias propriedades e usuários.
+- Motor de precificação por temporada, feriados e regras customizadas.
+- Auditoria, logs e permissões granulares.
+
+## Como Rodar
+
+Instale dependências:
+
 ```bash
 npm install
 ```
 
-3. **Configure as variáveis de ambiente**
-```bash
-cp env.example .env.local
-```
+Configure variáveis de ambiente em `.env` ou `.env.local`:
 
-Edite o arquivo `.env.local` com suas configurações:
 ```env
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5432/chacara_dos_sonhos"
-
-# Next.js
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secret-key"
-
-# Stripe
-STRIPE_PUBLISHABLE_KEY="pk_test_..."
-STRIPE_SECRET_KEY="sk_test_..."
-STRIPE_WEBHOOK_SECRET="whsec_..."
-
-# Email
-SENDGRID_API_KEY="SG..."
-FROM_EMAIL="noreply@chacaradossonhos.com"
-
-# WhatsApp
-WHATSAPP_API_URL="https://api.whatsapp.com/send"
-WHATSAPP_PHONE="+5511999999999"
-
-# Cloudinary (para upload de imagens)
-CLOUDINARY_CLOUD_NAME="your-cloud-name"
-CLOUDINARY_API_KEY="your-api-key"
-CLOUDINARY_API_SECRET="your-api-secret"
-
-# App
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
+DATABASE_URL="file:./dev.db"
+DASHBOARD_USERNAME="admin"
+DASHBOARD_PASSWORD="troque-esta-senha"
+AUTH_SECRET="gere-uma-string-longa-e-aleatoria"
+WHATSAPP_PHONE="5561999999999"
+WHATSAPP_WEBHOOK_URL=""
+CALLMEBOT_API_KEY=""
 ```
 
-4. **Configure o banco de dados**
+Na primeira autenticação, o app cria um registro em `admin_users` usando `DASHBOARD_USERNAME` e `DASHBOARD_PASSWORD`. Depois disso, a senha passa a ser validada pelo hash salvo no banco. Em produção, defina sempre `AUTH_SECRET`; em desenvolvimento há fallback apenas para facilitar testes locais.
+
+Prepare o Prisma:
+
 ```bash
-# Gerar o cliente Prisma
 npm run db:generate
-
-# Executar as migrações
-npm run db:migrate
-
-# (Opcional) Abrir o Prisma Studio
-npm run db:studio
+npm run db:push
 ```
 
-5. **Execute o projeto**
+Se estiver usando Node 25 e o Prisma Client não regenerar, use Node 24 LTS para os comandos Prisma:
+
+```bash
+npx -p node@24 node ./node_modules/prisma/build/index.js generate --schema=prisma/schema.prisma
+npx -p node@24 node ./node_modules/prisma/build/index.js db push --schema=prisma/schema.prisma
+```
+
+Rode em desenvolvimento:
+
 ```bash
 npm run dev
 ```
 
-O aplicativo estará disponível em `http://localhost:3000`
+A aplicação abre em `http://localhost:3000`.
 
-## Estrutura do Projeto
+## Estrutura Principal
 
+```txt
+app/
+  api/                  Rotas de autenticação, dashboard e reservas
+  api/catalog           Catálogo público de propriedade e pacotes
+  api/dashboard/packages Pacotes editáveis pelo painel
+  booking/              Fluxo público de solicitação de reserva
+  dashboard/            Painel administrativo
+  page.tsx              Página pública
+components/
+  auth/                 Login administrativo
+  ui/                   Componentes base
+  *.tsx                 Seções públicas e calendário
+lib/
+  site.ts               Marca, contato, pacotes e taxa operacional
+  catalog.ts            Fallback de catálogo para a UI
+  services/             Regras de negócio de reservas, preço e disponibilidade
+  prisma.ts             Cliente Prisma
+  notify.ts             Notificação WhatsApp
+  auth.ts               Hook de autenticação client-side
+  api-auth.ts           Validação do token administrativo assinado
+prisma/
+  schema.prisma         Schema SQLite local com pacotes e snapshots de reserva
+  schema-production.prisma Schema alternativa para PostgreSQL
+scripts/
+  quick-bookings.js     Consulta rápida de reservas
+  view-bookings.js      Consulta detalhada de reservas
 ```
-chacaraDosSonhos/
-├── app/                    # App Router do Next.js
-│   ├── booking/           # Página de reserva
-│   ├── dashboard/         # Painel do host
-│   ├── globals.css        # Estilos globais
-│   ├── layout.tsx         # Layout principal
-│   └── page.tsx           # Página inicial
-├── components/            # Componentes React
-│   ├── ui/               # Componentes base (Button, Card, etc.)
-│   ├── calendar.tsx      # Calendário de disponibilidade
-│   ├── contact.tsx       # Seção de contato
-│   ├── faq.tsx          # Perguntas frequentes
-│   ├── footer.tsx       # Rodapé
-│   ├── gallery.tsx      # Galeria de fotos
-│   ├── header.tsx       # Cabeçalho
-│   ├── hero.tsx         # Seção hero
-│   ├── pricing.tsx      # Tabela de preços
-│   └── about.tsx        # Seção sobre
-├── lib/                  # Utilitários e configurações
-│   ├── prisma.ts        # Cliente Prisma
-│   └── utils.ts         # Funções utilitárias
-├── prisma/              # Schema e migrações do banco
-│   └── schema.prisma    # Schema do banco de dados
-├── public/              # Arquivos estáticos
-└── README.md           # Este arquivo
+
+## Direção Recomendada De Refatoração
+
+Prioridade 1:
+
+- Completar a remoção de `any` em telas administrativas futuras.
+- Criar tela de troca de senha administrativa e rotação de `AUTH_SECRET`.
+- Criar fluxo de seed/migration mais formal para ambientes novos.
+
+Prioridade 2:
+
+- Criar camada de serviço para reservas, separando regra de negócio das API routes.
+- Criar testes para cálculo de preço, disponibilidade e transição de status.
+- Adicionar email transacional para cliente e anfitrião.
+- Adicionar filtros no dashboard por status, período e cliente.
+- Melhorar tratamento de loading/erro nas telas.
+
+Prioridade 3:
+
+- Implementar pagamento de sinal.
+- Gerar contrato PDF com dados da reserva.
+- Adicionar upload e ordenação de fotos.
+- Criar relatório mensal de receita, conversão e ocupação.
+- Adicionar refresh token e permissões granulares quando houver mais de um administrador.
+
+## Prompt Para Enviar Ao Claude
+
+Use o texto abaixo para pedir uma segunda visão de refatoração:
+
+```txt
+Analise este projeto como se fosse um produto real chamado Venue Eventos.
+
+Contexto: ele começou como um site específico para aluguel de uma propriedade, mas foi renomeado e reposicionado para virar uma base profissional de gestão de reservas para espaços de eventos. Quero remover qualquer traço de projeto pessoal antigo e decidir se vale manter esta arquitetura ou fazer uma refatoração maior.
+
+Stack atual:
+- Next.js 14 App Router
+- TypeScript
+- Tailwind CSS
+- Prisma
+- SQLite em desenvolvimento
+- API routes do Next.js
+- Autenticação administrativa com senha hasheada e sessão assinada
+
+Funcionalidades implementadas:
+- Página pública com seções comerciais.
+- Fluxo de solicitação de reserva.
+- Cálculo de preço por pacote, taxa operacional e convidados extras.
+- Persistência de reservas com Prisma.
+- Validação de disponibilidade no backend.
+- Datas bloqueadas persistidas.
+- Pacotes e configurações do espaço editáveis pelo painel.
+- Dashboard com login, estatísticas básicas, listagem, detalhes, aprovação, recusa e exclusão.
+- Calendário visual.
+
+Funcionalidades desejadas, mas ainda não implementadas:
+- Pagamento de sinal via PIX/cartão.
+- Tela de troca de senha e gestão de administradores.
+- Gestão real de fotos.
+- Email transacional.
+- Contrato PDF.
+- Assinatura eletrônica.
+- Relatórios melhores.
+- Refresh token, rotação de sessão e permissões granulares.
+- Possível multiunidade/multitenancy no futuro.
+
+Quero que você proponha:
+1. Uma estratégia de refatoração realista em fases.
+2. O que deve ser mantido, removido ou reescrito.
+3. O modelo de dados ideal para reservas, propriedades, pacotes, bloqueios, pagamentos e contratos.
+4. A arquitetura recomendada para continuar em Next.js ou separar backend.
+5. Riscos técnicos e pontos frágeis do projeto atual.
+6. Um plano de implementação com prioridades para transformar isso em produto profissional.
+
+Seja crítico, mas pragmático. Não proponha uma reescrita total se uma refatoração incremental resolver melhor.
 ```
-
-## Funcionalidades Implementadas
-
-### Página Pública
-- ✅ Design responsivo e moderno
-- ✅ Seção hero com call-to-action
-- ✅ Galeria de fotos com lightbox
-- ✅ Informações sobre a chácara
-- ✅ Tabela de preços com pacotes
-- ✅ FAQ interativo
-- ✅ Formulário de contato
-- ✅ Integração com WhatsApp
-
-### Sistema de Reservas
-- ✅ Fluxo de 4 etapas:
-  1. Seleção de data e número de convidados
-  2. Escolha do pacote (Básico, Completo, Premium)
-  3. Seleção de extras opcionais
-  4. Informações do cliente
-- ✅ Cálculo automático de preços
-- ✅ Resumo da reserva em tempo real
-- ✅ Validação de formulários
-
-### Painel do Host
-- ✅ Dashboard com estatísticas
-- ✅ Gerenciamento de reservas (aprovar/recusar)
-- ✅ Calendário de disponibilidade
-- ✅ Bloqueio/desbloqueio de datas
-- ✅ Configurações da propriedade
-
-### Calendário de Disponibilidade
-- ✅ Visualização mensal
-- ✅ Diferentes status: disponível, reservado, bloqueado
-- ✅ Navegação entre meses
-- ✅ Legendas e indicadores visuais
-
-## Próximos Passos
-
-### Implementações Pendentes
-1. **Sistema de Pagamentos**
-   - Integração com Stripe
-   - Pagamento via PIX
-   - Emissão de recibos
-
-2. **Notificações**
-   - Email automático para confirmações
-   - Integração com WhatsApp Business API
-   - Notificações push (PWA)
-
-3. **Contratos e Assinatura**
-   - Geração de PDFs
-   - Assinatura eletrônica
-   - Armazenamento seguro
-
-4. **Gestão de Mídia**
-   - Upload de fotos
-   - Organização da galeria
-   - Otimização de imagens
-
-5. **Sistema de Avaliações**
-   - Reviews pós-evento
-   - Sistema de rating
-   - Moderação de comentários
-
-## Deploy
-
-### Frontend (Vercel)
-1. Conecte seu repositório ao Vercel
-2. Configure as variáveis de ambiente
-3. Deploy automático a cada push
-
-### Backend (Render)
-1. Conecte o repositório
-2. Configure as variáveis de ambiente
-3. Configure o banco PostgreSQL
-
-### Banco de Dados
-- Use um serviço gerenciado como Supabase, PlanetScale ou Railway
-- Configure as variáveis de conexão
-
-
-

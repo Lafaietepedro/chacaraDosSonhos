@@ -19,7 +19,7 @@ export async function PATCH(
     
     const id = params.id
     const body = await request.json()
-    const { status } = body as { status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' }
+    const { status } = body as { status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REJECTED' }
 
     if (!id || !status) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
@@ -77,7 +77,7 @@ export async function DELETE(
       where: { id }
     })
 
-    console.log(`🗑️ Reserva excluída: ${id} - Cliente: ${existingBooking.user.name}`)
+    console.log(`Reserva excluída: ${id} - Cliente: ${existingBooking.user.name}`)
 
     return NextResponse.json({ 
       ok: true, 

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Facebook, Instagram, MapPin, Phone, Mail } from 'lucide-react'
+import { siteConfig } from '@/lib/site'
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -14,12 +15,12 @@ export function Footer() {
   ]
 
   const services = [
-    'Aniversários',
-    'Casamentos',
-    'Confraternizações',
-    'Eventos Corporativos',
-    'Festas Infantis',
-    'Churrascos'
+    'Agenda de reservas',
+    'Vitrine pública',
+    'Orçamento guiado',
+    'Painel do anfitrião',
+    'Notificações',
+    'Relatórios básicos'
   ]
 
   return (
@@ -29,13 +30,13 @@ export function Footer() {
           {/* Logo e Descrição */}
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-2 mb-4">
-              <img src="/gallery/logo.jpg" alt="Espaço Vip JR" className="h-8 w-auto rounded" />
-              <span className="font-bold text-xl">Espaço Vip JR</span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm font-black text-white">
+                VE
+              </div>
+              <span className="font-bold text-xl">{siteConfig.appName}</span>
             </div>
             <p className="text-gray-300 mb-6 leading-relaxed">
-              O local perfeito para seus momentos especiais. 
-              Mais de 5.000m² de área verde e infraestrutura completa 
-              para tornar seu evento inesquecível.
+              {siteConfig.appDescription}
             </p>
             <div className="flex space-x-4">
               <a 
@@ -74,7 +75,7 @@ export function Footer() {
 
           {/* Serviços */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">Nossos Serviços</h3>
+            <h3 className="font-semibold text-lg mb-4">Produto</h3>
             <ul className="space-y-2">
               {services.map((service) => (
                 <li key={service}>
@@ -91,20 +92,20 @@ export function Footer() {
               <div className="flex items-center space-x-3">
                 <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
                 <span className="text-gray-300 text-sm">
-                  Estrada da Chácara, 123<br />
-                  Brasília - DF
+                  {siteConfig.address}<br />
+                  {siteConfig.city}
                 </span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-primary flex-shrink-0" />
                 <span className="text-gray-300 text-sm">
-                  (61) 99999-9999
+                  {siteConfig.phone}
                 </span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-primary flex-shrink-0" />
                 <span className="text-gray-300 text-sm">
-                  contato@espacovipjr.com
+                  {siteConfig.email}
                 </span>
               </div>
             </div>
@@ -115,7 +116,7 @@ export function Footer() {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              © {currentYear} Espaço Vip JR. Todos os direitos reservados.
+              © {currentYear} {siteConfig.appName}. Todos os direitos reservados.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">

@@ -12,7 +12,7 @@ export function Gallery() {
     {
       id: 1,
       src: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop',
-      alt: 'Vista frontal da chácara',
+      alt: 'Fachada de espaço de eventos',
       category: 'Exterior'
     },
     {
@@ -83,10 +83,10 @@ export function Gallery() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Galeria de Fotos
+            Galeria demonstrativa
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Conheça cada cantinho da nossa chácara e imagine seu evento perfeito
+            Imagens de referência para validar a experiência pública da vitrine do espaço
           </p>
         </div>
 

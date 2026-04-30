@@ -56,5 +56,5 @@ export function isDateInRange(date: Date, startDate: Date, endDate: Date): boole
 }
 
 export function generateBookingId(): string {
-  return `CHC-${Date.now().toString(36).toUpperCase()}`
+  return `VEN-${Date.now().toString(36).toUpperCase()}`
 }

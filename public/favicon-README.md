@@ -1,8 +1,8 @@
-# Favicons - Espaço Vip JR
+# Favicons - Venue Eventos
 
 ## Arquivos de Favicon Criados
 
-### 📁 Arquivos na pasta `public/`:
+### Arquivos na pasta `public/`:
 
 - **`favicon.ico`** - Favicon tradicional (32x32px)
 - **`favicon.svg`** - Favicon vetorial moderno (32x32px)
@@ -10,15 +10,15 @@
 - **`apple-touch-icon.png`** - Ícone para dispositivos Apple (180x180px)
 - **`manifest.json`** - Manifesto PWA com configurações dos ícones
 
-## 🎨 Design do Favicon
+## Design do Favicon
 
 O favicon representa:
-- **Casa/chácara** - Simboliza o espaço para eventos
+- **Espaço de eventos** - Simboliza a vitrine e a agenda do local
 - **Cor verde** - Representa natureza e tranquilidade
 - **Design limpo** - Fácil identificação em qualquer tamanho
 - **Gradiente** - Visual moderno e profissional
 
-## 🔧 Configuração
+## Configuração
 
 O favicon está configurado no `app/layout.tsx` com:
 - Suporte a múltiplos formatos (ICO, SVG)
@@ -26,14 +26,14 @@ O favicon está configurado no `app/layout.tsx` com:
 - Manifesto PWA para instalação como app
 - Meta tags para redes sociais
 
-## 📱 Compatibilidade
+## Compatibilidade
 
-- ✅ Navegadores modernos (Chrome, Firefox, Safari, Edge)
-- ✅ Dispositivos móveis (iOS, Android)
-- ✅ PWA (Progressive Web App)
-- ✅ Redes sociais (Open Graph)
+- Navegadores modernos (Chrome, Firefox, Safari, Edge)
+- Dispositivos móveis (iOS, Android)
+- PWA (Progressive Web App)
+- Redes sociais (Open Graph)
 
-## 🎯 Benefícios
+## Benefícios
 
 - **Identidade visual** consistente
 - **Profissionalismo** na marca

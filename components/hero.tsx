@@ -3,48 +3,51 @@
 import { Button } from '@/components/ui/button'
 import { Calendar, Users, MapPin, Star, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
-import { Playfair_Display } from 'next/font/google'
-
-const playfair = Playfair_Display({ subsets: ['latin'], weight: ['700', '800', '900'] })
+import { buildWhatsAppUrl, siteConfig } from '@/lib/site'
 
 export function Hero() {
+  const whatsappUrl = buildWhatsAppUrl(`Olá! Quero entender como funciona o ${siteConfig.appName}.`)
+
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100">
+    <section id="home" className="relative min-h-screen flex items-center justify-center bg-slate-950">
       {/* Background Image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-35"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1920&h=1080&fit=crop')"
+          backgroundImage: `url('${siteConfig.heroImage}')`
         }}
       ></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/55 to-slate-950/80" />
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className={`${playfair.className} text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 tracking-tight`}>
-            Espaço Vip <span className="text-primary">JR</span>
+          <p className="mb-4 text-sm font-semibold uppercase text-emerald-200">
+            Gestão de reservas para espaços de eventos
+          </p>
+          <h1 className="font-serif text-6xl md:text-8xl font-extrabold text-white mb-6 tracking-tight">
+            {siteConfig.appName}
           </h1>
-          <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            O local perfeito para seus momentos especiais. Aniversários, casamentos, 
-            confraternizações e muito mais em um ambiente único e acolhedor.
+          <p className="text-xl md:text-2xl text-slate-100 mb-8 max-w-2xl mx-auto">
+            {siteConfig.shortPitch}
           </p>
           
           {/* Features */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
             <div className="flex flex-col items-center">
               <Users className="w-8 h-8 text-primary mb-2" />
-              <span className="text-sm font-medium text-gray-600">Até 150 pessoas</span>
+              <span className="text-sm font-medium text-slate-100">Até {siteConfig.capacity} pessoas</span>
             </div>
             <div className="flex flex-col items-center">
               <MapPin className="w-8 h-8 text-primary mb-2" />
-              <span className="text-sm font-medium text-gray-600">Localização privilegiada</span>
+              <span className="text-sm font-medium text-slate-100">Dados configuráveis</span>
             </div>
             <div className="flex flex-col items-center">
               <Star className="w-8 h-8 text-primary mb-2" />
-              <span className="text-sm font-medium text-gray-600">Ambiente completo</span>
+              <span className="text-sm font-medium text-slate-100">Orçamento guiado</span>
             </div>
             <div className="flex flex-col items-center">
               <Calendar className="w-8 h-8 text-primary mb-2" />
-              <span className="text-sm font-medium text-gray-600">Reserva online</span>
+              <span className="text-sm font-medium text-slate-100">Agenda centralizada</span>
             </div>
           </div>
 
@@ -57,7 +60,7 @@ export function Hero() {
               </Link>
             </Button>
             <Button variant="outline" className="h-12 md:h-14 px-6 md:px-8 text-base md:text-lg" asChild>
-              <a href="https://wa.me/5511999999999?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20o%20Espaço%20Vip%20JR." target="_blank" rel="noopener noreferrer">
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="w-6 h-6 mr-2" />
                 WhatsApp
               </a>

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Lock, User, Eye, EyeOff, Home } from 'lucide-react'
 import Link from 'next/link'
+import { siteConfig } from '@/lib/site'
 
 
 interface LoginFormProps {
@@ -55,8 +56,8 @@ export function LoginForm({ onLogin }: LoginFormProps) {
               <Lock className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Dashboard</CardTitle>
-          <p className="text-gray-600">Faça login para acessar o painel administrativo</p>
+          <CardTitle className="text-2xl font-bold">{siteConfig.appName}</CardTitle>
+          <p className="text-gray-600">Faça login para acessar o painel do anfitrião</p>
           
           {/* Botão para voltar ao site */}
           <div className="mt-4">
@@ -71,7 +72,7 @@ export function LoginForm({ onLogin }: LoginFormProps) {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="username">Usuário</Label>
+              <Label htmlFor="username">Usuário administrativo</Label>
               <div className="relative">
                 <User className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
                 <Input

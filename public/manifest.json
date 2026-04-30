@@ -1,11 +1,11 @@
 {
-  "name": "Espaço Vip JR",
-  "short_name": "Espaço Vip JR",
-  "description": "Espaço perfeito para seus eventos especiais. Aniversários, casamentos, confraternizações e muito mais.",
+  "name": "Venue Eventos",
+  "short_name": "Venue",
+  "description": "Plataforma para divulgar espaços de eventos, receber reservas qualificadas e acompanhar a agenda do anfitrião.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#22c55e",
+  "theme_color": "#16a34a",
   "orientation": "portrait-primary",
   "icons": [
     {

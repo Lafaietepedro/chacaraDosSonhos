@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Phone, Mail, MapPin, Clock, MessageCircle } from 'lucide-react'
+import { buildWhatsAppUrl, siteConfig } from '@/lib/site'
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -30,24 +31,26 @@ export function Contact() {
     }))
   }
 
+  const whatsappUrl = buildWhatsAppUrl(`Olá! Quero falar sobre uma reserva pelo ${siteConfig.appName}.`)
+
   const contactInfo = [
     {
       icon: Phone,
       title: 'Telefone',
-      info: '(61) 99999-9999',
+      info: siteConfig.phone,
       description: 'WhatsApp disponível'
     },
     {
       icon: Mail,
       title: 'Email',
-      info: 'contato@espacovipjr.com',
+      info: siteConfig.email,
       description: 'Resposta em até 24h'
     },
     {
       icon: MapPin,
       title: 'Endereço',
-      info: 'Estrada da Chácara, 123',
-      description: 'Brasília - DF'
+      info: siteConfig.address,
+      description: siteConfig.city
     },
     {
       icon: Clock,
@@ -65,8 +68,7 @@ export function Contact() {
             Entre em Contato
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Estamos aqui para ajudar você a planejar o evento perfeito. 
-            Entre em contato conosco!
+            Tire dúvidas, valide disponibilidade ou use o fluxo de reserva para enviar uma solicitação completa.
           </p>
         </div>
 
@@ -181,7 +183,7 @@ export function Contact() {
                 </p>
                 <Button asChild>
                   <a 
-                    href="https://wa.me/5511999999999?text=Olá! Gostaria de saber mais sobre a Chácara dos Sonhos."
+                    href={whatsappUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

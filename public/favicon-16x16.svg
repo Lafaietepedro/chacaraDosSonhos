@@ -2,7 +2,7 @@
   <!-- Fundo circular verde -->
   <circle cx="8" cy="8" r="8" fill="#22c55e"/>
   
-  <!-- Casa simples -->
+  <!-- Espaço simples -->
   <path d="M4 10V6C4 5.4 4.4 5 5 5H11C11.6 5 12 5.4 12 6V10" stroke="white" stroke-width="1" fill="none"/>
   
   <!-- Telhado -->

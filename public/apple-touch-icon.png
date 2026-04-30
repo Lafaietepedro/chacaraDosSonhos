@@ -2,7 +2,7 @@
   <!-- Fundo circular com gradiente verde -->
   <circle cx="90" cy="90" r="90" fill="url(#gradient)"/>
   
-  <!-- Ícone de casa/chácara estilizada -->
+  <!-- Ícone de espaço de eventos estilizado -->
   <path d="M45 112.5V67.5C45 61.2 50.2 56 56.5 56H123.5C129.8 56 135 61.2 135 67.5V112.5" stroke="white" stroke-width="8" fill="none"/>
   
   <!-- Telhado -->

@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -26,26 +27,69 @@ model User {
   @@map("users")
 }
 
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("admin_users")
+}
+
 model Property {
-  id          String  @id @default(cuid())
-  name        String
-  description String
-  capacity    Int
-  basePrice   Float
-  address     String
-  rules       String?
-  isActive    Boolean @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  description    String
+  capacity       Int
+  basePrice      Float
+  operationalFee Float    @default(150)
+  contactEmail   String?
+  contactPhone   String?
+  address        String
+  rules          String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
-  photos     Photo[]
-  bookings   Booking[]
+  photos       Photo[]
+  bookings     Booking[]
   blockedDates BlockedDate[]
-  extras     Extra[]
-  reviews    Review[]
+  extras       Extra[]
+  packages     BookingPackage[]
+  reviews      Review[]
 
   @@map("properties")
+}
+
+model BookingPackage {
+  id             String   @id @default(cuid())
+  slug           String
+  name           String
+  description    String?
+  basePrice      Float
+  duration       String
+  includedGuests Int
+  extraGuestFee  Float
+  features       String   @default("[]")
+  notIncluded    String   @default("[]")
+  isPopular      Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  propertyId     String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  property Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@unique([propertyId, slug])
+  @@map("packages")
 }
 
 model Photo {
@@ -63,41 +107,48 @@ model Photo {
 }
 
 model Extra {
-  id         String  @id @default(cuid())
-  name       String
+  id          String   @id @default(cuid())
+  name        String
   description String?
-  price      Float
-  isActive   Boolean @default(true)
-  propertyId String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  price       Float
+  isActive    Boolean  @default(true)
+  propertyId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
-  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  property      Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   bookingExtras BookingExtra[]
 
   @@map("extras")
 }
 
 model Booking {
-  id          String   @id @default(cuid())
-  startDate   DateTime
-  endDate     DateTime
-  guests      Int
-  totalPrice  Float
-  status      String   @default("PENDING")
-  notes       String?
-  contractUrl String?
-  signature   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                     String   @id @default(cuid())
+  startDate              DateTime
+  endDate                DateTime
+  guests                 Int
+  extraGuests            Int      @default(0)
+  totalPrice             Float
+  status                 String   @default("PENDING")
+  packageId              String?
+  packageNameSnapshot    String   @default("Legado")
+  basePriceSnapshot      Float    @default(0)
+  extraGuestFeeSnapshot  Float    @default(0)
+  operationalFeeSnapshot Float    @default(0)
+  notes                  String?
+  contractUrl            String?
+  signature              String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   // Relations
-  userId     String
-  propertyId String
-  user       User           @relation(fields: [userId], references: [id])
-  property   Property       @relation(fields: [propertyId], references: [id])
-  payments   Payment[]
+  userId        String
+  propertyId    String
+  user          User            @relation(fields: [userId], references: [id])
+  property      Property        @relation(fields: [propertyId], references: [id])
+  package       BookingPackage? @relation(fields: [packageId], references: [id])
+  payments      Payment[]
   bookingExtras BookingExtra[]
 
   @@map("bookings")

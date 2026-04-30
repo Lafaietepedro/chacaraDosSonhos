@@ -3,13 +3,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Calendar, Phone, Mail, MessageCircle, Settings } from 'lucide-react'
-import { Playfair_Display } from 'next/font/google'
-
-const playfair = Playfair_Display({ subsets: ['latin'], weight: ['700', '800', '900'] })
+import { Menu, X, Calendar, Phone, MessageCircle, Settings } from 'lucide-react'
+import { buildWhatsAppUrl, siteConfig } from '@/lib/site'
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const whatsappUrl = buildWhatsAppUrl(`Olá! Quero saber mais sobre o ${siteConfig.appName}.`)
 
   const navigation = [
     { name: 'Início', href: '#home' },
@@ -26,8 +25,10 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <img src="/gallery/logo.jpg" alt="Espaço Vip JR" className="h-8 w-auto rounded" />
-            <span className={`${playfair.className} text-xl md:text-xl font-extrabold text-gray-900 mb-1 tracking-tight`}>Espaço Vip JR</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm font-black text-white">
+              VE
+            </div>
+            <span className="font-serif text-xl md:text-xl font-extrabold text-gray-900 mb-1 tracking-tight">{siteConfig.appName}</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -52,7 +53,7 @@ export function Header() {
               </Link>
             </Button>
             <Button variant="outline" size="sm" asChild>
-              <a href="https://wa.me/5511999999999?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20o%20Espaço%20Vip%20JR." target="_blank" rel="noopener noreferrer">
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="w-4 h-4 mr-2" />
                 WhatsApp
               </a>
@@ -102,7 +103,7 @@ export function Header() {
                   </Link>
                 </Button>
                 <Button variant="outline" size="sm" asChild>
-                  <a href="https://wa.me/5511999999999?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20o%20Espaço%20Vip%20JR." target="_blank" rel="noopener noreferrer">
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                     <MessageCircle className="w-4 h-4 mr-2" />
                     WhatsApp
                   </a>

@@ -1,37 +1,38 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { TreePine, Home, Car, Wifi, Utensils, Music } from 'lucide-react'
+import { BarChart3, CalendarDays, ClipboardCheck, CreditCard, LayoutDashboard, MessageSquare } from 'lucide-react'
+import { siteConfig } from '@/lib/site'
 
 export function About() {
   const features = [
     {
-      icon: Home,
-      title: 'Casa Principal',
-      description: 'Casa confortável com 4 quartos, 3 banheiros, sala ampla e cozinha completa.'
+      icon: CalendarDays,
+      title: 'Agenda Operacional',
+      description: 'Visualize solicitações, reservas aprovadas e datas indisponíveis em uma única rotina.'
     },
     {
-      icon: TreePine,
-      title: 'Área Verde',
-      description: 'Mais de 5.000m² de área verde com jardins, pomar e espaço para atividades ao ar livre.'
+      icon: ClipboardCheck,
+      title: 'Reserva Guiada',
+      description: 'O cliente informa data, convidados, pacote e contato antes de chegar ao atendimento humano.'
     },
     {
-      icon: Car,
-      title: 'Estacionamento',
-      description: 'Estacionamento para até 30 veículos com fácil acesso e segurança.'
+      icon: LayoutDashboard,
+      title: 'Painel do Anfitrião',
+      description: 'Acompanhe pendências, aprove ou recuse pedidos e consulte detalhes de cada evento.'
     },
     {
-      icon: Utensils,
-      title: 'Churrasqueira',
-      description: 'Churrasqueira completa com bancadas, geladeira e área de preparo.'
+      icon: CreditCard,
+      title: 'Base para Pagamentos',
+      description: 'Estrutura pronta para evoluir para sinal, recibos, PIX e cartão com confirmação automática.'
     },
     {
-      icon: Music,
-      title: 'Som Ambiente',
-      description: 'Som ambiente para trilha sonora leve durante o evento.'
+      icon: MessageSquare,
+      title: 'Contato Rápido',
+      description: 'Fluxo pensado para WhatsApp, reduzindo respostas repetidas e perda de contexto.'
     },
     {
-      icon: Wifi,
-      title: 'Wi-Fi Gratuito',
-      description: 'Internet de alta velocidade disponível em toda a propriedade.'
+      icon: BarChart3,
+      title: 'Indicadores',
+      description: 'Resumo de reservas, pendências e receita para apoiar decisões de preço e agenda.'
     }
   ]
 
@@ -40,13 +41,10 @@ export function About() {
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Sobre a Chácara dos Sonhos
+            Uma base séria para operar reservas
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed">
-            Localizada em um ambiente tranquilo e privilegiado, nossa chácara oferece 
-            toda a infraestrutura necessária para tornar seu evento inesquecível. 
-            Com mais de 5.000m² de área verde e instalações modernas, garantimos 
-            conforto e praticidade para você e seus convidados.
+            {siteConfig.longPitch}
           </p>
         </div>
 
@@ -71,20 +69,20 @@ export function About() {
         {/* Stats */}
         <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="text-center">
-            <div className="text-4xl font-bold text-primary mb-2">150+</div>
-            <div className="text-gray-600">Capacidade</div>
+            <div className="text-4xl font-bold text-primary mb-2">{siteConfig.capacity}+</div>
+            <div className="text-gray-600">Convidados</div>
           </div>
           <div className="text-center">
-            <div className="text-4xl font-bold text-primary mb-2">5000m²</div>
-            <div className="text-gray-600">Área Total</div>
-          </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-primary mb-2">30</div>
-            <div className="text-gray-600">Vagas</div>
+            <div className="text-4xl font-bold text-primary mb-2">3</div>
+            <div className="text-gray-600">Pacotes</div>
           </div>
           <div className="text-center">
             <div className="text-4xl font-bold text-primary mb-2">24h</div>
-            <div className="text-gray-600">Disponível</div>
+            <div className="text-gray-600">Sessão admin</div>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-primary mb-2">R$</div>
+            <div className="text-gray-600">Cálculo automático</div>
           </div>
         </div>
       </div>

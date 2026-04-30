@@ -13,7 +13,7 @@ export async function notifyWhatsAppHost(message: string): Promise<boolean> {
       return false
     }
 
-    console.log(`📱 Tentando enviar WhatsApp para: ${phone}`)
+    console.log(`Tentando enviar WhatsApp para: ${phone}`)
 
     // Opção 1: Webhook personalizado (recomendado para produção)
     if (webhookUrl) {
@@ -27,14 +27,14 @@ export async function notifyWhatsAppHost(message: string): Promise<boolean> {
         })
 
         if (response.ok) {
-          console.log('✅ WhatsApp enviado via webhook')
+          console.log('WhatsApp enviado via webhook')
           return true
         } else {
-          console.error('❌ Erro no webhook WhatsApp:', response.status)
+          console.error('Erro no webhook WhatsApp:', response.status)
           return false
         }
       } catch (error) {
-        console.error('❌ Erro ao chamar webhook WhatsApp:', error)
+        console.error('Erro ao chamar webhook WhatsApp:', error)
         return false
       }
     }
@@ -53,25 +53,24 @@ export async function notifyWhatsAppHost(message: string): Promise<boolean> {
         })
         
         if (response.ok) {
-          console.log('✅ WhatsApp enviado via CallMeBot')
+          console.log('WhatsApp enviado via CallMeBot')
           return true
         } else {
-          console.error('❌ Erro CallMeBot:', response.status)
+          console.error('Erro CallMeBot:', response.status)
           return false
         }
       } catch (error) {
-        console.error('❌ Erro ao usar CallMeBot:', error)
+        console.error('Erro ao usar CallMeBot:', error)
         return false
       }
     }
 
-    console.warn('⚠️ Nenhuma configuração do WhatsApp encontrada!')
+    console.warn('Nenhuma configuração do WhatsApp encontrada.')
     console.warn('Configure WHATSAPP_PHONE + WHATSAPP_WEBHOOK_URL ou CALLMEBOT_API_KEY')
     return false
   } catch (err) {
-    console.error('❌ Falha geral ao enviar WhatsApp:', err)
+    console.error('Falha geral ao enviar WhatsApp:', err)
     return false
   }
 }
-
 

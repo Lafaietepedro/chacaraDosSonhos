@@ -9,44 +9,44 @@ export function FAQ() {
 
   const faqs = [
     {
-      question: 'Qual é a capacidade máxima da chácara?',
-      answer: 'Nossa chácara tem capacidade para até 150 pessoas confortavelmente. Para eventos maiores, podemos discutir opções especiais.'
+      question: 'A plataforma já impede reserva em data ocupada?',
+      answer: 'Sim. O backend verifica reservas pendentes/confirmadas e datas bloqueadas antes de criar uma nova solicitação.'
     },
     {
-      question: 'Qual é o horário de funcionamento?',
-      answer: 'A chácara está disponível 24 horas por dia, 7 dias por semana. Os pacotes incluem diferentes durações (8h, 12h ou 24h).'
+      question: 'Os pacotes podem ser alterados?',
+      answer: 'Sim. Os pacotes, valores, duração e capacidade foram centralizados em configuração para facilitar adaptação a diferentes espaços.'
     },
     {
-      question: 'É permitido levar animais de estimação?',
-      answer: 'Sim, animais de estimação são bem-vindos! Pedimos apenas que sejam mantidos sob supervisão e que os dejetos sejam recolhidos.'
+      question: 'Existe pagamento online implementado?',
+      answer: 'Ainda não. A base possui dependências de Stripe, mas o fluxo atual registra a solicitação e deixa pagamento como item de roadmap.'
     },
     {
-      question: 'Há estacionamento disponível?',
-      answer: 'Sim, temos estacionamento para até 30 veículos, com fácil acesso e segurança durante todo o evento.'
+      question: 'O painel é protegido?',
+      answer: 'Sim. O administrador é persistido no banco com senha hasheada e sessão assinada. Para SaaS, ainda falta controle granular de papéis.'
     },
     {
-      question: 'O que está incluído no preço?',
-      answer: 'Cada pacote inclui diferentes itens. Consulte nossa seção de preços para detalhes completos. Básico inclui acesso e infraestrutura, Completo inclui limpeza, e Premium inclui decoração básica e som profissional.'
+      question: 'As notificações por WhatsApp são reais?',
+      answer: 'Existe um helper para webhook ou CallMeBot. Em produção, a recomendação é integrar WhatsApp Business API ou um provedor transacional.'
     },
     {
-      question: 'Como funciona o pagamento?',
-      answer: 'Aceitamos PIX, cartão de crédito/débito e transferência bancária. Para reservas, é necessário pagar 50% como sinal e o restante até 7 dias antes do evento.'
+      question: 'O formulário de contato envia email?',
+      answer: 'No estado atual, o formulário apenas simula envio no navegador. O fluxo principal persistido é a solicitação de reserva.'
     },
     {
-      question: 'Posso cancelar minha reserva?',
-      answer: 'Sim, mas há políticas de cancelamento. Até 30 dias antes: reembolso total. Entre 15-30 dias: 50% de reembolso. Menos de 15 dias: sem reembolso.'
+      question: 'Funciona para mais de um espaço?',
+      answer: 'O schema suporta propriedades, mas a interface atual opera como instalação de um espaço principal. Multiunidade é viável, mas deve ser planejado como próxima fase.'
     },
     {
-      question: 'Há Wi-Fi disponível?',
-      answer: 'Sim, oferecemos Wi-Fi gratuito de alta velocidade em toda a propriedade para você e seus convidados.'
+      question: 'Dá para gerar contrato automaticamente?',
+      answer: 'Ainda não há tela de contrato. O schema já tem campos para contractUrl e signature, então a funcionalidade é viável como módulo posterior.'
     },
     {
-      question: 'É possível fazer o evento em dias de chuva?',
-      answer: 'Sim! Temos áreas cobertas e a casa principal para abrigar todos os convidados em caso de chuva.'
+      question: 'O projeto está pronto para vender como SaaS?',
+      answer: 'Ainda não. Ele é uma boa base de produto, mas precisa de autenticação robusta, permissões, pagamentos, auditoria e onboarding antes de virar SaaS.'
     },
     {
-      question: 'Há algum horário de silêncio?',
-      answer: 'Sim, respeitamos os vizinhos. O horário de silêncio é das 22h às 8h, mas a música pode continuar em volume baixo.'
+      question: 'Qual é a melhor próxima evolução?',
+      answer: 'Adicionar filtros operacionais no dashboard, email transacional e um fluxo formal de pagamento de sinal.'
     }
   ]
 
@@ -66,7 +66,7 @@ export function FAQ() {
             Perguntas Frequentes
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Tire suas dúvidas sobre nossa chácara e serviços
+            Limites atuais, viabilidade e próximos passos técnicos
           </p>
         </div>
 

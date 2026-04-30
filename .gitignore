@@ -16,6 +16,7 @@ yarn-error.log*
 out/
 build/
 dist/
+*.tsbuildinfo
 
 # Database
 prisma/dev.db

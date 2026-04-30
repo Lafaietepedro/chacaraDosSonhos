@@ -1,10 +1,10 @@
 # Galeria de Imagens
 
-Este diretório contém as imagens da galeria da chácara.
+Este diretório contém as imagens da galeria demonstrativa do espaço de eventos.
 
 ## Imagens necessárias:
 
-1. `1.jpg` - Vista frontal da chácara
+1. `1.jpg` - Fachada do espaço
 2. `2.jpg` - Área de eventos
 3. `3.jpg` - Churrasqueira
 4. `4.jpg` - Casa principal

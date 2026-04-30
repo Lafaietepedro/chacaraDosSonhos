@@ -1,14 +1,12 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
-
-const inter = Inter({ subsets: ['latin'] })
+import { siteConfig } from '@/lib/site'
 
 export const metadata: Metadata = {
-  title: 'Espaço Vip JR - Aluguel para Eventos',
-  description: 'Espaço perfeito para seus eventos especiais. Aniversários, casamentos, confraternizações e muito mais.',
-  keywords: 'espaço, chácara, aluguel, eventos, aniversário, casamento, confraternização',
-  authors: [{ name: 'Espaço Vip JR' }],
+  title: `${siteConfig.appName} - Reservas para espaços de eventos`,
+  description: siteConfig.appDescription,
+  keywords: siteConfig.keywords,
+  authors: [{ name: siteConfig.appName }],
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -20,8 +18,8 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: 'Espaço Vip JR - Aluguel para Eventos',
-    description: 'Espaço perfeito para seus eventos especiais. Aniversários, casamentos, confraternizações e muito mais.',
+    title: `${siteConfig.appName} - Reservas para espaços de eventos`,
+    description: siteConfig.appDescription,
     type: 'website',
     locale: 'pt_BR',
   },
@@ -37,7 +35,7 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className={inter.className}>
+      <body>
         {children}
       </body>
     </html>

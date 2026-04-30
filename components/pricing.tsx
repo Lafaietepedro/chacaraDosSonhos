@@ -1,93 +1,43 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Check, X } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils'
+import { siteConfig } from '@/lib/site'
+import { fallbackPackageOptions } from '@/lib/catalog'
+import type { CatalogResponse, PackageOption } from '@/types/booking'
 
 export function Pricing() {
-  const packages = [
-    {
-      name: 'Básico',
-      price: 800,
-      duration: '8 horas',
-      capacity: 50,
-      extraPerGuest: 20,
-      description: 'Perfeito para eventos menores e mais íntimos',
-      features: [
-        'Acesso à chácara por 8 horas',
-        'Até 50 pessoas',
-        'Churrasqueira e geladeira',
-        'Estacionamento para 15 veículos',
-        'Wi-Fi gratuito',
-        'Área verde para atividades',
-        'Piscina inclusa'
-      ],
-      notIncluded: [
-        // taxa de limpeza obrigatória, mostrada abaixo
-        'Decoração'
-      ],
-      popular: false
-    },
-    {
-      name: 'Completo',
-      price: 1200,
-      duration: '12 horas',
-      capacity: 100,
-      extraPerGuest: 18,
-      description: 'O mais escolhido para eventos especiais',
-      features: [
-        'Acesso à chácara por 12 horas',
-        'Até 100 pessoas',
-        'Churrasqueira e geladeira',
-        'Estacionamento para 25 veículos',
-        'Wi-Fi gratuito',
-        'Sistema de som básico',
-        'Área verde para atividades',
-        'Piscina inclusa'
-      ],
-      notIncluded: [
-        'Decoração personalizada'
-      ],
-      popular: true
-    },
-    {
-      name: 'Premium',
-      price: 1800,
-      duration: '24 horas',
-      capacity: 150,
-      extraPerGuest: 15,
-      description: 'Para eventos grandiosos e inesquecíveis',
-      features: [
-        'Acesso à chácara por 24 horas',
-        'Até 150 pessoas',
-        'Churrasqueira e geladeira',
-        'Estacionamento para 30 veículos',
-        'Wi-Fi gratuito',
-        'Som ambiente',
-        'Decoração básica incluída',
-        'Área verde para atividades',
-        'Piscina inclusa',
-        'Suporte durante o evento'
-      ],
-      notIncluded: [
-        'Decoração personalizada premium'
-      ],
-      popular: false
-    }
-  ]
+  const [packages, setPackages] = useState<PackageOption[]>(fallbackPackageOptions)
+  const [operationalFee, setOperationalFee] = useState(siteConfig.cleaningFee)
 
-  const CLEANING_FEE = 150
+  useEffect(() => {
+    fetch('/api/catalog')
+      .then(async (res) => {
+        if (!res.ok) return
+        const data = (await res.json()) as CatalogResponse
+        if (data.packages.length > 0) {
+          setPackages(data.packages)
+          setOperationalFee(data.property.operationalFee)
+        }
+      })
+      .catch((error) => {
+        console.warn('Não foi possível carregar pacotes do banco:', error)
+      })
+  }, [])
 
   return (
     <section id="pricing" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Nossos Pacotes
+            Pacotes configuráveis
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Escolha o pacote ideal para seu evento. Todos incluem o essencial, 
-            com opções de personalização.
+            Uma vitrine objetiva para o cliente comparar duração, capacidade e valor antes de solicitar a reserva.
           </p>
         </div>
 
@@ -112,11 +62,9 @@ export function Pricing() {
                   {formatCurrency(pkg.price)}
                 </div>
                 <div className="text-gray-600">{pkg.duration}</div>
-                {('capacity' in pkg) && (
-                  <div className="text-sm text-gray-500 mt-1">
-                    Até {(pkg as any).capacity} pessoas • {formatCurrency((pkg as any).extraPerGuest)} por convidado extra
-                  </div>
-                )}
+                <div className="text-sm text-gray-500 mt-1">
+                  Até {pkg.capacity} pessoas • {formatCurrency(pkg.extraPerGuest)} por convidado extra
+                </div>
                 <p className="text-sm text-gray-500 mt-2">{pkg.description}</p>
               </CardHeader>
               
@@ -153,7 +101,7 @@ export function Pricing() {
         {/* Cleaning fee note */}
         <div className="max-w-3xl mx-auto text-center mt-4">
           <p className="text-sm text-gray-600">
-            Taxa de limpeza obrigatória: <span className="font-medium">{formatCurrency(CLEANING_FEE)}</span> (aplicada em todos os pacotes). Piscina inclusa.
+            Taxa operacional configurável: <span className="font-medium">{formatCurrency(operationalFee)}</span> aplicada em todos os pacotes.
           </p>
         </div>
 
