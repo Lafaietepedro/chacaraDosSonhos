@@ -14,6 +14,13 @@ const emptyStats: DashboardStats = {
   occupancyRate: 0,
 }
 
+const emptyPagination = {
+  page: 1,
+  pageSize: 10,
+  totalItems: 0,
+  totalPages: 1,
+}
+
 const statusMap: Record<string, string> = {
   pending: 'PENDING',
   confirmed: 'CONFIRMED',
@@ -37,7 +44,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: authResult.error }, { status: 401 })
     }
     if (!prisma) {
-      return NextResponse.json({ recentBookings: [], stats: emptyStats })
+      return NextResponse.json({ recentBookings: [], stats: emptyStats, pagination: emptyPagination })
     }
     const property = await ensureDefaultProperty(prisma)
 
@@ -46,7 +53,9 @@ export async function GET(request: Request) {
     const search = searchParams.get('search')?.trim()
     const fromDate = parseDateParam(searchParams.get('from'))
     const toDate = parseDateParam(searchParams.get('to'), true)
-    const take = Math.min(Number(searchParams.get('take')) || 50, 100)
+    const pageSize = Math.min(Math.max(Number(searchParams.get('take')) || 10, 1), 50)
+    const page = Math.max(Number(searchParams.get('page')) || 1, 1)
+    const skip = (page - 1) * pageSize
 
     const bookingWhere: Prisma.BookingWhereInput = {}
 
@@ -78,13 +87,15 @@ export async function GET(request: Request) {
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
     const daysInMonth = endOfMonth.getDate()
 
-    const [bookings, monthly, monthlyConfirmedBookings, totals, totalBookings] = await Promise.all([
+    const [bookings, filteredBookingsCount, monthly, monthlyConfirmedBookings, totals, totalBookings] = await Promise.all([
       prisma.booking.findMany({
         where: bookingWhere,
         orderBy: { createdAt: 'desc' },
-        take,
+        skip,
+        take: pageSize,
         include: { user: true, package: true },
       }),
+      prisma.booking.count({ where: bookingWhere }),
       prisma.booking.aggregate({
         _sum: { totalPrice: true },
         where: { 
@@ -112,6 +123,7 @@ export async function GET(request: Request) {
       monthlyConfirmedBookings.map((booking) => booking.startDate.toISOString().slice(0, 10))
     ).size
     const occupancyRate = Math.round((occupiedDays / daysInMonth) * 100)
+    const totalPages = Math.max(Math.ceil(filteredBookingsCount / pageSize), 1)
 
     const recentBookings = bookings.map((b) => ({
       id: b.id,
@@ -140,9 +152,18 @@ export async function GET(request: Request) {
       occupancyRate,
     }
 
-    return NextResponse.json({ recentBookings, stats })
+    return NextResponse.json({
+      recentBookings,
+      stats,
+      pagination: {
+        page,
+        pageSize,
+        totalItems: filteredBookingsCount,
+        totalPages,
+      },
+    })
   } catch (e) {
     console.error(e)
-    return NextResponse.json({ recentBookings: [], stats: emptyStats }, { status: 200 })
+    return NextResponse.json({ recentBookings: [], stats: emptyStats, pagination: emptyPagination }, { status: 200 })
   }
 }

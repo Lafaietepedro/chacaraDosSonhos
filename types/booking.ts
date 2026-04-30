@@ -54,6 +54,13 @@ export type DashboardStats = {
   occupancyRate: number
 }
 
+export type DashboardPagination = {
+  page: number
+  pageSize: number
+  totalItems: number
+  totalPages: number
+}
+
 export type DashboardBlockedDate = {
   id: string
   startDate: string

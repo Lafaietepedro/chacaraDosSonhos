@@ -36,6 +36,7 @@ import type {
   DashboardBlockedDate,
   DashboardBooking,
   DashboardContactMessage,
+  DashboardPagination,
   DashboardStats,
   PackageOption,
   PackageSettingsInput,
@@ -49,6 +50,13 @@ const emptyStats: DashboardStats = {
   cancelledBookings: 0,
   monthlyRevenue: 0,
   occupancyRate: 0,
+}
+
+const emptyPagination: DashboardPagination = {
+  page: 1,
+  pageSize: 10,
+  totalItems: 0,
+  totalPages: 1,
 }
 
 const defaultPropertySettings: PropertySettingsInput = {
@@ -160,6 +168,8 @@ export default function DashboardPage() {
   }
 
   const [recentBookings, setRecentBookings] = useState<DashboardBooking[]>([])
+  const [bookingPagination, setBookingPagination] = useState<DashboardPagination>(emptyPagination)
+  const [bookingPage, setBookingPage] = useState(1)
   const [contactMessages, setContactMessages] = useState<DashboardContactMessage[]>([])
   const [stats, setStats] = useState<DashboardStats>(emptyStats)
   const [propertySettings, setPropertySettings] = useState<PropertySettingsInput>(defaultPropertySettings)
@@ -204,6 +214,8 @@ export default function DashboardPage() {
       if (bookingFilters.status !== 'all') params.set('status', bookingFilters.status)
       if (bookingFilters.from) params.set('from', bookingFilters.from)
       if (bookingFilters.to) params.set('to', bookingFilters.to)
+      params.set('page', String(bookingPage))
+      params.set('take', String(emptyPagination.pageSize))
 
       const queryString = params.toString()
       const res = await fetch(`/api/dashboard${queryString ? `?${queryString}` : ''}`, {
@@ -219,13 +231,18 @@ export default function DashboardPage() {
         }
         throw new Error('Erro ao carregar dados')
       }
-      const data = await res.json() as { recentBookings: DashboardBooking[]; stats: DashboardStats }
+      const data = await res.json() as {
+        recentBookings: DashboardBooking[]
+        stats: DashboardStats
+        pagination: DashboardPagination
+      }
       setRecentBookings(data.recentBookings)
       setStats(data.stats)
+      setBookingPagination(data.pagination)
     } catch (err) {
       console.error('Erro ao carregar dashboard:', err)
     }
-  }, [bookingFilters])
+  }, [bookingFilters, bookingPage])
 
   const fetchBlockedDates = useCallback(async () => {
     try {
@@ -614,11 +631,13 @@ export default function DashboardPage() {
   }
 
   const applyBookingFilters = () => {
+    setBookingPage(1)
     setBookingFilters(filterDraft)
   }
 
   const clearBookingFilters = () => {
     setFilterDraft(emptyBookingFilters)
+    setBookingPage(1)
     setBookingFilters(emptyBookingFilters)
   }
 
@@ -914,7 +933,7 @@ export default function DashboardPage() {
                 </div>
 
                 <p className="mb-4 text-sm text-gray-500">
-                  Mostrando {recentBookings.length} {recentBookings.length === 1 ? 'reserva' : 'reservas'}
+                  Mostrando {recentBookings.length} de {bookingPagination.totalItems} {bookingPagination.totalItems === 1 ? 'reserva' : 'reservas'}
                 </p>
 
                 <div className="space-y-4">
@@ -998,6 +1017,30 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
+
+                {bookingPagination.totalPages > 1 && (
+                  <div className="mt-6 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-gray-500">
+                      Página {bookingPagination.page} de {bookingPagination.totalPages}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        disabled={bookingPagination.page <= 1}
+                        onClick={() => setBookingPage((current) => Math.max(current - 1, 1))}
+                      >
+                        Anterior
+                      </Button>
+                      <Button
+                        variant="outline"
+                        disabled={bookingPagination.page >= bookingPagination.totalPages}
+                        onClick={() => setBookingPage((current) => Math.min(current + 1, bookingPagination.totalPages))}
+                      >
+                        Próxima
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
