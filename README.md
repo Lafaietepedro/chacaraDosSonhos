@@ -33,12 +33,13 @@ Funcionalidades que existem hoje:
 - Snapshot de pacote e preço gravado na reserva.
 - Validação de disponibilidade no backend para impedir reserva em data bloqueada ou já pendente/confirmada.
 - Bloqueios de data persistidos no banco e conectados ao calendário do dashboard.
-- Painel administrativo com login, indicadores básicos, lista de reservas, mensagens de contato, detalhes, aprovação, recusa e exclusão.
+- Painel administrativo com login, indicadores básicos, lista paginada de reservas, filtros, mensagens de contato, detalhes, aprovação, recusa e exclusão.
 - Calendário visual no dashboard com reservas pendentes/confirmadas e bloqueios persistidos.
 - Configurações básicas do espaço editáveis no dashboard: nome, descrição, capacidade, taxa operacional, contato e endereço.
 - Pacotes editáveis no dashboard: nome, preço, duração, capacidade, valor por convidado extra, itens incluídos, destaque e ativação.
 - Usuário administrativo persistido no banco, com bootstrap inicial por variáveis de ambiente e troca de senha pelo painel.
 - Notificação de nova reserva para cliente e anfitrião por email quando `RESEND_API_KEY` estiver configurada.
+- Testes automatizados com o runner nativo do Node para regras de preço e rate limit.
 - Configuração centralizada de marca/contato em `lib/site.ts`, usada como fallback e seed inicial.
 
 ## Diferença Para o README Antigo
@@ -182,9 +183,9 @@ Prioridade 1:
 Prioridade 2:
 
 - Criar camada de serviço para reservas, separando regra de negócio das API routes.
-- Criar testes para cálculo de preço, disponibilidade e transição de status.
+- Ampliar testes para disponibilidade, reservas e transições de status.
 - Criar templates HTML para os emails transacionais e histórico de envio.
-- Expandir filtros do dashboard com ordenação e paginação.
+- Expandir filtros do dashboard com ordenação e exportação.
 - Melhorar tratamento de loading/erro nas telas.
 
 Prioridade 3:
