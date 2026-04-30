@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { verifyAuth } from '@/lib/api-auth'
 import { ensureDefaultProperty } from '@/lib/services/property.service'
@@ -13,6 +14,21 @@ const emptyStats: DashboardStats = {
   occupancyRate: 0,
 }
 
+const statusMap: Record<string, string> = {
+  pending: 'PENDING',
+  confirmed: 'CONFIRMED',
+  cancelled: 'CANCELLED',
+  rejected: 'REJECTED',
+  completed: 'COMPLETED',
+}
+
+function parseDateParam(value: string | null, endOfDay = false) {
+  if (!value) return null
+
+  const date = new Date(`${value}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}`)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
 export async function GET(request: Request) {
   try {
     // Verificar autenticação
@@ -25,13 +41,46 @@ export async function GET(request: Request) {
     }
     await ensureDefaultProperty(prisma)
 
+    const { searchParams } = new URL(request.url)
+    const statusParam = searchParams.get('status')?.toLowerCase()
+    const search = searchParams.get('search')?.trim()
+    const fromDate = parseDateParam(searchParams.get('from'))
+    const toDate = parseDateParam(searchParams.get('to'), true)
+    const take = Math.min(Number(searchParams.get('take')) || 50, 100)
+
+    const bookingWhere: Prisma.BookingWhereInput = {}
+
+    if (statusParam && statusParam !== 'all' && statusMap[statusParam]) {
+      bookingWhere.status = statusMap[statusParam]
+    }
+
+    if (fromDate || toDate) {
+      bookingWhere.startDate = {
+        ...(fromDate ? { gte: fromDate } : {}),
+        ...(toDate ? { lte: toDate } : {}),
+      }
+    }
+
+    if (search) {
+      bookingWhere.user = {
+        is: {
+          OR: [
+            { name: { contains: search } },
+            { email: { contains: search } },
+            { phone: { contains: search } },
+          ],
+        },
+      }
+    }
+
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
     const [bookings, monthly, totals, totalBookings] = await Promise.all([
       prisma.booking.findMany({
+        where: bookingWhere,
         orderBy: { createdAt: 'desc' },
-        take: 10,
+        take,
         include: { user: true, package: true },
       }),
       prisma.booking.aggregate({
@@ -81,4 +130,3 @@ export async function GET(request: Request) {
     return NextResponse.json({ recentBookings: [], stats: emptyStats }, { status: 200 })
   }
 }
-

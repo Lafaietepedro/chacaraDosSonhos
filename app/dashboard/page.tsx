@@ -25,7 +25,8 @@ import {
   Phone,
   MessageSquare,
   X,
-  LogOut
+  LogOut,
+  Search
 } from 'lucide-react'
 import { formatCurrency, formatDate, parseLocalDate } from '@/lib/utils'
 import { siteConfig } from '@/lib/site'
@@ -71,6 +72,20 @@ const emptyPackageForm: PackageSettingsInput = {
   popular: false,
   isActive: true,
   sortOrder: 0,
+}
+
+type BookingFilterState = {
+  search: string
+  status: string
+  from: string
+  to: string
+}
+
+const emptyBookingFilters: BookingFilterState = {
+  search: '',
+  status: 'all',
+  from: '',
+  to: '',
 }
 
 function packageToForm(pkg: PackageOption): PackageSettingsInput {
@@ -141,6 +156,8 @@ export default function DashboardPage() {
   const [packages, setPackages] = useState<PackageOption[]>([])
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null)
   const [packageForm, setPackageForm] = useState<PackageSettingsInput>(emptyPackageForm)
+  const [bookingFilters, setBookingFilters] = useState<BookingFilterState>(emptyBookingFilters)
+  const [filterDraft, setFilterDraft] = useState<BookingFilterState>(emptyBookingFilters)
   const [isSavingSettings, setIsSavingSettings] = useState(false)
   const [isSavingPackage, setIsSavingPackage] = useState(false)
 
@@ -151,7 +168,15 @@ export default function DashboardPage() {
   const fetchDashboardData = useCallback(async () => {
     try {
       const token = authRef.current.getToken()
-      const res = await fetch('/api/dashboard', {
+      const params = new URLSearchParams()
+
+      if (bookingFilters.search.trim()) params.set('search', bookingFilters.search.trim())
+      if (bookingFilters.status !== 'all') params.set('status', bookingFilters.status)
+      if (bookingFilters.from) params.set('from', bookingFilters.from)
+      if (bookingFilters.to) params.set('to', bookingFilters.to)
+
+      const queryString = params.toString()
+      const res = await fetch(`/api/dashboard${queryString ? `?${queryString}` : ''}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -170,7 +195,7 @@ export default function DashboardPage() {
     } catch (err) {
       console.error('Erro ao carregar dashboard:', err)
     }
-  }, [])
+  }, [bookingFilters])
 
   const fetchBlockedDates = useCallback(async () => {
     try {
@@ -453,6 +478,22 @@ export default function DashboardPage() {
     setIsDetailsModalOpen(true)
   }
 
+  const updateFilterDraft = <Key extends keyof BookingFilterState>(
+    key: Key,
+    value: BookingFilterState[Key]
+  ) => {
+    setFilterDraft((current) => ({ ...current, [key]: value }))
+  }
+
+  const applyBookingFilters = () => {
+    setBookingFilters(filterDraft)
+  }
+
+  const clearBookingFilters = () => {
+    setFilterDraft(emptyBookingFilters)
+    setBookingFilters(emptyBookingFilters)
+  }
+
       const updateStatus = async (id: string, status: 'CONFIRMED' | 'REJECTED') => {
         try {
           const token = getToken()
@@ -662,8 +703,77 @@ export default function DashboardPage() {
                 <CardTitle>Gerenciar Reservas</CardTitle>
               </CardHeader>
               <CardContent>
+                <div className="mb-6 grid grid-cols-1 gap-4 rounded-lg border bg-gray-50 p-4 lg:grid-cols-[1.5fr_0.9fr_0.9fr_0.9fr_auto]">
+                  <div>
+                    <Label htmlFor="booking-search">Buscar</Label>
+                    <div className="relative">
+                      <Search className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="booking-search"
+                        value={filterDraft.search}
+                        onChange={(event) => updateFilterDraft('search', event.target.value)}
+                        placeholder="Nome, email ou telefone"
+                        className="pr-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="booking-status">Status</Label>
+                    <select
+                      id="booking-status"
+                      value={filterDraft.status}
+                      onChange={(event) => updateFilterDraft('status', event.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    >
+                      <option value="all">Todos</option>
+                      <option value="pending">Pendentes</option>
+                      <option value="confirmed">Confirmadas</option>
+                      <option value="rejected">Recusadas</option>
+                      <option value="cancelled">Canceladas</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="booking-from">De</Label>
+                    <Input
+                      id="booking-from"
+                      type="date"
+                      value={filterDraft.from}
+                      onChange={(event) => updateFilterDraft('from', event.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="booking-to">Até</Label>
+                    <Input
+                      id="booking-to"
+                      type="date"
+                      value={filterDraft.to}
+                      onChange={(event) => updateFilterDraft('to', event.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex items-end gap-2">
+                    <Button onClick={applyBookingFilters} className="flex-1 lg:flex-none">
+                      Filtrar
+                    </Button>
+                    <Button variant="outline" onClick={clearBookingFilters} className="flex-1 lg:flex-none">
+                      Limpar
+                    </Button>
+                  </div>
+                </div>
+
+                <p className="mb-4 text-sm text-gray-500">
+                  Mostrando {recentBookings.length} {recentBookings.length === 1 ? 'reserva' : 'reservas'}
+                </p>
+
                 <div className="space-y-4">
-                  {recentBookings.map((booking) => (
+                  {recentBookings.length === 0 ? (
+                    <div className="rounded-lg border border-dashed p-8 text-center text-gray-500">
+                      Nenhuma reserva encontrada para os filtros selecionados.
+                    </div>
+                  ) : recentBookings.map((booking) => (
                     <div key={booking.id} className="border rounded-lg p-6">
                       <div className="flex justify-between items-start mb-4">
                         <div>
