@@ -133,6 +133,12 @@ npm run dev
 
 A aplicação abre em `http://localhost:3000`.
 
+Rode os testes automatizados:
+
+```bash
+npm test
+```
+
 ## Estrutura Principal
 
 ```txt

@@ -17,6 +17,7 @@ out/
 build/
 dist/
 *.tsbuildinfo
+.test-build/
 
 # Database
 prisma/dev.db
