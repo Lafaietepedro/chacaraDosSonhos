@@ -107,12 +107,28 @@ type EmptyStateProps = {
   action?: ReactNode
 }
 
+type StatTileProps = {
+  icon: LucideIcon
+  label: string
+  value: string | number
+  helper: string
+  tone: 'emerald' | 'amber' | 'blue' | 'slate'
+}
+
 const emptyBookingFilters: BookingFilterState = {
   search: '',
   status: 'all',
   from: '',
   to: '',
 }
+
+const dashboardTabs = [
+  { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
+  { id: 'bookings', label: 'Reservas', icon: CalendarIcon },
+  { id: 'contacts', label: 'Contatos', icon: Mail },
+  { id: 'calendar', label: 'Calendário', icon: CalendarIcon },
+  { id: 'settings', label: 'Configurações', icon: Settings },
+]
 
 function packageToForm(pkg: PackageOption): PackageSettingsInput {
   return {
@@ -152,6 +168,32 @@ function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps)
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">{description}</p>
       {action && <div className="mt-5 flex justify-center">{action}</div>}
     </div>
+  )
+}
+
+function StatTile({ icon: Icon, label, value, helper, tone }: StatTileProps) {
+  const tones: Record<StatTileProps['tone'], string> = {
+    emerald: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
+    amber: 'bg-amber-50 text-amber-700 ring-amber-100',
+    blue: 'bg-blue-50 text-blue-700 ring-blue-100',
+    slate: 'bg-slate-100 text-slate-700 ring-slate-200',
+  }
+
+  return (
+    <Card className="border-slate-200 shadow-sm">
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-slate-500">{label}</p>
+            <p className="mt-3 text-3xl font-bold tracking-tight text-slate-950">{value}</p>
+          </div>
+          <div className={`rounded-md p-2 ring-1 ring-inset ${tones[tone]}`}>
+            <Icon className="h-5 w-5" />
+          </div>
+        </div>
+        <p className="mt-4 text-xs leading-5 text-slate-500">{helper}</p>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -739,27 +781,31 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+    <div className="min-h-screen bg-slate-100">
+      <div className="border-b border-slate-800 bg-slate-950 text-white">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Painel do Anfitrião</h1>
-              <p className="text-gray-600">Acompanhe solicitações, agenda e indicadores do espaço</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">
+                Venue Eventos
+              </p>
+              <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">Painel do Anfitrião</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                Acompanhe solicitações, agenda, contatos e configurações do espaço em uma rotina operacional.
+              </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button variant="outline" onClick={() => setActiveTab('settings')}>
+              <Button variant="outline" onClick={() => setActiveTab('settings')} className="border-white/20 bg-white/10 text-white hover:bg-white hover:text-slate-950">
                 <Settings className="w-4 h-4 mr-2" />
                 Configurações
               </Button>
-              <Button asChild>
+              <Button asChild className="bg-emerald-600 text-white hover:bg-emerald-700">
                 <Link href="/booking">
                   <Plus className="w-4 h-4 mr-2" />
                   Nova Reserva
                 </Link>
               </Button>
-              <Button variant="outline" onClick={logout} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+              <Button variant="outline" onClick={logout} className="border-white/20 bg-transparent text-slate-200 hover:bg-red-500 hover:text-white">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sair
               </Button>
@@ -790,21 +836,15 @@ export default function DashboardPage() {
         )}
 
         {/* Navigation Tabs */}
-        <div className="mb-8 flex w-full gap-1 overflow-x-auto rounded-lg bg-gray-100 p-1 lg:w-fit">
-          {[
-            { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
-            { id: 'bookings', label: 'Reservas', icon: CalendarIcon },
-            { id: 'contacts', label: 'Contatos', icon: Mail },
-            { id: 'calendar', label: 'Calendário', icon: CalendarIcon },
-            { id: 'settings', label: 'Configurações', icon: Settings }
-          ].map((tab) => (
+        <div className="mb-8 flex w-full gap-1 overflow-x-auto rounded-md border border-slate-200 bg-white p-1 shadow-sm lg:w-fit">
+          {dashboardTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex shrink-0 items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex shrink-0 items-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'bg-white text-primary shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-slate-950 text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'
               }`}
             >
               <tab.icon className="w-4 h-4 mr-2" />
@@ -817,60 +857,49 @@ export default function DashboardPage() {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <CalendarIcon className="w-8 h-8 text-primary" />
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Total de Reservas</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.totalBookings}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <AlertCircle className="w-8 h-8 text-yellow-500" />
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Pendentes</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.pendingBookings}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <DollarSign className="w-8 h-8 text-green-500" />
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Receita Mensal</p>
-                      <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.monthlyRevenue)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center">
-                    <Users className="w-8 h-8 text-blue-500" />
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Taxa de Ocupação</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.occupancyRate}%</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <StatTile
+                icon={CalendarIcon}
+                label="Total de reservas"
+                value={stats.totalBookings}
+                helper="Solicitações registradas no histórico da operação."
+                tone="slate"
+              />
+              <StatTile
+                icon={AlertCircle}
+                label="Pendentes"
+                value={stats.pendingBookings}
+                helper="Pedidos aguardando decisão do anfitrião."
+                tone="amber"
+              />
+              <StatTile
+                icon={DollarSign}
+                label="Receita mensal"
+                value={formatCurrency(stats.monthlyRevenue)}
+                helper="Reservas confirmadas ou concluídas no mês."
+                tone="emerald"
+              />
+              <StatTile
+                icon={Users}
+                label="Ocupação"
+                value={`${stats.occupancyRate}%`}
+                helper="Dias ocupados em relação ao mês atual."
+                tone="blue"
+              />
             </div>
 
             {/* Recent Bookings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Reservas Recentes</CardTitle>
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader className="border-b border-slate-100">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <CardTitle className="text-xl text-slate-950">Reservas recentes</CardTitle>
+                    <p className="mt-1 text-sm text-slate-500">Últimas solicitações recebidas pelo fluxo público.</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setActiveTab('bookings')}>
+                    Ver todas
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -889,18 +918,18 @@ export default function DashboardPage() {
                       }
                     />
                   ) : recentBookings.map((booking) => (
-                    <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={booking.id} className="flex flex-col gap-4 rounded-md border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-center space-x-4">
                         {getStatusIcon(booking.status)}
                         <div>
-                        <p className="font-medium">{booking.customer}</p>
-                      <p className="text-sm text-gray-600">
-                        {booking.date ? formatDate(parseBookingDate(booking.date)) : 'Data não disponível'} • {booking.guests} pessoas
-                      </p>
+                          <p className="font-medium text-slate-950">{booking.customer}</p>
+                          <p className="text-sm text-slate-500">
+                            {booking.date ? formatDate(parseBookingDate(booking.date)) : 'Data não disponível'} • {booking.guests} pessoas
+                          </p>
                         </div>
                       </div>
-                      <div className="text-right space-y-2">
-                        <p className="font-semibold">{formatCurrency(booking.total)}</p>
+                      <div className="space-y-2 sm:text-right">
+                        <p className="font-semibold text-slate-950">{formatCurrency(booking.total)}</p>
                         <StatusBadge status={booking.status} />
                         <div className="flex items-center justify-end gap-2">
                           <Button 
@@ -924,12 +953,13 @@ export default function DashboardPage() {
         {/* Bookings Tab */}
         {activeTab === 'bookings' && (
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gerenciar Reservas</CardTitle>
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader className="border-b border-slate-100">
+                <CardTitle className="text-xl text-slate-950">Gerenciar reservas</CardTitle>
+                <p className="text-sm text-slate-500">Filtre, analise e avance o status das solicitações.</p>
               </CardHeader>
               <CardContent>
-                <div className="mb-6 grid grid-cols-1 gap-4 rounded-lg border bg-gray-50 p-4 lg:grid-cols-[1.5fr_0.9fr_0.9fr_0.9fr_auto]">
+                <div className="mb-6 grid grid-cols-1 gap-4 rounded-md border border-slate-200 bg-slate-50 p-4 lg:grid-cols-[1.5fr_0.9fr_0.9fr_0.9fr_auto]">
                   <div>
                     <Label htmlFor="booking-search">Buscar</Label>
                     <div className="relative">
@@ -991,7 +1021,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <p className="mb-4 text-sm text-gray-500">
+                <p className="mb-4 text-sm text-slate-500">
                   Mostrando {recentBookings.length} de {bookingPagination.totalItems} {bookingPagination.totalItems === 1 ? 'reserva' : 'reservas'}
                 </p>
 
@@ -1008,11 +1038,11 @@ export default function DashboardPage() {
                       }
                     />
                   ) : recentBookings.map((booking) => (
-                    <div key={booking.id} className="border rounded-lg p-6">
+                    <div key={booking.id} className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
                       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold">{booking.customer}</h3>
-                          <p className="text-sm text-gray-500">{booking.email}</p>
+                          <h3 className="text-lg font-semibold text-slate-950">{booking.customer}</h3>
+                          <p className="text-sm text-slate-500">{booking.email}</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(booking.status)}
@@ -1020,23 +1050,23 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                          <p className="text-sm text-gray-600">Data</p>
-                          <p className="font-medium">{booking.date ? formatDate(parseBookingDate(booking.date)) : 'Data não disponível'}</p>
+                      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+                        <div className="rounded-md bg-slate-50 p-3">
+                          <p className="text-xs font-medium uppercase text-slate-500">Data</p>
+                          <p className="mt-1 font-medium text-slate-950">{booking.date ? formatDate(parseBookingDate(booking.date)) : 'Data não disponível'}</p>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Convidados</p>
-                          <p className="font-medium">{booking.guests} pessoas</p>
+                        <div className="rounded-md bg-slate-50 p-3">
+                          <p className="text-xs font-medium uppercase text-slate-500">Convidados</p>
+                          <p className="mt-1 font-medium text-slate-950">{booking.guests} pessoas</p>
                         </div>
-                        <div>
-                          <p className="text-sm text-gray-600">Pacote</p>
-	                          <p className="font-medium">{booking.packageName}</p>
+                        <div className="rounded-md bg-slate-50 p-3">
+                          <p className="text-xs font-medium uppercase text-slate-500">Pacote</p>
+	                          <p className="mt-1 font-medium text-slate-950">{booking.packageName}</p>
                         </div>
                       </div>
 
                       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div className="text-2xl font-bold text-primary">
+                        <div className="text-2xl font-bold text-slate-950">
                           {formatCurrency(booking.total)}
                         </div>
                             <div className="flex flex-wrap gap-2">
