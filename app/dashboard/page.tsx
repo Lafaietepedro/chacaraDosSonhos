@@ -26,6 +26,7 @@ import {
   Mail,
   Phone,
   MessageSquare,
+  SlidersHorizontal,
   X,
   LogOut,
   Search,
@@ -34,6 +35,7 @@ import {
 } from 'lucide-react'
 import { formatCurrency, formatDate, parseLocalDate } from '@/lib/utils'
 import { siteConfig } from '@/lib/site'
+import { parseCustomBookingNotes } from '@/lib/custom-briefing'
 import type {
   CatalogResponse,
   DashboardBlockedDate,
@@ -213,6 +215,92 @@ function StatusBadge({ status }: { status: DashboardBooking['status'] }) {
     <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${style.className}`}>
       {style.label}
     </span>
+  )
+}
+
+function CustomBriefingBadge({ notes }: { notes: string | null }) {
+  const briefing = parseCustomBookingNotes(notes)
+
+  if (!briefing.isCustom) return null
+
+  return (
+    <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">
+      <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />
+      Sob medida
+    </span>
+  )
+}
+
+function CustomBriefingPreview({ notes }: { notes: string | null }) {
+  const briefing = parseCustomBookingNotes(notes)
+
+  if (!briefing.isCustom) return null
+
+  const previewFields = briefing.fields.slice(0, 2)
+
+  return (
+    <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3">
+      <div className="flex items-start gap-2">
+        <SlidersHorizontal className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-emerald-950">Pedido sob medida</p>
+          {previewFields.length > 0 ? (
+            <p className="mt-1 break-words text-sm leading-6 text-emerald-900/80">
+              {previewFields.map((field) => `${field.label}: ${field.value}`).join(' · ')}
+            </p>
+          ) : (
+            <p className="mt-1 text-sm leading-6 text-emerald-900/80">
+              Briefing registrado nas observações da reserva.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BookingNotesPanel({ notes }: { notes: string | null }) {
+  const briefing = parseCustomBookingNotes(notes)
+
+  if (!briefing.isCustom && !briefing.remainingNotes) return null
+
+  if (!briefing.isCustom) {
+    return (
+      <div>
+        <h4 className="mb-2 font-medium text-gray-900">Observações</h4>
+        <div className="flex items-start text-sm">
+          <MessageSquare className="mr-2 mt-0.5 h-4 w-4 shrink-0 text-gray-500" />
+          <span className="whitespace-pre-line break-words text-gray-600">{briefing.remainingNotes}</span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <SlidersHorizontal className="h-4 w-4 text-emerald-700" />
+        <h4 className="font-semibold text-emerald-950">Briefing sob medida</h4>
+      </div>
+
+      {briefing.fields.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {briefing.fields.map((field) => (
+            <div key={field.label} className="rounded-md bg-white/80 p-3 ring-1 ring-inset ring-emerald-100">
+              <p className="text-xs font-semibold uppercase text-emerald-700">{field.label}</p>
+              <p className="mt-1 break-words text-sm leading-6 text-slate-900">{field.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {briefing.remainingNotes && (
+        <div className="mt-3 rounded-md bg-white/80 p-3 ring-1 ring-inset ring-emerald-100">
+          <p className="text-xs font-semibold uppercase text-emerald-700">Observações adicionais</p>
+          <p className="mt-1 whitespace-pre-line break-words text-sm leading-6 text-slate-900">{briefing.remainingNotes}</p>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -781,6 +869,10 @@ export default function DashboardPage() {
     }
   }
 
+  const customBookingCount = recentBookings.filter((booking) =>
+    parseCustomBookingNotes(booking.notes).isCustom
+  ).length
+
   return (
     <div className="min-h-screen bg-slate-100">
       <div className="border-b border-slate-800 bg-slate-950 text-white">
@@ -921,7 +1013,10 @@ export default function DashboardPage() {
                       <div className="flex items-center space-x-4">
                         {getStatusIcon(booking.status)}
                         <div>
-                          <p className="font-medium text-slate-950">{booking.customer}</p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-medium text-slate-950">{booking.customer}</p>
+                            <CustomBriefingBadge notes={booking.notes} />
+                          </div>
                           <p className="text-sm text-slate-500">
                             {booking.date ? formatDate(parseBookingDate(booking.date)) : 'Data não disponível'} • {booking.guests} pessoas
                           </p>
@@ -1024,6 +1119,17 @@ export default function DashboardPage() {
                   Mostrando {recentBookings.length} de {bookingPagination.totalItems} {bookingPagination.totalItems === 1 ? 'reserva' : 'reservas'}
                 </p>
 
+                {customBookingCount > 0 && (
+                  <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                    <div className="flex items-start gap-2">
+                      <SlidersHorizontal className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+                      <p>
+                        {customBookingCount} {customBookingCount === 1 ? 'pedido sob medida nesta página precisa' : 'pedidos sob medida nesta página precisam'} de análise de briefing antes da confirmação.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-4">
                   {recentBookings.length === 0 ? (
                     <EmptyState
@@ -1040,7 +1146,10 @@ export default function DashboardPage() {
                     <div key={booking.id} className="rounded-md border border-slate-200 bg-white p-5 shadow-sm">
                       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <h3 className="text-lg font-semibold text-slate-950">{booking.customer}</h3>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-lg font-semibold text-slate-950">{booking.customer}</h3>
+                            <CustomBriefingBadge notes={booking.notes} />
+                          </div>
                           <p className="text-sm text-slate-500">{booking.email}</p>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -1048,6 +1157,8 @@ export default function DashboardPage() {
                           <StatusBadge status={booking.status} />
                         </div>
                       </div>
+
+                      <CustomBriefingPreview notes={booking.notes} />
                       
                       <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
                         <div className="rounded-md bg-slate-50 p-3">
@@ -1698,11 +1809,11 @@ export default function DashboardPage() {
 
         {/* Modal de Detalhes da Reserva */}
         {isDetailsModalOpen && selectedBooking && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <Card className="max-w-md w-full mx-4">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <Card className="max-h-[90vh] w-full max-w-2xl overflow-hidden border-slate-200 shadow-xl">
+              <CardHeader className="border-b border-slate-200">
+                <div className="flex items-center justify-between gap-4">
+                  <CardTitle className="flex items-center text-slate-950">
                     <User className="w-5 h-5 mr-2" />
                     Detalhes da Reserva
                   </CardTitle>
@@ -1715,12 +1826,15 @@ export default function DashboardPage() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="max-h-[calc(90vh-84px)] space-y-5 overflow-y-auto p-6">
                 {/* Cliente */}
                 <div className="border-b pb-4">
-                  <div className="flex items-center text-lg font-semibold mb-2">
-                    <User className="w-5 h-5 mr-2 text-primary" />
-                    {selectedBooking.customer}
+                  <div className="mb-2 flex flex-wrap items-center gap-2 text-lg font-semibold">
+                    <span className="flex items-center text-slate-950">
+                      <User className="w-5 h-5 mr-2 text-primary" />
+                      {selectedBooking.customer}
+                    </span>
+                    <CustomBriefingBadge notes={selectedBooking.notes} />
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center">
@@ -1777,19 +1891,10 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                {/* Observações */}
-                {selectedBooking.notes && selectedBooking.notes.trim() && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Observações</h4>
-                    <div className="flex items-start text-sm">
-                      <MessageSquare className="w-4 h-4 mr-2 text-gray-500 mt-0.5" />
-                      <span className="text-gray-600">{selectedBooking.notes}</span>
-                    </div>
-                  </div>
-                )}
+                <BookingNotesPanel notes={selectedBooking.notes} />
 
                     {/* Botões de Ação */}
-                    <div className="flex space-x-2 pt-4">
+                    <div className="flex flex-wrap gap-2 border-t border-slate-200 pt-4">
                       {selectedBooking.status === 'pending' && (
                         <>
                           <Button 

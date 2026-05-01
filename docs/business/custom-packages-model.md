@@ -166,7 +166,8 @@ model QuoteLineItem {
 
 ### Dashboard
 
-- Aba de proposta dentro dos detalhes da reserva.
+- Concluído na fase inicial: badge `Sob medida`, prévia do briefing na lista de reservas e briefing estruturado no modal de detalhes.
+- Próximo passo: aba de proposta dentro dos detalhes da reserva.
 - Campos para ajustar valores manualmente.
 - Status de proposta.
 - Botão futuro para enviar email/WhatsApp com proposta.
@@ -175,10 +176,11 @@ model QuoteLineItem {
 
 1. Concluído: criar o card `Sob medida` na vitrine apontando para o fluxo atual com observações.
 2. Concluído: adicionar `notes` estruturado no booking para capturar necessidades especiais.
-3. Criar `PackageAddon` e adicionar adicionais editáveis.
-4. Criar `CustomQuote` e `QuoteLineItem`.
-5. Gerar proposta PDF.
-6. Conectar pagamento de sinal.
+3. Concluído: exibir o briefing sob medida de forma destacada no dashboard.
+4. Criar `PackageAddon` e adicionar adicionais editáveis.
+5. Criar `CustomQuote` e `QuoteLineItem`.
+6. Gerar proposta PDF.
+7. Conectar pagamento de sinal.
 
 ## Decisão Recomendada
 
