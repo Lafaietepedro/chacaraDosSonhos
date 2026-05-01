@@ -1,89 +1,160 @@
 # Venue Eventos
 
-Venue Eventos é uma base web para operadores de espaços de eventos que precisam divulgar o local, receber solicitações de reserva e acompanhar a agenda pelo painel administrativo.
+Venue Eventos é uma aplicação web para operação de espaços de eventos: vitrine pública, solicitação de reserva, validação de disponibilidade, calendário administrativo, gestão de pacotes e acompanhamento de contatos.
 
-O projeto nasceu como uma página específica de uma propriedade, mas foi reposicionado para não depender de nomes, pessoas ou contexto anterior. A direção recomendada agora é tratar o código como um produto reaproveitável para salões, espaços ao ar livre, áreas de lazer e pequenas operações de eventos.
+O projeto começou como um site específico para uma propriedade, mas foi reposicionado como um produto reaproveitável para salões, chácaras, áreas de lazer e pequenas operações que precisam sair de planilhas, mensagens soltas e controle manual de agenda.
 
-## Estado Atual
+## Case
 
-Stack real do repositório:
+### Problema
+
+Operadores de espaços de eventos normalmente recebem pedidos por WhatsApp, calculam valores manualmente e verificam a agenda em ferramentas separadas. Isso cria três riscos recorrentes:
+
+- Reserva duplicada para a mesma data.
+- Preço inconsistente entre pacotes, taxas e convidados extras.
+- Falta de histórico centralizado de contatos, pedidos e decisões.
+
+### Solução
+
+O Venue Eventos centraliza o fluxo mínimo de operação:
+
+- Página pública para apresentar o espaço, pacotes e canais de contato.
+- Formulário de reserva em etapas, com pacote, data, convidados e dados do cliente.
+- Regra de preço isolada em serviço testável.
+- Validação de disponibilidade no backend antes de criar reservas.
+- Dashboard para aprovar, recusar, cancelar, concluir e excluir reservas.
+- Bloqueio manual de datas no calendário administrativo.
+- Configuração editável de propriedade, taxa operacional e pacotes.
+
+### Resultado Atual
+
+O projeto já está em nível apresentável para portfólio técnico: tem domínio claro, regras de negócio fora da UI, persistência real, autenticação administrativa, dashboard funcional, testes automatizados e build de produção validado.
+
+Ainda não é um SaaS pronto para clientes pagantes. Os principais pontos antes de produção real são deploy com PostgreSQL, gestão de fotos, pagamento de sinal e melhoria visual final do dashboard.
+
+## Stack
 
 - Next.js 16 com App Router
+- React 18
 - TypeScript
 - Tailwind CSS
 - Prisma ORM
-- SQLite local em desenvolvimento
+- SQLite em desenvolvimento
+- Schema alternativo para PostgreSQL
 - API routes do próprio Next.js
-- ESLint 9 com configuração flat e regras do Next
-- Autenticação administrativa com `AdminUser`, senha hasheada por `scrypt` e token assinado por HMAC
-- Helper de notificação por WhatsApp via webhook ou CallMeBot
-- Email transacional opcional via Resend
-- Node 24 LTS recomendado. Node 25 é uma release Current e apresentou falha silenciosa ao gerar Prisma Client neste ambiente.
+- ESLint 9 flat config
+- Node 24 recomendado
+- Testes com `node:test`
 
-Funcionalidades que existem hoje:
+Node 25 é uma release Current e apresentou instabilidade na geração do Prisma Client neste ambiente. Para desenvolvimento e build, use Node 24.
 
-- Página pública responsiva com hero, proposta de valor, galeria demonstrativa, pacotes, FAQ e contato.
-- Formulário de contato persistido no banco, com notificação opcional para o anfitrião.
-- Fluxo de solicitação de reserva em 3 etapas: data/convidados, pacote e dados do cliente.
-- Rate limiting em memória nos endpoints públicos de contato e reserva.
-- Cálculo automático de valor com pacote, taxa operacional e convidados extras.
-- Persistência de reservas no Prisma.
-- Criação automática de usuário cliente e propriedade padrão quando necessário.
-- Catálogo de pacotes persistido no banco via modelo `BookingPackage`, com fallback inicial a partir de `lib/site.ts`.
-- Snapshot de pacote e preço gravado na reserva.
-- Validação de disponibilidade no backend para impedir reserva em data bloqueada ou já pendente/confirmada.
-- Bloqueios de data persistidos no banco e conectados ao calendário do dashboard.
-- Painel administrativo com login, indicadores básicos, lista paginada de reservas, filtros, mensagens de contato, detalhes, aprovação, recusa e exclusão.
-- Calendário visual no dashboard com reservas pendentes/confirmadas e bloqueios persistidos.
-- Configurações básicas do espaço editáveis no dashboard: nome, descrição, capacidade, taxa operacional, contato e endereço.
-- Pacotes editáveis no dashboard: nome, preço, duração, capacidade, valor por convidado extra, itens incluídos, destaque e ativação.
-- Usuário administrativo persistido no banco, com bootstrap inicial por variáveis de ambiente e troca de senha pelo painel.
-- Notificação de nova reserva para cliente e anfitrião por email quando `RESEND_API_KEY` estiver configurada.
-- Testes automatizados com o runner nativo do Node para regras de preço e rate limit.
-- Configuração centralizada de marca/contato em `lib/site.ts`, usada como fallback e seed inicial.
+## Funcionalidades
 
-## Diferença Para o README Antigo
+### Público
 
-O README antigo descrevia uma visão maior do que o código implementado. Estes pontos ainda não estão prontos para produção:
+- Página responsiva com hero, proposta de valor, galeria demonstrativa, pacotes, FAQ e contato.
+- Catálogo público carregado do banco, com fallback inicial de configuração.
+- Formulário de contato persistido no banco.
+- Solicitação de reserva em 3 etapas.
+- Cálculo automático de pacote, taxa operacional e convidados extras.
+- Rate limiting em memória nos endpoints públicos.
+- Notificação opcional por email via Resend.
+- Notificação opcional por WhatsApp via webhook ou CallMeBot.
 
-- Pagamento online com PIX, cartão ou provedor dedicado.
-- Cobrança de sinal integrada ao fluxo.
-- Emissão de recibo ou fatura.
-- WhatsApp Business API oficial.
-- Geração de contrato PDF.
-- Assinatura eletrônica.
-- Upload e gestão de fotos.
-- Reviews pós-evento.
-- Relatórios avançados.
-- Multiunidade/multitenancy.
-- Backend Express separado.
-- PostgreSQL como banco padrão local.
-- Refresh token, gestão de múltiplos administradores e papéis/permissões granulares.
+### Administrativo
 
-## Viabilidade Das Funcionalidades
+- Login administrativo.
+- Usuário administrador persistido no banco.
+- Senha com hash usando `scrypt`.
+- Sessão assinada por HMAC.
+- Dashboard com indicadores de reservas, receita mensal e ocupação.
+- Lista paginada de reservas com filtros.
+- Detalhes de reserva.
+- Transições de status validadas no backend.
+- Calendário com reservas e bloqueios.
+- Bloqueios de data persistidos.
+- Gestão de mensagens de contato.
+- Configuração do espaço: nome, descrição, capacidade, taxa, contato e endereço.
+- Gestão de pacotes: preço, duração, capacidade, convidado extra, itens incluídos, destaque, ordem e ativação.
+- Troca de senha pelo painel.
 
-Alta viabilidade:
+## Decisões Técnicas
 
-- Enviar emails com Resend, SendGrid ou outro provedor.
-- Melhorar dashboard com filtros e busca.
-- Criar páginas de termos, privacidade e contrato base.
+### Next.js Como Aplicação Full Stack
 
-Viabilidade média:
+O projeto permanece em Next.js porque ainda é uma operação de escopo concentrado. Separar backend agora adicionaria deploy, autenticação entre serviços e duplicação operacional sem ganho proporcional.
 
-- Pagamento de sinal por Mercado Pago, Stripe Checkout ou provedor equivalente.
-- PIX com confirmação por webhook.
-- Geração de PDF com dados da reserva.
-- Upload de fotos com Cloudinary ou Supabase Storage.
-- Exportação para Google Calendar.
-- Relatórios mensais de receita e ocupação.
+As API routes são suficientes para o estágio atual, desde que regras críticas fiquem em `lib/services`.
 
-Maior complexidade:
+### Prisma Como Camada de Persistência
 
-- Assinatura eletrônica com validade jurídica forte.
-- WhatsApp Business API oficial.
-- SaaS multitenant com várias propriedades e usuários.
-- Motor de precificação por temporada, feriados e regras customizadas.
-- Auditoria, logs e permissões granulares.
+O Prisma mantém o modelo de dados explícito e facilita a migração futura para PostgreSQL. SQLite é mantido para desenvolvimento local, mas não deve ser o banco final de demonstração pública.
+
+### Regras de Negócio em Serviços
+
+Preço, disponibilidade, criação de reserva e transições de status ficam fora dos componentes React. Isso reduz acoplamento e permite testes rápidos sem subir a aplicação inteira.
+
+### Snapshots de Pacote
+
+Reservas gravam nome, preço base, taxa operacional e valor por convidado extra no momento da criação. Assim, alterações futuras em pacotes não corrompem o histórico financeiro.
+
+## Arquitetura
+
+```txt
+app/
+  api/                         Rotas de autenticação, catálogo, contato, reservas e dashboard
+  booking/                     Fluxo público de solicitação de reserva
+  dashboard/                   Painel administrativo
+  page.tsx                     Página pública
+components/
+  auth/                        Login administrativo
+  ui/                          Componentes base
+  *.tsx                        Seções públicas, calendário e partes do dashboard
+lib/
+  services/
+    availability.ts            Regra de disponibilidade
+    booking.service.ts         Criação transacional de reserva
+    booking-status.ts          Fluxo permitido de status
+    notification.service.ts    Email transacional opcional
+    pricing.ts                 Cálculo de preço
+    property.service.ts        Bootstrap e consulta da propriedade padrão
+  api-auth.ts                  Validação de sessão administrativa
+  auth-crypto.ts               Hash de senha e assinatura
+  catalog.ts                   Catálogo público
+  prisma.ts                    Cliente Prisma
+  rate-limit.ts                Rate limit em memória
+  site.ts                      Fallback de marca e seed inicial
+prisma/
+  schema.prisma                Schema local com SQLite
+  schema-production.prisma     Referência para PostgreSQL
+  seed.js                      Seed idempotente
+tests/
+  availability.test.ts
+  booking-status.test.ts
+  pricing.test.ts
+  rate-limit.test.ts
+```
+
+## Qualidade
+
+Cobertura automatizada atual:
+
+- Cálculo de preço.
+- Rate limiting.
+- Disponibilidade de datas.
+- Transições de status de reserva.
+
+Checks usados durante o desenvolvimento:
+
+```bash
+npm test
+npm run lint
+./node_modules/.bin/tsc --noEmit
+npm audit
+npx -p node@24 npm run build
+```
+
+Último estado validado: testes, lint, TypeScript, audit e build de produção passando.
 
 ## Como Rodar
 
@@ -93,7 +164,7 @@ Instale dependências:
 npm install
 ```
 
-Configure variáveis de ambiente em `.env` ou `.env.local`:
+Configure `.env` ou `.env.local`:
 
 ```env
 DATABASE_URL="file:./dev.db"
@@ -107,23 +178,12 @@ WHATSAPP_WEBHOOK_URL=""
 CALLMEBOT_API_KEY=""
 ```
 
-Na primeira autenticação, o app cria um registro em `admin_users` usando `DASHBOARD_USERNAME` e `DASHBOARD_PASSWORD`. Depois disso, a senha passa a ser validada pelo hash salvo no banco. Em produção, defina sempre `AUTH_SECRET`; em desenvolvimento há fallback apenas para facilitar testes locais.
-
-Prepare o Prisma:
+Prepare o banco:
 
 ```bash
 npm run db:generate
 npm run db:push
 npm run db:seed
-```
-
-O seed é idempotente: cria a propriedade padrão, garante os pacotes iniciais e cria o primeiro administrador apenas se ainda não existir. Em bases que já foram usadas pelo painel, ele preserva configurações e pacotes existentes.
-
-Se estiver usando Node 25 e o Prisma Client não regenerar, use Node 24 LTS para os comandos Prisma:
-
-```bash
-npx -p node@24 node ./node_modules/prisma/build/index.js generate --schema=prisma/schema.prisma
-npx -p node@24 node ./node_modules/prisma/build/index.js db push --schema=prisma/schema.prisma
 ```
 
 Rode em desenvolvimento:
@@ -134,71 +194,69 @@ npm run dev
 
 A aplicação abre em `http://localhost:3000`.
 
-Rode os testes automatizados:
+Rode validações:
 
 ```bash
 npm test
+npm run lint
+npm run build
 ```
 
-## Estrutura Principal
+Se estiver usando Node 25 e o Prisma Client não gerar corretamente, execute os comandos com Node 24:
 
-```txt
-app/
-  api/                  Rotas de autenticação, dashboard e reservas
-  api/catalog           Catálogo público de propriedade e pacotes
-  api/contact           Recebimento de mensagens do formulário público
-  api/dashboard/packages Pacotes editáveis pelo painel
-  booking/              Fluxo público de solicitação de reserva
-  dashboard/            Painel administrativo
-  page.tsx              Página pública
-components/
-  auth/                 Login administrativo
-  ui/                   Componentes base
-  *.tsx                 Seções públicas e calendário
-lib/
-  site.ts               Marca, contato, pacotes e taxa operacional
-  catalog.ts            Fallback de catálogo para a UI
-  services/             Regras de negócio de reservas, preço e disponibilidade
-  prisma.ts             Cliente Prisma
-  notify.ts             Notificação WhatsApp
-  auth.ts               Hook de autenticação client-side
-  api-auth.ts           Validação do token administrativo assinado
-prisma/
-  schema.prisma         Schema SQLite local com pacotes e snapshots de reserva
-  schema-production.prisma Schema alternativa para PostgreSQL
-  seed.js               Bootstrap idempotente de propriedade, pacotes e admin
-scripts/
-  quick-bookings.js     Consulta rápida de reservas
-  view-bookings.js      Consulta detalhada de reservas
+```bash
+npx -p node@24 npm run build
 ```
 
-## Direção Recomendada De Refatoração
+## Deploy Recomendado
 
-Prioridade 1:
+Para uma demonstração pública de portfólio:
 
-- Completar a remoção de `any` em telas administrativas futuras.
-- Criar rotação de `AUTH_SECRET` e gestão de sessões ativas.
-- Criar fluxo de seed/migration mais formal para ambientes novos.
+- Vercel para aplicação Next.js.
+- Supabase, Neon ou Railway para PostgreSQL.
+- `schema-production.prisma` como base da migração.
+- `AUTH_SECRET` obrigatório em produção.
+- Seed inicial rodado uma vez no ambiente remoto.
 
-Prioridade 2:
+SQLite local é aceitável para desenvolvimento, mas é um ponto fraco para demo pública porque não resolve concorrência real e não representa uma operação em produção.
 
-- Criar camada de serviço para reservas, separando regra de negócio das API routes.
-- Ampliar testes para disponibilidade, reservas e transições de status.
-- Criar templates HTML para os emails transacionais e histórico de envio.
-- Expandir filtros do dashboard com ordenação e exportação.
-- Melhorar tratamento de loading/erro nas telas.
+## Trade-Offs
 
-Prioridade 3:
+- Autenticação customizada mantém o projeto simples, mas NextAuth/Auth.js pode fazer sentido quando houver múltiplos administradores, recuperação de senha e sessões mais robustas.
+- Rate limiting em memória funciona para desenvolvimento e deploy simples, mas deve virar Upstash Redis ou alternativa persistente em produção serverless.
+- Email via Resend está pronto como integração opcional, mas o projeto ainda não mantém histórico de envio.
+- Não há multitenancy. A decisão é intencional: primeiro consolidar uma operação bem feita, depois generalizar para múltiplas propriedades.
+- Não há pagamento de sinal. Mercado Pago é provavelmente a melhor próxima escolha para o mercado brasileiro.
 
-- Implementar pagamento de sinal.
-- Gerar contrato PDF com dados da reserva.
-- Adicionar upload e ordenação de fotos.
-- Criar relatório mensal de receita, conversão e ocupação.
-- Adicionar refresh token e permissões granulares quando houver mais de um administrador.
+## Roadmap
 
-## Prompt Para Enviar Ao Claude
+Prioridade alta:
 
-Use o texto abaixo para pedir uma segunda visão de refatoração:
+- Deploy público com PostgreSQL.
+- Polimento visual final do dashboard.
+- Upload e ordenação de fotos.
+- Histórico de notificações.
+- Testes para criação de reserva com transação e snapshots.
+
+Prioridade média:
+
+- Pagamento de sinal via Mercado Pago.
+- Contrato PDF gerado sob demanda.
+- Exportação de agenda.
+- Relatórios de receita, ocupação, conversão e ticket médio.
+- Gestão de múltiplos administradores.
+
+Prioridade futura:
+
+- Assinatura eletrônica.
+- WhatsApp Business API oficial.
+- Motor de preços por temporada, feriado e regras customizadas.
+- Multiunidade ou multitenancy.
+- Auditoria e permissões granulares.
+
+## Prompt Para Segunda Opinião
+
+Use este prompt para pedir uma avaliação crítica a outro assistente:
 
 ```txt
 Analise este projeto como se fosse um produto real chamado Venue Eventos.
@@ -207,12 +265,15 @@ Contexto: ele começou como um site específico para aluguel de uma propriedade,
 
 Stack atual:
 - Next.js 16 App Router
+- React 18
 - TypeScript
 - Tailwind CSS
 - Prisma
 - SQLite em desenvolvimento
+- Schema alternativo para PostgreSQL
 - API routes do Next.js
-- Autenticação administrativa com senha hasheada e sessão assinada
+- Autenticação administrativa com senha hasheada por scrypt e sessão assinada por HMAC
+- Testes com node:test
 
 Funcionalidades implementadas:
 - Página pública com seções comerciais.
@@ -223,18 +284,20 @@ Funcionalidades implementadas:
 - Datas bloqueadas persistidas.
 - Pacotes e configurações do espaço editáveis pelo painel.
 - Email transacional opcional para cliente e anfitrião via Resend.
-- Dashboard com login, estatísticas básicas, listagem, detalhes, aprovação, recusa e exclusão.
+- Dashboard com login, estatísticas, paginação, filtros, detalhes, aprovação, recusa, cancelamento, conclusão e exclusão.
 - Calendário visual.
+- Testes para preço, disponibilidade, rate limit e transições de status.
 
-Funcionalidades desejadas, mas ainda não implementadas:
+Funcionalidades desejadas:
+- Deploy público com PostgreSQL.
 - Pagamento de sinal via PIX/cartão.
-- Gestão de múltiplos administradores.
 - Gestão real de fotos.
 - Contrato PDF.
-- Assinatura eletrônica.
+- Gestão de múltiplos administradores.
 - Relatórios melhores.
+- Histórico de notificações.
 - Refresh token, rotação de sessão e permissões granulares.
-- Possível multiunidade/multitenancy no futuro.
+- Possível multiunidade ou multitenancy no futuro.
 
 Quero que você proponha:
 1. Uma estratégia de refatoração realista em fases.
