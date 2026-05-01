@@ -164,6 +164,12 @@ Instale dependências:
 npm install
 ```
 
+Copie o arquivo de exemplo e ajuste os valores:
+
+```bash
+cp .env.example .env
+```
+
 Configure `.env` ou `.env.local`:
 
 ```env
