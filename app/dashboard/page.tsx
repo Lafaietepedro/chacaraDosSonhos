@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Calendar } from '@/components/calendar'
 import { LoginForm } from '@/components/auth/login-form'
+import { BrandLogo } from '@/components/brand-logo'
 import { useAuth } from '@/lib/auth'
 import { 
   Calendar as CalendarIcon, 
@@ -786,9 +787,7 @@ export default function DashboardPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">
-                Venue Eventos
-              </p>
+              <BrandLogo variant="light" markClassName="h-9 w-9" />
               <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">Painel do Anfitrião</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
                 Acompanhe solicitações, agenda, contatos e configurações do espaço em uma rotina operacional.

@@ -1,29 +1,10 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Fundo circular com gradiente verde -->
-  <circle cx="16" cy="16" r="16" fill="url(#gradient)"/>
-  
-  <!-- Ícone de espaço de eventos estilizado -->
-  <path d="M8 20V12C8 10.9 8.9 10 10 10H22C23.1 10 24 10.9 24 12V20" stroke="white" stroke-width="2" fill="none"/>
-  
-  <!-- Telhado -->
-  <path d="M6 12L16 6L26 12" stroke="white" stroke-width="2" fill="none"/>
-  
-  <!-- Porta -->
-  <rect x="14" y="16" width="4" height="4" fill="white"/>
-  
-  <!-- Janelas -->
-  <rect x="10" y="14" width="2" height="2" fill="white"/>
-  <rect x="20" y="14" width="2" height="2" fill="white"/>
-  
-  <!-- Árvore decorativa -->
-  <circle cx="4" cy="22" r="2" fill="white"/>
-  <rect x="3.5" y="24" width="1" height="2" fill="white"/>
-  
-  <!-- Gradiente -->
-  <defs>
-    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#16a34a;stop-opacity:1" />
-    </linearGradient>
-  </defs>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="14" fill="#020617"/>
+  <path d="M16 39V27.8C16 22.4 20.4 18 25.8 18H38.2C43.6 18 48 22.4 48 27.8V39" fill="none" stroke="#F8FAFC" stroke-width="3" stroke-linecap="round"/>
+  <path d="M21 39V28.5C21 25.5 23.5 23 26.5 23H37.5C40.5 23 43 25.5 43 28.5V39" fill="none" stroke="#6EE7B7" stroke-width="2" stroke-linecap="round"/>
+  <path d="M13 42H51" stroke="#F8FAFC" stroke-width="3" stroke-linecap="round"/>
+  <path d="M20 42L27 52H37L44 42" fill="none" stroke="#FDE68A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M26 32L30 39L38 25" fill="none" stroke="#34D399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="39" y="9" width="12" height="12" rx="3" fill="#10B981"/>
+  <path d="M42 13H48M42 16H48" stroke="#F8FAFC" stroke-width="1.5" stroke-linecap="round"/>
 </svg>

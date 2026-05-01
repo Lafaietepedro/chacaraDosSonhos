@@ -50,6 +50,12 @@ Login administrativo:
 
 O redesign atual reposiciona a interface pública como produto operacional premium para espaços de eventos. Para comparar com uma proposta externa, use o briefing em [`docs/design/original-project-overview.md`](docs/design/original-project-overview.md), que descreve o design anterior, pontos fracos e restrições para uma segunda leitura.
 
+A identidade visual agora usa uma marca vetorial própria em [`public/brand/venue-eventos-logo.svg`](public/brand/venue-eventos-logo.svg), com símbolo aplicado no header, footer, login, dashboard e favicons.
+
+## Modelo De Negócio
+
+A evolução recomendada é um modelo híbrido de pacotes fixos e orçamento sob medida. A proposta completa está em [`docs/business/custom-packages-model.md`](docs/business/custom-packages-model.md), com impacto no fluxo, modelo de dados sugerido e roadmap incremental.
+
 ## Stack
 
 - Next.js 16 com App Router

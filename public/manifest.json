@@ -4,8 +4,8 @@
   "description": "Plataforma para divulgar espaços de eventos, receber reservas qualificadas e acompanhar a agenda do anfitrião.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#16a34a",
+  "background_color": "#020617",
+  "theme_color": "#020617",
   "orientation": "portrait-primary",
   "icons": [
     {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Check, Clock, Users } from 'lucide-react'
+import { ArrowRight, Check, Clock, SlidersHorizontal, Users } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils'
 import { siteConfig } from '@/lib/site'
@@ -104,6 +104,28 @@ export function Pricing() {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        <div className="mt-6 rounded-md border border-slate-200 bg-slate-950 p-6 text-white shadow-sm">
+          <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="flex gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-emerald-400/15 text-emerald-200">
+                <SlidersHorizontal className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold">Pacote sob medida</h3>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
+                  Para casamentos, eventos corporativos, montagem prolongada ou necessidades fora dos planos padrão. A proposta pode combinar duração, áreas, apoio operacional e adicionais.
+                </p>
+              </div>
+            </div>
+            <Button className="bg-white text-slate-950 hover:bg-slate-100" asChild>
+              <Link href="/booking">
+                Montar proposta
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <p className="mt-8 max-w-3xl text-sm leading-6 text-slate-500">

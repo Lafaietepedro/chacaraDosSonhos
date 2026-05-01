@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Mail, MapPin, Phone } from 'lucide-react'
 import { siteConfig } from '@/lib/site'
+import { BrandLogo } from '@/components/brand-logo'
 
 const quickLinks = [
   { name: 'Operação', href: '#about' },
@@ -26,12 +27,7 @@ export function Footer() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
           <div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-white text-sm font-black text-slate-950">
-                VE
-              </div>
-              <span className="font-serif text-xl font-black">{siteConfig.appName}</span>
-            </div>
+            <BrandLogo variant="light" />
             <p className="mt-5 max-w-sm text-sm leading-6 text-slate-300">
               {siteConfig.appDescription}
             </p>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Calendar, Menu, MessageCircle, Settings, X } from 'lucide-react'
 import { buildWhatsAppUrl, siteConfig } from '@/lib/site'
+import { BrandLogo } from '@/components/brand-logo'
 
 const navigation = [
   { name: 'Operação', href: '#about' },
@@ -22,18 +23,8 @@ export function Header() {
     <header className="fixed top-0 z-50 w-full border-b border-slate-200/70 bg-white/[0.94] backdrop-blur">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between gap-4">
-          <Link href="/" className="flex min-w-0 items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-950 text-sm font-black text-white">
-              VE
-            </div>
-            <div className="min-w-0">
-              <span className="block truncate font-serif text-xl font-black tracking-normal text-slate-950">
-                {siteConfig.appName}
-              </span>
-              <span className="hidden text-xs font-medium uppercase tracking-[0.18em] text-emerald-700 sm:block">
-                Eventos & reservas
-              </span>
-            </div>
+          <Link href="/" className="min-w-0">
+            <BrandLogo />
           </Link>
 
           <nav className="hidden items-center gap-7 lg:flex">

@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Lock, User, Eye, EyeOff, Home } from 'lucide-react'
+import { User, Eye, EyeOff, Home } from 'lucide-react'
 import Link from 'next/link'
 import { siteConfig } from '@/lib/site'
+import { BrandLogo } from '@/components/brand-logo'
 
 
 interface LoginFormProps {
@@ -51,10 +52,8 @@ export function LoginForm({ onLogin }: LoginFormProps) {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <Lock className="w-8 h-8 text-primary" />
-            </div>
+          <div className="mb-4 flex justify-center">
+            <BrandLogo showText={false} markClassName="h-16 w-16" />
           </div>
           <CardTitle className="text-2xl font-bold">{siteConfig.appName}</CardTitle>
           <p className="text-gray-600">Faça login para acessar o painel do anfitrião</p>

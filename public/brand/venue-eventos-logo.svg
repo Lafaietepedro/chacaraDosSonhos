@@ -1,0 +1,14 @@
+<svg width="720" height="220" viewBox="0 0 720 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="24" y="28" width="164" height="164" rx="36" fill="#020617"/>
+  <path d="M65 127V91.8C65 75.9 77.9 63 93.8 63H118.2C134.1 63 147 75.9 147 91.8V127" fill="none" stroke="#F8FAFC" stroke-width="8" stroke-linecap="round"/>
+  <path d="M78 127V94C78 84.6 85.6 77 95 77H117C126.4 77 134 84.6 134 94V127" fill="none" stroke="#6EE7B7" stroke-width="5" stroke-linecap="round"/>
+  <path d="M57 135H155" stroke="#F8FAFC" stroke-width="8" stroke-linecap="round"/>
+  <path d="M76 135L95 162H117L136 135" fill="none" stroke="#FDE68A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M93 109L103 127L123 92" fill="none" stroke="#34D399" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="132" y="43" width="34" height="34" rx="9" fill="#10B981"/>
+  <path d="M141 54H158M141 63H158" stroke="#F8FAFC" stroke-width="4" stroke-linecap="round"/>
+  <text x="224" y="104" fill="#020617" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="800">Venue Eventos</text>
+  <text x="228" y="144" fill="#047857" font-family="Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="7">EVENTOS &amp; RESERVAS</text>
+  <path d="M228 167H580" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="228" y="192" fill="#475569" font-family="Arial, sans-serif" font-size="16">Gestao de reservas para espacos de eventos</text>
+</svg>
