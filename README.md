@@ -46,6 +46,10 @@ Login administrativo:
 
 ![Login administrativo](docs/screenshots/dashboard-login.png)
 
+## Design
+
+O redesign atual reposiciona a interface pública como produto operacional premium para espaços de eventos. Para comparar com uma proposta externa, use o briefing em [`docs/design/original-project-overview.md`](docs/design/original-project-overview.md), que descreve o design anterior, pontos fracos e restrições para uma segunda leitura.
+
 ## Stack
 
 - Next.js 16 com App Router

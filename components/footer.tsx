@@ -1,71 +1,48 @@
 import Link from 'next/link'
-import { Facebook, Instagram, MapPin, Phone, Mail } from 'lucide-react'
+import { Mail, MapPin, Phone } from 'lucide-react'
 import { siteConfig } from '@/lib/site'
+
+const quickLinks = [
+  { name: 'Operação', href: '#about' },
+  { name: 'Galeria', href: '#gallery' },
+  { name: 'Pacotes', href: '#pricing' },
+  { name: 'Dúvidas', href: '#faq' },
+  { name: 'Contato', href: '#contact' },
+]
+
+const productItems = [
+  'Agenda e bloqueios',
+  'Reservas com snapshots',
+  'Pacotes editáveis',
+  'Contato persistido',
+  'Dashboard administrativo',
+]
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
 
-  const quickLinks = [
-    { name: 'Início', href: '#home' },
-    { name: 'Sobre', href: '#about' },
-    { name: 'Galeria', href: '#gallery' },
-    { name: 'Preços', href: '#pricing' },
-    { name: 'FAQ', href: '#faq' },
-    { name: 'Contato', href: '#contact' }
-  ]
-
-  const services = [
-    'Agenda de reservas',
-    'Vitrine pública',
-    'Orçamento guiado',
-    'Painel do anfitrião',
-    'Notificações',
-    'Relatórios básicos'
-  ]
-
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="bg-slate-950 text-white">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Logo e Descrição */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm font-black text-white">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
+          <div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-white text-sm font-black text-slate-950">
                 VE
               </div>
-              <span className="font-bold text-xl">{siteConfig.appName}</span>
+              <span className="font-serif text-xl font-black">{siteConfig.appName}</span>
             </div>
-            <p className="text-gray-300 mb-6 leading-relaxed">
+            <p className="mt-5 max-w-sm text-sm leading-6 text-slate-300">
               {siteConfig.appDescription}
             </p>
-            <div className="flex space-x-4">
-              <a 
-                href="#" 
-                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a 
-                href="#" 
-                className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-primary transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-            </div>
           </div>
 
-          {/* Links Rápidos */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">Links Rápidos</h3>
-            <ul className="space-y-2">
+            <h3 className="font-semibold">Navegação</h3>
+            <ul className="mt-4 space-y-2">
               {quickLinks.map((link) => (
                 <li key={link.name}>
-                  <Link 
-                    href={link.href}
-                    className="text-gray-300 hover:text-white transition-colors"
-                  >
+                  <Link href={link.href} className="text-sm text-slate-300 transition-colors hover:text-white">
                     {link.name}
                   </Link>
                 </li>
@@ -73,63 +50,45 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Serviços */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">Produto</h3>
-            <ul className="space-y-2">
-              {services.map((service) => (
-                <li key={service}>
-                  <span className="text-gray-300">{service}</span>
+            <h3 className="font-semibold">Produto</h3>
+            <ul className="mt-4 space-y-2">
+              {productItems.map((item) => (
+                <li key={item} className="text-sm text-slate-300">
+                  {item}
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Contato */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">Contato</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-primary flex-shrink-0" />
-                <span className="text-gray-300 text-sm">
-                  {siteConfig.address}<br />
+            <h3 className="font-semibold">Contato</h3>
+            <div className="mt-4 space-y-3 text-sm text-slate-300">
+              <div className="flex items-start gap-3">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+                <span>
+                  {siteConfig.address}
+                  <br />
                   {siteConfig.city}
                 </span>
               </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-primary flex-shrink-0" />
-                <span className="text-gray-300 text-sm">
-                  {siteConfig.phone}
-                </span>
+              <div className="flex items-center gap-3">
+                <Phone className="h-4 w-4 shrink-0 text-emerald-300" />
+                <span>{siteConfig.phone}</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-primary flex-shrink-0" />
-                <span className="text-gray-300 text-sm">
-                  {siteConfig.email}
-                </span>
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 shrink-0 text-emerald-300" />
+                <span>{siteConfig.email}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-gray-800 mt-8 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © {currentYear} {siteConfig.appName}. Todos os direitos reservados.
-            </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link href="/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
-                Política de Privacidade
-              </Link>
-              <Link href="/terms" className="text-gray-400 hover:text-white text-sm transition-colors">
-                Termos de Uso
-              </Link>
-              <Link href="/dashboard" className="text-gray-400 hover:text-white text-sm transition-colors">
-                Área Administrativa
-              </Link>
-            </div>
-          </div>
+        <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
+          <p>© {currentYear} {siteConfig.appName}. Projeto de portfólio técnico.</p>
+          <Link href="/dashboard" className="transition-colors hover:text-white">
+            Área administrativa
+          </Link>
         </div>
       </div>
     </footer>

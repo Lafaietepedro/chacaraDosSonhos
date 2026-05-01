@@ -4,113 +4,79 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
-export function FAQ() {
-  const [openItems, setOpenItems] = useState<number[]>([])
+const faqs = [
+  {
+    question: 'A plataforma impede reserva em data ocupada?',
+    answer: 'Sim. O backend verifica reservas pendentes ou confirmadas e datas bloqueadas antes de criar uma nova solicitação.',
+  },
+  {
+    question: 'Os valores mudam reservas antigas?',
+    answer: 'Não. A reserva grava snapshots de pacote, preço base, taxa operacional e convidado extra no momento da criação.',
+  },
+  {
+    question: 'O painel permite encerrar o ciclo da reserva?',
+    answer: 'Sim. O anfitrião pode aprovar, recusar, cancelar e concluir reservas com transições validadas no backend.',
+  },
+  {
+    question: 'Existe pagamento online implementado?',
+    answer: 'Ainda não. A estrutura está pronta para evoluir para sinal, PIX, cartão e confirmação por webhook.',
+  },
+  {
+    question: 'Funciona para mais de um espaço?',
+    answer: 'O schema suporta propriedades, mas a interface atual opera como instalação de um espaço principal. Multiunidade deve entrar como fase posterior.',
+  },
+  {
+    question: 'O projeto está pronto para vender como SaaS?',
+    answer: 'Ainda não. Para SaaS faltam onboarding, permissões, auditoria, cobrança, isolamento de dados e suporte operacional.',
+  },
+]
 
-  const faqs = [
-    {
-      question: 'A plataforma já impede reserva em data ocupada?',
-      answer: 'Sim. O backend verifica reservas pendentes/confirmadas e datas bloqueadas antes de criar uma nova solicitação.'
-    },
-    {
-      question: 'Os pacotes podem ser alterados?',
-      answer: 'Sim. Os pacotes, valores, duração e capacidade foram centralizados em configuração para facilitar adaptação a diferentes espaços.'
-    },
-    {
-      question: 'Existe pagamento online implementado?',
-      answer: 'Ainda não. O fluxo atual registra a solicitação e deixa pagamento de sinal como item de roadmap.'
-    },
-    {
-      question: 'O painel é protegido?',
-      answer: 'Sim. O administrador é persistido no banco com senha hasheada e sessão assinada. Para SaaS, ainda falta controle granular de papéis.'
-    },
-    {
-      question: 'As notificações por WhatsApp são reais?',
-      answer: 'Existe um helper para webhook ou CallMeBot. Em produção, a recomendação é integrar WhatsApp Business API ou um provedor transacional.'
-    },
-    {
-      question: 'O formulário de contato envia email?',
-      answer: 'No estado atual, o formulário apenas simula envio no navegador. O fluxo principal persistido é a solicitação de reserva.'
-    },
-    {
-      question: 'Funciona para mais de um espaço?',
-      answer: 'O schema suporta propriedades, mas a interface atual opera como instalação de um espaço principal. Multiunidade é viável, mas deve ser planejado como próxima fase.'
-    },
-    {
-      question: 'Dá para gerar contrato automaticamente?',
-      answer: 'Ainda não há tela de contrato. O schema já tem campos para contractUrl e signature, então a funcionalidade é viável como módulo posterior.'
-    },
-    {
-      question: 'O projeto está pronto para vender como SaaS?',
-      answer: 'Ainda não. Ele é uma boa base de produto, mas precisa de autenticação robusta, permissões, pagamentos, auditoria e onboarding antes de virar SaaS.'
-    },
-    {
-      question: 'Qual é a melhor próxima evolução?',
-      answer: 'Adicionar filtros operacionais no dashboard, email transacional e um fluxo formal de pagamento de sinal.'
-    }
-  ]
+export function FAQ() {
+  const [openItems, setOpenItems] = useState<number[]>([0])
 
   const toggleItem = (index: number) => {
-    setOpenItems(prev => 
-      prev.includes(index) 
-        ? prev.filter(item => item !== index)
-        : [...prev, index]
+    setOpenItems((prev) =>
+      prev.includes(index) ? prev.filter((item) => item !== index) : [...prev, index]
     )
   }
 
   return (
-    <section id="faq" className="py-20 bg-gray-50">
+    <section id="faq" className="bg-stone-50 py-20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Perguntas Frequentes
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Limites atuais, viabilidade e próximos passos técnicos
-          </p>
-        </div>
+        <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr]">
+          <div>
+            <p className="text-sm font-semibold uppercase text-emerald-700">Dúvidas técnicas</p>
+            <h2 className="mt-3 text-4xl font-bold leading-tight text-slate-950 md:text-5xl">
+              O que já está pronto e o que ainda é roadmap.
+            </h2>
+            <p className="mt-5 text-sm leading-6 text-slate-600">
+              A leitura honesta do estado atual evita vender o projeto como mais maduro do que ele é, e ajuda a priorizar o que realmente melhora o produto.
+            </p>
+          </div>
 
-        <div className="max-w-3xl mx-auto">
-          <div className="space-y-4">
+          <div className="space-y-3">
             {faqs.map((faq, index) => (
-              <Card key={index} className="overflow-hidden">
+              <Card key={faq.question} className="overflow-hidden border-slate-200 bg-white shadow-sm">
                 <button
+                  type="button"
                   onClick={() => toggleItem(index)}
-                  className="w-full p-6 text-left flex justify-between items-center hover:bg-gray-50 transition-colors"
+                  className="flex w-full items-center justify-between gap-4 p-5 text-left transition-colors hover:bg-slate-50"
                 >
-                  <h3 className="text-lg font-semibold text-gray-900 pr-4">
-                    {faq.question}
-                  </h3>
+                  <h3 className="text-base font-semibold text-slate-950">{faq.question}</h3>
                   {openItems.includes(index) ? (
-                    <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                    <ChevronUp className="h-5 w-5 shrink-0 text-slate-500" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                    <ChevronDown className="h-5 w-5 shrink-0 text-slate-500" />
                   )}
                 </button>
-                
                 {openItems.includes(index) && (
-                  <CardContent className="px-6 pb-6 pt-0">
-                    <p className="text-gray-600 leading-relaxed">
-                      {faq.answer}
-                    </p>
+                  <CardContent className="px-5 pb-5 pt-0">
+                    <p className="text-sm leading-6 text-slate-600">{faq.answer}</p>
                   </CardContent>
                 )}
               </Card>
             ))}
           </div>
-        </div>
-
-        {/* Contact CTA */}
-        <div className="text-center mt-12">
-          <p className="text-gray-600 mb-4">
-            Não encontrou a resposta que procurava?
-          </p>
-          <a 
-            href="#contact" 
-            className="inline-flex items-center text-primary hover:text-primary/80 font-medium transition-colors"
-          >
-            Entre em contato conosco
-          </a>
         </div>
       </div>
     </section>

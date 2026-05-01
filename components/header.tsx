@@ -3,120 +3,110 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Calendar, Phone, MessageCircle, Settings } from 'lucide-react'
+import { Calendar, Menu, MessageCircle, Settings, X } from 'lucide-react'
 import { buildWhatsAppUrl, siteConfig } from '@/lib/site'
+
+const navigation = [
+  { name: 'Operação', href: '#about' },
+  { name: 'Galeria', href: '#gallery' },
+  { name: 'Pacotes', href: '#pricing' },
+  { name: 'Dúvidas', href: '#faq' },
+  { name: 'Contato', href: '#contact' },
+]
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const whatsappUrl = buildWhatsAppUrl(`Olá! Quero saber mais sobre o ${siteConfig.appName}.`)
 
-  const navigation = [
-    { name: 'Início', href: '#home' },
-    { name: 'Sobre', href: '#about' },
-    { name: 'Galeria', href: '#gallery' },
-    { name: 'Preços', href: '#pricing' },
-    { name: 'FAQ', href: '#faq' },
-    { name: 'Contato', href: '#contact' },
-  ]
-
   return (
-    <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b z-50">
+    <header className="fixed top-0 z-50 w-full border-b border-slate-200/70 bg-white/[0.94] backdrop-blur">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm font-black text-white">
+        <div className="flex h-16 items-center justify-between gap-4">
+          <Link href="/" className="flex min-w-0 items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-950 text-sm font-black text-white">
               VE
             </div>
-            <span className="font-serif text-xl md:text-xl font-extrabold text-gray-900 mb-1 tracking-tight">{siteConfig.appName}</span>
+            <div className="min-w-0">
+              <span className="block truncate font-serif text-xl font-black tracking-normal text-slate-950">
+                {siteConfig.appName}
+              </span>
+              <span className="hidden text-xs font-medium uppercase tracking-[0.18em] text-emerald-700 sm:block">
+                Eventos & reservas
+              </span>
+            </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden items-center gap-7 lg:flex">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-600 hover:text-primary transition-colors"
+                className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-950"
               >
                 {item.name}
               </Link>
             ))}
           </nav>
 
-          {/* CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="#contact">
-                <Phone className="w-4 h-4 mr-2" />
-                Contato
-              </Link>
-            </Button>
+          <div className="hidden items-center gap-2 md:flex">
             <Button variant="outline" size="sm" asChild>
               <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="w-4 h-4 mr-2" />
+                <MessageCircle className="mr-2 h-4 w-4" />
                 WhatsApp
               </a>
             </Button>
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard">
-                <Settings className="w-4 h-4 mr-2" />
+                <Settings className="mr-2 h-4 w-4" />
                 Admin
               </Link>
             </Button>
             <Button size="sm" asChild>
               <Link href="/booking">
-                <Calendar className="w-4 h-4 mr-2" />
+                <Calendar className="mr-2 h-4 w-4" />
                 Reservar
               </Link>
             </Button>
           </div>
 
-          {/* Mobile menu button */}
           <button
-            className="md:hidden p-2"
+            className="rounded-md p-2 text-slate-700 hover:bg-slate-100 md:hidden"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? 'Fechar menu' : 'Abrir menu'}
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
 
-        {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t">
-            <nav className="flex flex-col space-y-4">
+          <div className="border-t border-slate-200 py-4 md:hidden">
+            <nav className="flex flex-col gap-3">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-gray-600 hover:text-primary transition-colors"
+                  className="rounded-md px-2 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
-              <div className="flex flex-col space-y-2 pt-4">
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="#contact">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Contato
-                  </Link>
-                </Button>
+              <div className="grid gap-2 pt-3">
                 <Button variant="outline" size="sm" asChild>
                   <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="w-4 h-4 mr-2" />
+                    <MessageCircle className="mr-2 h-4 w-4" />
                     WhatsApp
                   </a>
                 </Button>
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/dashboard">
-                    <Settings className="w-4 h-4 mr-2" />
+                    <Settings className="mr-2 h-4 w-4" />
                     Admin
                   </Link>
                 </Button>
                 <Button size="sm" asChild>
                   <Link href="/booking">
-                    <Calendar className="w-4 h-4 mr-2" />
+                    <Calendar className="mr-2 h-4 w-4" />
                     Reservar
                   </Link>
                 </Button>

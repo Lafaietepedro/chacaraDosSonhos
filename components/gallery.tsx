@@ -2,180 +2,140 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Expand, X } from 'lucide-react'
+
+const images = [
+  {
+    id: 1,
+    src: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=900&fit=crop',
+    alt: 'Fachada de espaço de eventos com área externa',
+    category: 'Exterior',
+  },
+  {
+    id: 2,
+    src: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&h=900&fit=crop',
+    alt: 'Mesa de evento montada em salão',
+    category: 'Eventos',
+  },
+  {
+    id: 3,
+    src: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1000&h=800&fit=crop',
+    alt: 'Piscina e área de convivência',
+    category: 'Lazer',
+  },
+  {
+    id: 4,
+    src: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1000&h=800&fit=crop',
+    alt: 'Interior de casa de apoio',
+    category: 'Interior',
+  },
+  {
+    id: 5,
+    src: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1000&h=800&fit=crop',
+    alt: 'Jardim e paisagismo',
+    category: 'Exterior',
+  },
+]
 
 export function Gallery() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null)
 
-  const images = [
-    {
-      id: 1,
-      src: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&h=600&fit=crop',
-      alt: 'Fachada de espaço de eventos',
-      category: 'Exterior'
-    },
-    {
-      id: 2,
-      src: 'https://images.unsplash.com/photo-1664490591674-97cc38de245f?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      alt: 'Área de eventos',
-      category: 'Eventos'
-    },
-    {
-      id: 3,
-      src: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&h=600&fit=crop',
-      alt: 'Churrasqueira',
-      category: 'Lazer'
-    },
-    {
-      id: 4,
-      src: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop',
-      alt: 'Casa principal',
-      category: 'Interior'
-    },
-    {
-      id: 5,
-      src: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=600&fit=crop',
-      alt: 'Jardim',
-      category: 'Exterior'
-    },
-    {
-      id: 6,
-      src: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop',
-      alt: 'Piscina',
-      category: 'Lazer'
-    },
-    {
-      id: 7,
-      src: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop',
-      alt: 'Sala de estar',
-      category: 'Interior'
-    },
-    {
-      id: 8,
-      src: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop',
-      alt: 'Área verde',
-      category: 'Exterior'
-    }
-  ]
-
-  const categories = ['Todas', 'Exterior', 'Interior', 'Eventos', 'Lazer']
-  const [activeCategory, setActiveCategory] = useState('Todas')
-
-  const filteredImages = activeCategory === 'Todas' 
-    ? images 
-    : images.filter(img => img.category === activeCategory)
-
   const nextImage = () => {
-    if (selectedImage !== null) {
-      setSelectedImage((selectedImage + 1) % filteredImages.length)
-    }
+    if (selectedImage !== null) setSelectedImage((selectedImage + 1) % images.length)
   }
 
   const prevImage = () => {
-    if (selectedImage !== null) {
-      setSelectedImage(selectedImage === 0 ? filteredImages.length - 1 : selectedImage - 1)
-    }
+    if (selectedImage !== null) setSelectedImage(selectedImage === 0 ? images.length - 1 : selectedImage - 1)
   }
 
   return (
-    <section id="gallery" className="py-20 bg-gray-50">
+    <section id="gallery" className="bg-stone-50 py-20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Galeria demonstrativa
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Imagens de referência para validar a experiência pública da vitrine do espaço
+        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase text-emerald-700">Vitrine pública</p>
+            <h2 className="mt-3 max-w-2xl text-4xl font-bold leading-tight text-slate-950 md:text-5xl">
+              Imagens que vendem o espaço antes da conversa.
+            </h2>
+          </div>
+          <p className="max-w-md text-sm leading-6 text-slate-600">
+            A galeria usa imagens demonstrativas e já está preparada para evoluir para upload real com ordenação pelo painel.
           </p>
         </div>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {categories.map((category) => (
-            <Button
-              key={category}
-              variant={activeCategory === category ? "default" : "outline"}
-              onClick={() => setActiveCategory(category)}
-            >
-              {category}
-            </Button>
-          ))}
-        </div>
-
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredImages.map((image, index) => (
-            <Card 
-              key={image.id} 
-              className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+        <div className="grid gap-4 lg:grid-cols-4 lg:grid-rows-2">
+          {images.map((image, index) => (
+            <button
+              key={image.id}
+              type="button"
               onClick={() => setSelectedImage(index)}
+              className={`group relative overflow-hidden rounded-md bg-slate-200 text-left ${
+                index === 0 ? 'lg:col-span-2 lg:row-span-2' : ''
+              }`}
             >
-              <CardContent className="p-0">
-                <div className="aspect-square relative overflow-hidden">
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    fill
-                    sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
-                    className="object-cover transition-transform duration-300 hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
-                    <div className="opacity-0 hover:opacity-100 transition-opacity">
-                      <div className="bg-white/90 rounded-full p-2">
-                        <span className="text-sm font-medium">Ver detalhes</span>
-                      </div>
-                    </div>
-                  </div>
+              <div className={index === 0 ? 'aspect-[1.12/1]' : 'aspect-[1.12/0.82]'}>
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  sizes={index === 0 ? '(min-width: 1024px) 50vw, 100vw' : '(min-width: 1024px) 25vw, 100vw'}
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/10 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 text-white">
+                <div>
+                  <span className="rounded-md bg-white/15 px-2 py-1 text-xs font-medium backdrop-blur">
+                    {image.category}
+                  </span>
+                  <p className="mt-2 text-sm font-medium">{image.alt}</p>
                 </div>
-              </CardContent>
-            </Card>
+                <Expand className="h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100" />
+              </div>
+            </button>
           ))}
         </div>
 
-        {/* Lightbox Modal */}
         {selectedImage !== null && (
-          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-            <div className="relative max-w-4xl max-h-full">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 p-4">
+            <div className="relative max-h-full max-w-5xl">
               <Image
-                src={filteredImages[selectedImage].src}
-                alt={filteredImages[selectedImage].alt}
-                width={1200}
-                height={900}
+                src={images[selectedImage].src}
+                alt={images[selectedImage].alt}
+                width={1400}
+                height={1000}
                 sizes="100vw"
-                className="max-h-[88vh] w-auto max-w-full object-contain"
+                className="max-h-[86vh] w-auto max-w-full rounded-md object-contain"
                 priority
               />
-              
-              {/* Close button */}
               <button
                 onClick={() => setSelectedImage(null)}
-                className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors"
+                className="absolute right-3 top-3 rounded-md bg-white/10 p-2 text-white backdrop-blur transition-colors hover:bg-white/20"
+                aria-label="Fechar imagem"
               >
-                <X className="w-8 h-8" />
+                <X className="h-6 w-6" />
               </button>
-
-              {/* Navigation buttons */}
-              <button
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
                 onClick={prevImage}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors"
+                className="absolute left-3 top-1/2 -translate-y-1/2 border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                aria-label="Imagem anterior"
               >
-                <ChevronLeft className="w-8 h-8" />
-              </button>
-              
-              <button
+                <ChevronLeft className="h-6 w-6" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
                 onClick={nextImage}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                aria-label="Próxima imagem"
               >
-                <ChevronRight className="w-8 h-8" />
-              </button>
-
-              {/* Image info */}
-              <div className="absolute bottom-4 left-4 text-white">
-                <p className="text-lg font-medium">{filteredImages[selectedImage].alt}</p>
-                <p className="text-sm opacity-75">{filteredImages[selectedImage].category}</p>
-              </div>
+                <ChevronRight className="h-6 w-6" />
+              </Button>
             </div>
           </div>
         )}

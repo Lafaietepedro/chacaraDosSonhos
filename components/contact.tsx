@@ -1,12 +1,19 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Phone, Mail, MapPin, Clock, MessageCircle } from 'lucide-react'
+import { Clock, Mail, MapPin, MessageCircle, Phone } from 'lucide-react'
 import { buildWhatsAppUrl, siteConfig } from '@/lib/site'
+
+const contactInfo = [
+  { icon: Phone, title: 'Telefone', info: siteConfig.phone, description: 'WhatsApp disponível' },
+  { icon: Mail, title: 'Email', info: siteConfig.email, description: 'Retorno operacional' },
+  { icon: MapPin, title: 'Endereço', info: siteConfig.address, description: siteConfig.city },
+  { icon: Clock, title: 'Atendimento', info: 'Solicitação online', description: 'Painel disponível 24h' },
+]
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -14,7 +21,7 @@ export function Contact() {
     email: '',
     phone: '',
     subject: '',
-    message: ''
+    message: '',
   })
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
   const [feedback, setFeedback] = useState('')
@@ -33,12 +40,10 @@ export function Contact() {
       })
 
       const data = await response.json().catch(() => null)
-      if (!response.ok) {
-        throw new Error(data?.error || 'Não foi possível enviar a mensagem')
-      }
+      if (!response.ok) throw new Error(data?.error || 'Não foi possível enviar a mensagem')
 
       setStatus('success')
-      setFeedback('Mensagem enviada com sucesso. Entraremos em contato em breve.')
+      setFeedback('Mensagem enviada com sucesso. O contato ficou registrado no painel.')
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
     } catch (error) {
       setStatus('error')
@@ -47,103 +52,70 @@ export function Contact() {
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   const whatsappUrl = buildWhatsAppUrl(`Olá! Quero falar sobre uma reserva pelo ${siteConfig.appName}.`)
 
-  const contactInfo = [
-    {
-      icon: Phone,
-      title: 'Telefone',
-      info: siteConfig.phone,
-      description: 'WhatsApp disponível'
-    },
-    {
-      icon: Mail,
-      title: 'Email',
-      info: siteConfig.email,
-      description: 'Resposta em até 24h'
-    },
-    {
-      icon: MapPin,
-      title: 'Endereço',
-      info: siteConfig.address,
-      description: siteConfig.city
-    },
-    {
-      icon: Clock,
-      title: 'Horário',
-      info: '24h por dia',
-      description: '7 dias por semana'
-    }
-  ]
-
   return (
-    <section id="contact" className="py-20 bg-white">
+    <section id="contact" className="bg-slate-950 py-20 text-white">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Entre em Contato
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Tire dúvidas, valide disponibilidade ou use o fluxo de reserva para enviar uma solicitação completa.
-          </p>
-        </div>
+        <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:items-start">
+          <div>
+            <p className="text-sm font-semibold uppercase text-emerald-300">Contato</p>
+            <h2 className="mt-3 max-w-xl text-4xl font-bold leading-tight md:text-5xl">
+              Conversas entram no mesmo fluxo da operação.
+            </h2>
+            <p className="mt-5 max-w-xl text-lg leading-8 text-slate-300">
+              Mensagens públicas são persistidas no banco e aparecem no dashboard para acompanhamento do anfitrião.
+            </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Envie sua Mensagem</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              {contactInfo.map((item) => (
+                <div key={item.title} className="rounded-md border border-white/10 bg-white/[0.06] p-4">
+                  <item.icon className="mb-3 h-5 w-5 text-emerald-300" />
+                  <h3 className="font-semibold">{item.title}</h3>
+                  <p className="mt-1 text-sm font-medium text-amber-100">{item.info}</p>
+                  <p className="mt-1 text-xs text-slate-400">{item.description}</p>
+                </div>
+              ))}
+            </div>
+
+            <Button className="mt-8 bg-white text-slate-950 hover:bg-slate-100" asChild>
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Abrir WhatsApp
+              </a>
+            </Button>
+          </div>
+
+          <Card className="border-white/10 bg-white text-slate-950 shadow-2xl">
+            <CardContent className="p-6 md:p-8">
+              <h3 className="text-2xl font-bold">Enviar mensagem</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Registre dúvidas, disponibilidade e detalhes iniciais do evento.
+              </p>
+
+              <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <Label htmlFor="name">Nome *</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                    />
+                    <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
                   </div>
                   <div>
                     <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                    />
+                    <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <Label htmlFor="phone">Telefone</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                    />
+                    <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} />
                   </div>
                   <div>
                     <Label htmlFor="subject">Assunto</Label>
-                    <Input
-                      id="subject"
-                      name="subject"
-                      value={formData.subject}
-                      onChange={handleChange}
-                    />
+                    <Input id="subject" name="subject" value={formData.subject} onChange={handleChange} />
                   </div>
                 </div>
 
@@ -156,8 +128,8 @@ export function Contact() {
                     onChange={handleChange}
                     required
                     rows={5}
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    placeholder="Conte-nos sobre seu evento..."
+                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    placeholder="Conte sobre data, número de convidados e tipo de evento."
                   />
                 </div>
 
@@ -174,60 +146,11 @@ export function Contact() {
                 )}
 
                 <Button type="submit" className="w-full" disabled={status === 'sending'}>
-                  {status === 'sending' ? 'Enviando...' : 'Enviar Mensagem'}
+                  {status === 'sending' ? 'Enviando...' : 'Registrar contato'}
                 </Button>
               </form>
             </CardContent>
           </Card>
-
-          {/* Contact Info */}
-          <div className="space-y-6">
-            {contactInfo.map((item, index) => (
-              <Card key={index}>
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">
-                        {item.title}
-                      </h3>
-                      <p className="text-lg text-primary font-medium mb-1">
-                        {item.info}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-
-            {/* WhatsApp CTA */}
-            <Card className="border-primary bg-primary/5">
-              <CardContent className="p-6 text-center">
-                <MessageCircle className="w-12 h-12 text-primary mx-auto mb-4" />
-                <h3 className="font-semibold text-gray-900 mb-2">
-                  Resposta Rápida
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Para dúvidas urgentes, fale conosco no WhatsApp
-                </p>
-                <Button asChild>
-                  <a 
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    WhatsApp
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
     </section>

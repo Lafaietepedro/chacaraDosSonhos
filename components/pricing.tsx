@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Check, X } from 'lucide-react'
+import { ArrowRight, Check, Clock, Users } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils'
 import { siteConfig } from '@/lib/site'
@@ -30,67 +30,75 @@ export function Pricing() {
   }, [])
 
   return (
-    <section id="pricing" className="py-20 bg-white">
+    <section id="pricing" className="bg-white py-20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-6">
-            Pacotes configuráveis
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Uma vitrine objetiva para o cliente comparar duração, capacidade e valor antes de solicitar a reserva.
-          </p>
+        <div className="mb-12 grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+          <div>
+            <p className="text-sm font-semibold uppercase text-emerald-700">Pacotes</p>
+            <h2 className="mt-3 max-w-2xl text-4xl font-bold leading-tight text-slate-950 md:text-5xl">
+              Comparação clara para o cliente escolher sem atrito.
+            </h2>
+          </div>
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-5">
+            <p className="text-sm leading-6 text-slate-600">
+              Taxa operacional atual: <span className="font-semibold text-slate-950">{formatCurrency(operationalFee)}</span>. Valores e capacidades são editáveis no dashboard, preservando snapshots nas reservas antigas.
+            </p>
+          </div>
         </div>
 
-        {/* Packages */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          {packages.map((pkg, index) => (
-            <Card 
-              key={index} 
-              className={`relative ${pkg.popular ? 'border-primary shadow-lg scale-105' : ''}`}
+        <div className="grid gap-5 lg:grid-cols-3">
+          {packages.map((pkg) => (
+            <Card
+              key={pkg.id}
+              className={`relative overflow-hidden shadow-sm ${
+                pkg.popular ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-slate-200'
+              }`}
             >
               {pkg.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-primary text-white px-4 py-1 rounded-full text-sm font-medium">
-                    Mais Popular
-                  </div>
+                <div className="bg-emerald-600 px-5 py-2 text-sm font-semibold text-white">
+                  Melhor equilíbrio
                 </div>
               )}
-              
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl">{pkg.name}</CardTitle>
-                <div className="text-4xl font-bold text-primary">
-                  {formatCurrency(pkg.price)}
+
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-2xl font-bold text-slate-950">{pkg.name}</h3>
+                    <p className="mt-2 min-h-12 text-sm leading-6 text-slate-600">{pkg.description}</p>
+                  </div>
                 </div>
-                <div className="text-gray-600">{pkg.duration}</div>
-                <div className="text-sm text-gray-500 mt-1">
-                  Até {pkg.capacity} pessoas • {formatCurrency(pkg.extraPerGuest)} por convidado extra
+
+                <div className="mt-6">
+                  <div className="text-4xl font-black text-slate-950">{formatCurrency(pkg.price)}</div>
+                  <p className="mt-2 text-sm text-slate-500">
+                    {formatCurrency(pkg.extraPerGuest)} por convidado extra
+                  </p>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">{pkg.description}</p>
-              </CardHeader>
-              
-              <CardContent>
-                <ul className="space-y-3 mb-6">
-                  {pkg.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start">
-                      <Check className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                  {pkg.notIncluded.map((feature, idx) => (
-                    <li key={idx} className="flex items-start opacity-50">
-                      <X className="w-5 h-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
+
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <Clock className="mb-2 h-4 w-4 text-emerald-700" />
+                    <p className="text-sm font-medium text-slate-950">{pkg.duration}</p>
+                  </div>
+                  <div className="rounded-md bg-slate-50 p-3">
+                    <Users className="mb-2 h-4 w-4 text-emerald-700" />
+                    <p className="text-sm font-medium text-slate-950">Até {pkg.capacity} pessoas</p>
+                  </div>
+                </div>
+
+                <ul className="mt-6 space-y-3">
+                  {pkg.features.slice(0, 6).map((feature) => (
+                    <li key={feature} className="flex items-start gap-3 text-sm leading-6 text-slate-700">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                      <span>{feature}</span>
                     </li>
                   ))}
                 </ul>
-                
-                <Button 
-                  className="w-full" 
-                  variant={pkg.popular ? "default" : "outline"}
-                  asChild
-                >
+
+                <Button className="mt-7 w-full" variant={pkg.popular ? 'default' : 'outline'} asChild>
                   <Link href="/booking">
-                    Escolher Pacote
+                    Escolher pacote
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </CardContent>
@@ -98,20 +106,9 @@ export function Pricing() {
           ))}
         </div>
 
-        {/* Cleaning fee note */}
-        <div className="max-w-3xl mx-auto text-center mt-4">
-          <p className="text-sm text-gray-600">
-            Taxa operacional configurável: <span className="font-medium">{formatCurrency(operationalFee)}</span> aplicada em todos os pacotes.
-          </p>
-        </div>
-
-        {/* Note */}
-        <div className="text-center mt-12">
-          <p className="text-gray-600">
-            * Preços podem variar conforme a temporada e disponibilidade.<br />
-            ** Consulte condições especiais para eventos corporativos.
-          </p>
-        </div>
+        <p className="mt-8 max-w-3xl text-sm leading-6 text-slate-500">
+          Preços sujeitos à confirmação do anfitrião. A estrutura está pronta para evoluir para pagamento de sinal e contrato PDF.
+        </p>
       </div>
     </section>
   )
