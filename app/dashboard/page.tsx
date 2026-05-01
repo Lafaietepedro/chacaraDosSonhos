@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,7 +27,9 @@ import {
   MessageSquare,
   X,
   LogOut,
-  Search
+  Search,
+  Inbox,
+  type LucideIcon
 } from 'lucide-react'
 import { formatCurrency, formatDate, parseLocalDate } from '@/lib/utils'
 import { siteConfig } from '@/lib/site'
@@ -96,6 +98,13 @@ type DashboardNotice = {
   message: string
 }
 
+type EmptyStateProps = {
+  icon: LucideIcon
+  title: string
+  description: string
+  action?: ReactNode
+}
+
 const emptyBookingFilters: BookingFilterState = {
   search: '',
   status: 'all',
@@ -129,6 +138,37 @@ function textToList(value: string) {
     .split('\n')
     .map((item) => item.trim())
     .filter(Boolean)
+}
+
+function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps) {
+  return (
+    <div className="rounded-lg border border-dashed bg-gray-50/70 p-8 text-center">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-gray-500 shadow-sm">
+        <Icon className="h-5 w-5" />
+      </div>
+      <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">{description}</p>
+      {action && <div className="mt-5 flex justify-center">{action}</div>}
+    </div>
+  )
+}
+
+function StatusBadge({ status }: { status: DashboardBooking['status'] }) {
+  const styles: Record<DashboardBooking['status'], { label: string; className: string }> = {
+    pending: { label: 'Pendente', className: 'bg-yellow-50 text-yellow-700 ring-yellow-200' },
+    confirmed: { label: 'Confirmada', className: 'bg-green-50 text-green-700 ring-green-200' },
+    rejected: { label: 'Recusada', className: 'bg-red-50 text-red-700 ring-red-200' },
+    cancelled: { label: 'Cancelada', className: 'bg-gray-100 text-gray-700 ring-gray-200' },
+    completed: { label: 'Concluída', className: 'bg-blue-50 text-blue-700 ring-blue-200' },
+  }
+
+  const style = styles[status]
+
+  return (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${style.className}`}>
+      {style.label}
+    </span>
+  )
 }
 
 export default function DashboardPage() {
@@ -613,6 +653,8 @@ export default function DashboardPage() {
         return 'Cancelado'
       case 'rejected':
         return 'Recusado'
+      case 'completed':
+        return 'Concluído'
       default:
         return 'Desconhecido'
     }
@@ -699,12 +741,12 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Painel do Anfitrião</h1>
               <p className="text-gray-600">Acompanhe solicitações, agenda e indicadores do espaço</p>
             </div>
-            <div className="flex space-x-4">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Button variant="outline" onClick={() => setActiveTab('settings')}>
                 <Settings className="w-4 h-4 mr-2" />
                 Configurações
@@ -746,7 +788,7 @@ export default function DashboardPage() {
         )}
 
         {/* Navigation Tabs */}
-        <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg w-fit">
+        <div className="mb-8 flex w-full gap-1 overflow-x-auto rounded-lg bg-gray-100 p-1 lg:w-fit">
           {[
             { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
             { id: 'bookings', label: 'Reservas', icon: CalendarIcon },
@@ -757,7 +799,7 @@ export default function DashboardPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex shrink-0 items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'bg-white text-primary shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -830,7 +872,21 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                {recentBookings.map((booking) => (
+                  {recentBookings.length === 0 ? (
+                    <EmptyState
+                      icon={Inbox}
+                      title="Nenhuma reserva recente"
+                      description="As novas solicitações aparecerão aqui assim que clientes enviarem pedidos pelo fluxo público."
+                      action={
+                        <Button asChild>
+                          <Link href="/booking">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Criar reserva
+                          </Link>
+                        </Button>
+                      }
+                    />
+                  ) : recentBookings.map((booking) => (
                     <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
                         {getStatusIcon(booking.status)}
@@ -843,7 +899,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="text-right space-y-2">
                         <p className="font-semibold">{formatCurrency(booking.total)}</p>
-                        <p className="text-sm text-gray-600">{getStatusText(booking.status)}</p>
+                        <StatusBadge status={booking.status} />
                         <div className="flex items-center justify-end gap-2">
                           <Button 
                             size="sm" 
@@ -938,19 +994,26 @@ export default function DashboardPage() {
 
                 <div className="space-y-4">
                   {recentBookings.length === 0 ? (
-                    <div className="rounded-lg border border-dashed p-8 text-center text-gray-500">
-                      Nenhuma reserva encontrada para os filtros selecionados.
-                    </div>
+                    <EmptyState
+                      icon={Search}
+                      title="Nenhuma reserva encontrada"
+                      description="Ajuste os filtros ou limpe a busca para voltar à lista completa de solicitações."
+                      action={
+                        <Button variant="outline" onClick={clearBookingFilters}>
+                          Limpar filtros
+                        </Button>
+                      }
+                    />
                   ) : recentBookings.map((booking) => (
                     <div key={booking.id} className="border rounded-lg p-6">
-                      <div className="flex justify-between items-start mb-4">
+                      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <h3 className="text-lg font-semibold">{booking.customer}</h3>
                           <p className="text-sm text-gray-500">{booking.email}</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(booking.status)}
-                          <span className="text-sm font-medium">{getStatusText(booking.status)}</span>
+                          <StatusBadge status={booking.status} />
                         </div>
                       </div>
                       
@@ -969,11 +1032,11 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div className="text-2xl font-bold text-primary">
                           {formatCurrency(booking.total)}
                         </div>
-                            <div className="flex space-x-2">
+                            <div className="flex flex-wrap gap-2">
                               <Button 
                                 size="sm" 
                                 variant="outline"
@@ -1055,9 +1118,11 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 {contactMessages.length === 0 ? (
-                  <div className="rounded-lg border border-dashed p-8 text-center text-gray-500">
-                    Nenhuma mensagem recebida pelo formulário público.
-                  </div>
+                  <EmptyState
+                    icon={Mail}
+                    title="Nenhuma mensagem recebida"
+                    description="Quando alguém entrar em contato pela página pública, a conversa aparecerá aqui para acompanhamento."
+                  />
                 ) : (
                   <div className="space-y-4">
                     {contactMessages.map((contactMessage) => (
@@ -1181,7 +1246,11 @@ export default function DashboardPage() {
                 <CardContent>
                   <div className="space-y-2">
 	                    {blockedDates.length === 0 ? (
-	                      <p className="text-gray-500 text-sm">Nenhuma data bloqueada</p>
+	                      <EmptyState
+	                        icon={CalendarIcon}
+	                        title="Agenda sem bloqueios"
+	                        description="Bloqueie datas indisponíveis para impedir novas solicitações nesses dias."
+	                      />
 	                    ) : (
 	                      blockedDates.map((blockedDate) => (
 	                        <div key={blockedDate.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
