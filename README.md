@@ -32,6 +32,20 @@ O projeto já está em nível apresentável para portfólio técnico: tem domín
 
 Ainda não é um SaaS pronto para clientes pagantes. Os principais pontos antes de produção real são deploy com PostgreSQL, gestão de fotos, pagamento de sinal e melhoria visual final do dashboard.
 
+## Preview
+
+Página pública:
+
+![Página pública do Venue Eventos](docs/screenshots/home.png)
+
+Fluxo de reserva:
+
+![Fluxo de solicitação de reserva](docs/screenshots/booking.png)
+
+Login administrativo:
+
+![Login administrativo](docs/screenshots/dashboard-login.png)
+
 ## Stack
 
 - Next.js 16 com App Router
