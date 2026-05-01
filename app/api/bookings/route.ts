@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createBookingRequest, BookingServiceError } from '@/lib/services/booking.service'
 import { notifyBookingCreated } from '@/lib/services/notification.service'
 import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rate-limit'
+import { bookingRequestSchema } from '@/lib/validation/booking'
 
 export async function POST(request: Request) {
   try {
@@ -19,28 +20,16 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const {
-      date,
-      guests,
-      packageId,
-      customer,
-    } = body as {
-      date: string
-      guests: number
-      packageId: string
-      customer: { name: string; email: string; phone: string; notes?: string }
+    const parsed = bookingRequestSchema.safeParse(body)
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Dados de reserva inválidos', issues: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      )
     }
 
-    if (!date || !guests || !packageId || !customer?.name || !customer?.email) {
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
-    }
-
-    const { booking, package: selectedPackage, quote } = await createBookingRequest({
-      date,
-      guests,
-      packageId,
-      customer,
-    })
+    const { booking, package: selectedPackage, quote } = await createBookingRequest(parsed.data)
 
     const notifications = await notifyBookingCreated({
       booking,
