@@ -98,6 +98,8 @@ type DashboardNotice = {
   message: string
 }
 
+type BookingStatusUpdate = 'CONFIRMED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED'
+
 type EmptyStateProps = {
   icon: LucideIcon
   title: string
@@ -169,6 +171,17 @@ function StatusBadge({ status }: { status: DashboardBooking['status'] }) {
       {style.label}
     </span>
   )
+}
+
+function getStatusUpdateSuccessMessage(status: BookingStatusUpdate) {
+  const messages: Record<BookingStatusUpdate, string> = {
+    CONFIRMED: 'Reserva aprovada com sucesso.',
+    REJECTED: 'Reserva recusada com sucesso.',
+    CANCELLED: 'Reserva cancelada com sucesso.',
+    COMPLETED: 'Reserva marcada como concluída.',
+  }
+
+  return messages[status]
 }
 
 export default function DashboardPage() {
@@ -643,23 +656,6 @@ export default function DashboardPage() {
     }
   }
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return 'Confirmado'
-      case 'pending':
-        return 'Pendente'
-      case 'cancelled':
-        return 'Cancelado'
-      case 'rejected':
-        return 'Recusado'
-      case 'completed':
-        return 'Concluído'
-      default:
-        return 'Desconhecido'
-    }
-  }
-
   const showBookingDetails = (booking: DashboardBooking) => {
     setSelectedBooking(booking)
     setIsDetailsModalOpen(true)
@@ -683,7 +679,7 @@ export default function DashboardPage() {
     setBookingFilters(emptyBookingFilters)
   }
 
-  const updateStatus = async (id: string, status: 'CONFIRMED' | 'REJECTED') => {
+  const updateStatus = async (id: string, status: BookingStatusUpdate) => {
     try {
       const token = getToken()
       const res = await fetch(`/api/bookings/${id}`, {
@@ -694,17 +690,23 @@ export default function DashboardPage() {
         },
         body: JSON.stringify({ status }),
       })
-      if (!res.ok) throw new Error('Falha ao atualizar')
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        const message = res.status === 409
+          ? 'Essa mudança de status não é permitida para a reserva atual.'
+          : data?.error || 'Falha ao atualizar'
+        throw new Error(message)
+      }
       
       await fetchDashboardData()
       setIsDetailsModalOpen(false)
-      showNotice({
-        type: 'success',
-        message: status === 'CONFIRMED' ? 'Reserva aprovada com sucesso.' : 'Reserva recusada com sucesso.',
-      })
+      showNotice({ type: 'success', message: getStatusUpdateSuccessMessage(status) })
     } catch (e) {
       console.error(e)
-      showNotice({ type: 'error', message: 'Não foi possível atualizar o status. Tente novamente.' })
+      showNotice({
+        type: 'error',
+        message: e instanceof Error ? e.message : 'Não foi possível atualizar o status. Tente novamente.',
+      })
     }
   }
 
@@ -955,6 +957,7 @@ export default function DashboardPage() {
                       <option value="confirmed">Confirmadas</option>
                       <option value="rejected">Recusadas</option>
                       <option value="cancelled">Canceladas</option>
+                      <option value="completed">Concluídas</option>
                     </select>
                   </div>
 
@@ -1059,10 +1062,31 @@ export default function DashboardPage() {
                                   <Button 
                                     size="sm"
                                     onClick={() => updateStatus(booking.id, 'CONFIRMED')}
-                                    className="text-green-600 hover:text-green-700"
+                                    className="bg-green-600 text-white hover:bg-green-700"
                                   >
                                     <CheckCircle className="w-4 h-4 mr-2" />
                                     Aprovar
+                                  </Button>
+                                </>
+                              )}
+                              {booking.status === 'confirmed' && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => updateStatus(booking.id, 'CANCELLED')}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <XCircle className="w-4 h-4 mr-2" />
+                                    Cancelar
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateStatus(booking.id, 'COMPLETED')}
+                                    className="bg-blue-600 text-white hover:bg-blue-700"
+                                  >
+                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                    Concluir
                                   </Button>
                                 </>
                               )}
@@ -1719,13 +1743,7 @@ export default function DashboardPage() {
                     
                     <div className="flex items-center justify-between">
                       <span>Status:</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        selectedBooking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                        selectedBooking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {getStatusText(selectedBooking.status)}
-                      </span>
+                      <StatusBadge status={selectedBooking.status} />
                     </div>
                   </div>
                 </div>
@@ -1757,10 +1775,40 @@ export default function DashboardPage() {
                           <Button 
                             size="sm"
                             onClick={() => updateStatus(selectedBooking.id, 'CONFIRMED')}
-                            className="text-green-600 hover:text-green-700"
+                            className="bg-green-600 text-white hover:bg-green-700"
                           >
                             <CheckCircle className="w-4 h-4 mr-2" />
                             Aprovar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateStatus(selectedBooking.id, 'CANCELLED')}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Cancelar
+                          </Button>
+                        </>
+                      )}
+                      {selectedBooking.status === 'confirmed' && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateStatus(selectedBooking.id, 'CANCELLED')}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Cancelar
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => updateStatus(selectedBooking.id, 'COMPLETED')}
+                            className="bg-blue-600 text-white hover:bg-blue-700"
+                          >
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Concluir
                           </Button>
                         </>
                       )}

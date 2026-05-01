@@ -101,7 +101,7 @@ export async function GET(request: Request) {
         where: { 
           propertyId: property.id,
           startDate: { gte: startOfMonth, lte: endOfMonth },
-          status: 'CONFIRMED',
+          status: { in: ['CONFIRMED', 'COMPLETED'] },
         },
       }),
       prisma.booking.findMany({
@@ -109,7 +109,7 @@ export async function GET(request: Request) {
         where: {
           propertyId: property.id,
           startDate: { gte: startOfMonth, lte: endOfMonth },
-          status: 'CONFIRMED',
+          status: { in: ['CONFIRMED', 'COMPLETED'] },
         },
       }),
       prisma.booking.groupBy({
