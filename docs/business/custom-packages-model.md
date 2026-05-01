@@ -153,15 +153,16 @@ model QuoteLineItem {
 
 ### Página Pública
 
-- Adicionar card `Sob medida` ao lado dos pacotes.
+- Card `Sob medida` na seção de pacotes apontando para `/booking?mode=custom`.
 - CTA: `Montar proposta`.
 - Explicar que é uma estimativa, não confirmação automática.
 
 ### Fluxo De Reserva
 
-- Nova etapa opcional para customização.
-- Perguntas condicionais conforme tipo de evento.
-- Resumo com linha por linha: base, convidados, horas, adicionais e taxa.
+- Modo `Sob medida` com pacote base de referência.
+- Campos iniciais para tipo de evento, duração desejada, faixa de investimento e necessidades principais.
+- Resumo como estimativa, com aviso de que a proposta final pode variar.
+- Briefing salvo em `notes` estruturado enquanto `CustomQuote` ainda não existe.
 
 ### Dashboard
 
@@ -172,8 +173,8 @@ model QuoteLineItem {
 
 ## Prioridade Recomendada
 
-1. Criar apenas o card `Sob medida` na vitrine apontando para o fluxo atual com observações.
-2. Adicionar `notes` estruturado no booking para capturar necessidades especiais.
+1. Concluído: criar o card `Sob medida` na vitrine apontando para o fluxo atual com observações.
+2. Concluído: adicionar `notes` estruturado no booking para capturar necessidades especiais.
 3. Criar `PackageAddon` e adicionar adicionais editáveis.
 4. Criar `CustomQuote` e `QuoteLineItem`.
 5. Gerar proposta PDF.

@@ -13,7 +13,7 @@ export const bookingRequestSchema = z.object({
     name: z.string().trim().min(2).max(120),
     email: z.string().trim().toLowerCase().email().max(160),
     phone: z.string().trim().max(40).default(''),
-    notes: z.string().trim().max(1000).optional(),
+    notes: z.string().trim().max(1600).optional(),
   }),
 })
 

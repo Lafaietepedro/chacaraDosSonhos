@@ -31,6 +31,18 @@ test('bookingRequestSchema accepts numeric guest values as strings', () => {
   assert.equal(parsed.guests, 120)
 })
 
+test('bookingRequestSchema accepts structured custom package notes', () => {
+  const parsed = bookingRequestSchema.parse({
+    ...validPayload,
+    customer: {
+      ...validPayload.customer,
+      notes: '[Pacote sob medida]\nTipo de evento: Corporativo\nNecessidades principais: briefing detalhado',
+    },
+  })
+
+  assert.match(parsed.customer.notes ?? '', /Pacote sob medida/)
+})
+
 test('bookingRequestSchema rejects invalid dates, guests and customer email', () => {
   const result = bookingRequestSchema.safeParse({
     ...validPayload,

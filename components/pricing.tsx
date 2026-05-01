@@ -120,7 +120,7 @@ export function Pricing() {
               </div>
             </div>
             <Button className="bg-white text-slate-950 hover:bg-slate-100" asChild>
-              <Link href="/booking">
+              <Link href="/booking?mode=custom">
                 Montar proposta
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

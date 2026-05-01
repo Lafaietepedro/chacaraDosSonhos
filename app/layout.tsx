@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { siteConfig } from '@/lib/site'
 
@@ -31,6 +31,11 @@ export const metadata: Metadata = {
     title: `${siteConfig.appName} - Reservas para espaços de eventos`,
     description: siteConfig.appDescription,
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
