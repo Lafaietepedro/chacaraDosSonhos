@@ -3,18 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { ensureDefaultProperty } from '@/lib/services/property.service'
 import { notifyContactMessage } from '@/lib/services/notification.service'
 import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rate-limit'
-
-type ContactPayload = {
-  name?: string
-  email?: string
-  phone?: string
-  subject?: string
-  message?: string
-}
-
-function clean(value?: string) {
-  return value?.trim() ?? ''
-}
+import { contactMessageSchema } from '@/lib/validation/contact'
 
 export async function POST(request: Request) {
   try {
@@ -35,21 +24,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Banco de dados indisponível' }, { status: 503 })
     }
 
-    const body = await request.json() as ContactPayload
-    const name = clean(body.name)
-    const email = clean(body.email).toLowerCase()
-    const phone = clean(body.phone)
-    const subject = clean(body.subject)
-    const message = clean(body.message)
+    const body = await request.json()
+    const parsed = contactMessageSchema.safeParse(body)
 
-    if (!name || !email || !message) {
-      return NextResponse.json({ error: 'Informe nome, email e mensagem' }, { status: 400 })
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Dados de contato inválidos', issues: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      )
     }
 
-    if (!email.includes('@')) {
-      return NextResponse.json({ error: 'Informe um email válido' }, { status: 400 })
-    }
-
+    const { name, email, phone, subject, message } = parsed.data
     const property = await ensureDefaultProperty(prisma)
     const contactMessage = await prisma.contactMessage.create({
       data: {
