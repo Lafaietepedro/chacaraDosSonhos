@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyAuth } from '@/lib/api-auth'
+import { assertBookingStatusTransition, isBookingStatus } from '@/lib/services/booking-status'
 
 export async function PATCH(
   request: Request,
@@ -19,10 +20,25 @@ export async function PATCH(
     
     const { id } = await params
     const body = await request.json()
-    const { status } = body as { status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'REJECTED' }
+    const { status } = body as { status: string }
 
-    if (!id || !status) {
+    if (!id || !status || !isBookingStatus(status)) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+    }
+
+    const currentBooking = await prisma.booking.findUnique({
+      where: { id },
+      select: { status: true },
+    })
+
+    if (!currentBooking) {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+    }
+
+    try {
+      assertBookingStatusTransition(currentBooking.status, status)
+    } catch {
+      return NextResponse.json({ error: 'Invalid status transition' }, { status: 409 })
     }
 
     const booking = await prisma.booking.update({
