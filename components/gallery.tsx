@@ -74,7 +74,7 @@ export function Gallery() {
                 index === 0 ? 'lg:col-span-2 lg:row-span-2' : ''
               }`}
             >
-              <div className={index === 0 ? 'aspect-[1.12/1]' : 'aspect-[1.12/0.82]'}>
+              <div className={`relative ${index === 0 ? 'aspect-[1.12/1]' : 'aspect-[1.12/0.82]'}`}>
                 <Image
                   src={image.src}
                   alt={image.alt}

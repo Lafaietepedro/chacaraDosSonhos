@@ -23,9 +23,9 @@ O Venue Eventos centraliza o fluxo mínimo de operação:
 - Regra de preço isolada em serviço testável.
 - Validação de disponibilidade no backend antes de criar reservas.
 - Dashboard para aprovar, recusar, cancelar, concluir e excluir reservas.
-- Proposta sob medida persistida com linhas de valor para pedidos customizados.
+- Proposta sob medida persistida, editável e exportável em PDF.
 - Bloqueio manual de datas no calendário administrativo.
-- Configuração editável de propriedade, taxa operacional e pacotes.
+- Configuração editável de propriedade, taxa operacional, pacotes e adicionais.
 
 ### Resultado Atual
 
@@ -51,7 +51,7 @@ Login administrativo:
 
 O redesign atual reposiciona a interface pública como produto operacional premium para espaços de eventos. Para comparar com uma proposta externa, use o briefing em [`docs/design/original-project-overview.md`](docs/design/original-project-overview.md), que descreve o design anterior, pontos fracos e restrições para uma segunda leitura.
 
-A identidade visual agora usa uma marca vetorial própria em [`public/brand/venue-eventos-logo.svg`](public/brand/venue-eventos-logo.svg), com símbolo aplicado no header, footer, login, dashboard e favicons.
+A identidade visual usa uma marca vetorial própria em [`public/brand/venue-eventos-logo.svg`](public/brand/venue-eventos-logo.svg), com símbolo aplicado no header, footer, login, dashboard e favicons.
 
 ## Modelo De Negócio
 
@@ -103,7 +103,8 @@ Node 25 é uma release Current e apresentou instabilidade na geração do Prisma
 - Gestão de pacotes: preço, duração, capacidade, convidado extra, itens incluídos, destaque, ordem e ativação.
 - Gestão de adicionais: nome, descrição, preço e ativação.
 - Visualização de adicionais selecionados e briefing sob medida nas reservas.
-- Proposta sob medida com valor estimado e composição por itens.
+- Proposta sob medida com valor estimado, valor final editável, status e composição por itens.
+- Contrato/proposta em PDF gerado sob demanda pelo painel.
 - Troca de senha pelo painel.
 
 ## Decisões Técnicas
@@ -141,13 +142,15 @@ components/
 lib/
   services/
     availability.ts            Regra de disponibilidade
+    addon.service.ts           Criação e edição administrativa de adicionais
     booking.service.ts         Criação transacional de reserva
     booking-status.ts          Fluxo permitido de status
-    addon.service.ts           Criação e edição administrativa de adicionais
     custom-quote.service.ts    Geração de proposta sob medida
     notification.service.ts    Email transacional opcional
     pricing.ts                 Cálculo de preço
     property.service.ts        Bootstrap e consulta da propriedade padrão
+  pdf/
+    simple-pdf.ts              Gerador leve de contrato/proposta em PDF
   api-auth.ts                  Validação de sessão administrativa
   auth-crypto.ts               Hash de senha e assinatura
   catalog.ts                   Catálogo público
@@ -171,6 +174,7 @@ Cobertura automatizada atual:
 
 - Cálculo de preço com convidados extras e adicionais.
 - Geração de proposta sob medida.
+- Geração de PDF simples.
 - Rate limiting.
 - Disponibilidade de datas.
 - Transições de status de reserva.
@@ -208,11 +212,14 @@ DATABASE_URL="file:./dev.db"
 DASHBOARD_USERNAME="admin"
 DASHBOARD_PASSWORD="troque-esta-senha"
 AUTH_SECRET="gere-uma-string-longa-e-aleatoria"
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 RESEND_API_KEY=""
 RESEND_FROM_EMAIL="Venue Eventos <reservas@seudominio.com.br>"
 WHATSAPP_PHONE="5561999999999"
 WHATSAPP_WEBHOOK_URL=""
 CALLMEBOT_API_KEY=""
+MERCADO_PAGO_ACCESS_TOKEN=""
+MERCADO_PAGO_WEBHOOK_SECRET=""
 ```
 
 Prepare o banco:
@@ -257,11 +264,14 @@ Para uma demonstração pública de portfólio:
 
 SQLite local é aceitável para desenvolvimento, mas é um ponto fraco para demo pública porque não resolve concorrência real e não representa uma operação em produção.
 
+O checklist operacional está em [`docs/deployment.md`](docs/deployment.md).
+
 ## Trade-Offs
 
 - Autenticação customizada mantém o projeto simples, mas NextAuth/Auth.js pode fazer sentido quando houver múltiplos administradores, recuperação de senha e sessões mais robustas.
 - Rate limiting em memória funciona para desenvolvimento e deploy simples, mas deve virar Upstash Redis ou alternativa persistente em produção serverless.
 - Email via Resend está pronto como integração opcional, mas o projeto ainda não mantém histórico de envio.
+- PDF de proposta/contrato é gerado sob demanda pelo próprio app. Para contrato juridicamente robusto, ainda faltam cláusulas configuráveis, versionamento e assinatura eletrônica.
 - Não há multitenancy. A decisão é intencional: primeiro consolidar uma operação bem feita, depois generalizar para múltiplas propriedades.
 - Não há pagamento de sinal. Mercado Pago é provavelmente a melhor próxima escolha para o mercado brasileiro.
 
@@ -270,7 +280,6 @@ SQLite local é aceitável para desenvolvimento, mas é um ponto fraco para demo
 Prioridade alta:
 
 - Deploy público com PostgreSQL.
-- Polimento visual final do dashboard.
 - Upload e ordenação de fotos.
 - Histórico de notificações.
 - Testes para criação de reserva com transação e snapshots.
@@ -278,7 +287,6 @@ Prioridade alta:
 Prioridade média:
 
 - Pagamento de sinal via Mercado Pago.
-- Contrato PDF gerado sob demanda.
 - Exportação de agenda.
 - Relatórios de receita, ocupação, conversão e ticket médio.
 - Gestão de múltiplos administradores.
@@ -316,10 +324,13 @@ Funcionalidades implementadas:
 - Página pública com seções comerciais.
 - Fluxo de solicitação de reserva.
 - Cálculo de preço por pacote, taxa operacional e convidados extras.
+- Adicionais selecionáveis no fluxo público e editáveis no painel.
 - Persistência de reservas com Prisma.
 - Validação de disponibilidade no backend.
 - Datas bloqueadas persistidas.
 - Pacotes e configurações do espaço editáveis pelo painel.
+- Proposta sob medida persistida com itens, status e valor final editável.
+- Contrato/proposta PDF gerado sob demanda no dashboard.
 - Email transacional opcional para cliente e anfitrião via Resend.
 - Dashboard com login, estatísticas, paginação, filtros, detalhes, aprovação, recusa, cancelamento, conclusão e exclusão.
 - Calendário visual.
@@ -329,7 +340,6 @@ Funcionalidades desejadas:
 - Deploy público com PostgreSQL.
 - Pagamento de sinal via PIX/cartão.
 - Gestão real de fotos.
-- Contrato PDF.
 - Gestão de múltiplos administradores.
 - Relatórios melhores.
 - Histórico de notificações.

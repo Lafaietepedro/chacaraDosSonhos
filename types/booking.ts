@@ -53,6 +53,8 @@ export type QuoteLineItem = {
   source: string | null
 }
 
+export type CustomQuoteStatus = 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED'
+
 export type DashboardCustomQuote = {
   id: string
   eventType: string | null
@@ -61,7 +63,7 @@ export type DashboardCustomQuote = {
   requirements: string | null
   estimatedAmount: number | null
   finalAmount: number | null
-  status: string
+  status: CustomQuoteStatus
   items: QuoteLineItem[]
 }
 

@@ -15,6 +15,7 @@
     "tests/**/*.ts",
     "lib/custom-briefing.ts",
     "lib/rate-limit.ts",
+    "lib/pdf/simple-pdf.ts",
     "lib/services/custom-quote.service.ts",
     "lib/services/pricing.ts",
     "lib/validation/booking.ts",

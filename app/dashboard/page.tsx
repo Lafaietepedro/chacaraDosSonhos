@@ -31,6 +31,8 @@ import {
   LogOut,
   Search,
   Inbox,
+  FileText,
+  Save,
   type LucideIcon
 } from 'lucide-react'
 import { formatCurrency, formatDate, parseLocalDate } from '@/lib/utils'
@@ -42,9 +44,11 @@ import type {
   CatalogResponse,
   DashboardBlockedDate,
   DashboardBooking,
+  DashboardCustomQuote,
   DashboardContactMessage,
   DashboardPagination,
   DashboardStats,
+  CustomQuoteStatus,
   PackageOption,
   PackageSettingsInput,
   PropertySettingsInput,
@@ -111,6 +115,11 @@ type DashboardNotice = {
 }
 
 type BookingStatusUpdate = 'CONFIRMED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED'
+
+type CustomQuoteUpdateInput = {
+  status: CustomQuoteStatus
+  finalAmount: number | null
+}
 
 type EmptyStateProps = {
   icon: LucideIcon
@@ -336,7 +345,24 @@ function BookingAddonsPanel({ addons }: { addons: DashboardBooking['addons'] }) 
   )
 }
 
-function BookingCustomQuotePanel({ quote }: { quote: DashboardBooking['customQuote'] }) {
+function BookingCustomQuotePanel({
+  quote,
+  isSaving,
+  onSave,
+}: {
+  quote: DashboardBooking['customQuote']
+  isSaving: boolean
+  onSave: (input: CustomQuoteUpdateInput) => Promise<void>
+}) {
+  const [status, setStatus] = useState<CustomQuoteStatus>('DRAFT')
+  const [finalAmount, setFinalAmount] = useState('')
+
+  useEffect(() => {
+    if (!quote) return
+    setStatus(quote.status)
+    setFinalAmount(quote.finalAmount === null ? '' : String(quote.finalAmount))
+  }, [quote])
+
   if (!quote) return null
 
   const statusLabel = {
@@ -346,9 +372,11 @@ function BookingCustomQuotePanel({ quote }: { quote: DashboardBooking['customQuo
     REJECTED: 'Recusada',
   }[quote.status] ?? quote.status
   const displayedAmount = quote.finalAmount ?? quote.estimatedAmount ?? 0
+  const parsedFinalAmount = finalAmount.trim() ? Number(finalAmount) : null
+  const canSave = parsedFinalAmount === null || (Number.isFinite(parsedFinalAmount) && parsedFinalAmount >= 0)
 
   return (
-    <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-emerald-100 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase text-emerald-700">Proposta sob medida</p>
@@ -360,6 +388,50 @@ function BookingCustomQuotePanel({ quote }: { quote: DashboardBooking['customQuo
         <span className="inline-flex w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200">
           {statusLabel}
         </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:grid-cols-[1fr_180px_auto] sm:items-end">
+        <div>
+          <Label htmlFor="quote-final-amount" className="text-xs font-semibold uppercase text-slate-500">
+            Valor final
+          </Label>
+          <Input
+            id="quote-final-amount"
+            inputMode="decimal"
+            type="number"
+            min="0"
+            step="0.01"
+            value={finalAmount}
+            onChange={(event) => setFinalAmount(event.target.value)}
+            placeholder={quote.estimatedAmount ? String(quote.estimatedAmount) : '0'}
+            className="mt-1 bg-white"
+          />
+        </div>
+        <div>
+          <Label htmlFor="quote-status" className="text-xs font-semibold uppercase text-slate-500">
+            Status
+          </Label>
+          <select
+            id="quote-status"
+            value={status}
+            onChange={(event) => setStatus(event.target.value as CustomQuoteStatus)}
+            className="mt-1 h-10 w-full rounded-md border border-input bg-white px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <option value="DRAFT">Rascunho</option>
+            <option value="SENT">Enviada</option>
+            <option value="ACCEPTED">Aceita</option>
+            <option value="REJECTED">Recusada</option>
+          </select>
+        </div>
+        <Button
+          type="button"
+          disabled={!canSave || isSaving}
+          onClick={() => onSave({ status, finalAmount: parsedFinalAmount })}
+          className="bg-slate-950 text-white hover:bg-slate-800"
+        >
+          <Save className="mr-2 h-4 w-4" />
+          {isSaving ? 'Salvando...' : 'Salvar'}
+        </Button>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -477,6 +549,8 @@ export default function DashboardPage() {
   const [isSavingSettings, setIsSavingSettings] = useState(false)
   const [isSavingPackage, setIsSavingPackage] = useState(false)
   const [isSavingAddon, setIsSavingAddon] = useState(false)
+  const [isSavingQuote, setIsSavingQuote] = useState(false)
+  const [generatingContractId, setGeneratingContractId] = useState<string | null>(null)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   const showNotice = useCallback((nextNotice: DashboardNotice) => {
@@ -1047,6 +1121,80 @@ export default function DashboardPage() {
         type: 'error',
         message: e instanceof Error ? e.message : 'Não foi possível atualizar o status. Tente novamente.',
       })
+    }
+  }
+
+  const applyCustomQuoteUpdate = (customQuote: DashboardCustomQuote) => {
+    setRecentBookings((current) =>
+      current.map((booking) =>
+        booking.customQuote?.id === customQuote.id ? { ...booking, customQuote } : booking
+      )
+    )
+    setSelectedBooking((current) =>
+      current?.customQuote?.id === customQuote.id ? { ...current, customQuote } : current
+    )
+  }
+
+  const handleSaveCustomQuote = async (quoteId: string, input: CustomQuoteUpdateInput) => {
+    try {
+      setIsSavingQuote(true)
+      const token = getToken()
+      const res = await fetch(`/api/dashboard/custom-quotes/${quoteId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(input),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Falha ao salvar proposta')
+      }
+
+      const data = await res.json() as { customQuote: DashboardCustomQuote }
+      applyCustomQuoteUpdate(data.customQuote)
+      showNotice({ type: 'success', message: 'Proposta atualizada com sucesso.' })
+    } catch (error) {
+      console.error(error)
+      showNotice({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Não foi possível salvar a proposta.',
+      })
+    } finally {
+      setIsSavingQuote(false)
+    }
+  }
+
+  const handleOpenContractPdf = async (bookingId: string) => {
+    try {
+      setGeneratingContractId(bookingId)
+      const token = getToken()
+      const res = await fetch(`/api/dashboard/bookings/${bookingId}/contract`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Falha ao gerar PDF')
+      }
+
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      window.open(url, '_blank', 'noopener,noreferrer')
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 60_000)
+      showNotice({ type: 'success', message: 'PDF gerado em uma nova aba.' })
+    } catch (error) {
+      console.error(error)
+      showNotice({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Não foi possível gerar o PDF.',
+      })
+    } finally {
+      setGeneratingContractId(null)
     }
   }
 
@@ -2128,8 +2276,8 @@ export default function DashboardPage() {
         {/* Modal de Detalhes da Reserva */}
         {isDetailsModalOpen && selectedBooking && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <Card className="max-h-[90vh] w-full max-w-2xl overflow-hidden border-slate-200 shadow-xl">
-              <CardHeader className="border-b border-slate-200">
+            <Card className="max-h-[90vh] w-full max-w-3xl overflow-hidden border-slate-200 shadow-2xl">
+              <CardHeader className="border-b border-slate-200 bg-slate-50/80">
                 <div className="flex items-center justify-between gap-4">
                   <CardTitle className="flex items-center text-slate-950">
                     <User className="w-5 h-5 mr-2" />
@@ -2146,7 +2294,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="max-h-[calc(90vh-84px)] space-y-5 overflow-y-auto p-6">
                 {/* Cliente */}
-                <div className="border-b pb-4">
+                <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                   <div className="mb-2 flex flex-wrap items-center gap-2 text-lg font-semibold">
                     <span className="flex items-center text-slate-950">
                       <User className="w-5 h-5 mr-2 text-primary" />
@@ -2167,54 +2315,70 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Detalhes do Evento */}
-                <div className="space-y-3">
-                  <h4 className="font-medium text-gray-900">Informações do Evento</h4>
+                <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                  <h4 className="font-semibold text-slate-950">Informações do evento</h4>
                   
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center">
+                  <div className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
+                    <div className="rounded-md bg-slate-50 p-3">
+                      <span className="flex items-center text-slate-500">
                         <CalendarIcon className="w-4 h-4 mr-2 text-gray-500" />
-                        Data:
+                        Data
                       </span>
-                      <span className="font-medium">
+                      <p className="mt-1 font-semibold text-slate-950">
                         {selectedBooking.date ? formatDate(parseBookingDate(selectedBooking.date)) : 'Data não disponível'}
-                      </span>
+                      </p>
                     </div>
                     
-	                    <div className="flex items-center justify-between">
-	                      <span className="flex items-center">
-	                        <Users className="w-4 h-4 mr-2 text-gray-500" />
-	                        Convidados:
-	                      </span>
-	                      <span className="font-medium">{selectedBooking.guests} pessoas</span>
-	                    </div>
+                    <div className="rounded-md bg-slate-50 p-3">
+                      <span className="flex items-center text-slate-500">
+                        <Users className="w-4 h-4 mr-2 text-gray-500" />
+                        Convidados
+                      </span>
+                      <p className="mt-1 font-semibold text-slate-950">{selectedBooking.guests} pessoas</p>
+                    </div>
 
-	                    <div className="flex items-center justify-between">
-	                      <span>Pacote:</span>
-	                      <span className="font-medium">{selectedBooking.packageName}</span>
-	                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center">
-                        <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
-                        Valor:
-                      </span>
-                      <span className="font-medium">{formatCurrency(selectedBooking.total)}</span>
+                    <div className="rounded-md bg-slate-50 p-3">
+                      <span className="text-slate-500">Pacote</span>
+                      <p className="mt-1 font-semibold text-slate-950">{selectedBooking.packageName}</p>
                     </div>
                     
-                    <div className="flex items-center justify-between">
-                      <span>Status:</span>
+                    <div className="rounded-md bg-slate-50 p-3">
+                      <span className="flex items-center text-slate-500">
+                        <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
+                        Valor
+                      </span>
+                      <p className="mt-1 font-semibold text-slate-950">{formatCurrency(selectedBooking.total)}</p>
+                    </div>
+                    
+                    <div className="rounded-md bg-slate-50 p-3 sm:col-span-2">
+                      <span className="mb-2 block text-slate-500">Status</span>
                       <StatusBadge status={selectedBooking.status} />
                     </div>
                   </div>
                 </div>
 
                 <BookingNotesPanel notes={selectedBooking.notes} />
-                <BookingCustomQuotePanel quote={selectedBooking.customQuote} />
+                <BookingCustomQuotePanel
+                  quote={selectedBooking.customQuote}
+                  isSaving={isSavingQuote}
+                  onSave={(input) => selectedBooking.customQuote
+                    ? handleSaveCustomQuote(selectedBooking.customQuote.id, input)
+                    : Promise.resolve()
+                  }
+                />
                 <BookingAddonsPanel addons={selectedBooking.addons} />
 
                     {/* Botões de Ação */}
                     <div className="flex flex-wrap gap-2 border-t border-slate-200 pt-4">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={generatingContractId === selectedBooking.id}
+                        onClick={() => handleOpenContractPdf(selectedBooking.id)}
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        {generatingContractId === selectedBooking.id ? 'Gerando...' : 'Contrato PDF'}
+                      </Button>
                       {selectedBooking.status === 'pending' && (
                         <>
                           <Button 

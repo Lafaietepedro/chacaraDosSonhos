@@ -38,17 +38,6 @@ type CustomDetails = {
   requirements: string
 }
 
-type BookingPageProps = {
-  searchParams?: {
-    mode?: string | string[]
-  }
-}
-
-function hasCustomMode(searchParams?: BookingPageProps['searchParams']) {
-  const mode = searchParams?.mode
-  return Array.isArray(mode) ? mode.includes('custom') : mode === 'custom'
-}
-
 function findCustomBasePackage(packages: PackageOption[]) {
   return (
     packages.find((pkg) => pkg.slug === 'producao') ??
@@ -69,10 +58,10 @@ function buildCustomNotes(details: CustomDetails) {
   return rows.join('\n')
 }
 
-export default function BookingPage({ searchParams }: BookingPageProps) {
+export default function BookingPage() {
   const router = useRouter()
   const [step, setStep] = useState(1)
-  const [isCustomMode, setIsCustomMode] = useState(() => hasCustomMode(searchParams))
+  const [isCustomMode, setIsCustomMode] = useState(false)
   const [selectedDate, setSelectedDate] = useState('')
   const [dateError, setDateError] = useState('')
   const [guests, setGuests] = useState(50)
