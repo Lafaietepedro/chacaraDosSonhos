@@ -23,6 +23,7 @@ O Venue Eventos centraliza o fluxo mínimo de operação:
 - Regra de preço isolada em serviço testável.
 - Validação de disponibilidade no backend antes de criar reservas.
 - Dashboard para aprovar, recusar, cancelar, concluir e excluir reservas.
+- Proposta sob medida persistida com linhas de valor para pedidos customizados.
 - Bloqueio manual de datas no calendário administrativo.
 - Configuração editável de propriedade, taxa operacional e pacotes.
 
@@ -102,6 +103,7 @@ Node 25 é uma release Current e apresentou instabilidade na geração do Prisma
 - Gestão de pacotes: preço, duração, capacidade, convidado extra, itens incluídos, destaque, ordem e ativação.
 - Gestão de adicionais: nome, descrição, preço e ativação.
 - Visualização de adicionais selecionados e briefing sob medida nas reservas.
+- Proposta sob medida com valor estimado e composição por itens.
 - Troca de senha pelo painel.
 
 ## Decisões Técnicas
@@ -142,6 +144,7 @@ lib/
     booking.service.ts         Criação transacional de reserva
     booking-status.ts          Fluxo permitido de status
     addon.service.ts           Criação e edição administrativa de adicionais
+    custom-quote.service.ts    Geração de proposta sob medida
     notification.service.ts    Email transacional opcional
     pricing.ts                 Cálculo de preço
     property.service.ts        Bootstrap e consulta da propriedade padrão
@@ -167,6 +170,7 @@ tests/
 Cobertura automatizada atual:
 
 - Cálculo de preço com convidados extras e adicionais.
+- Geração de proposta sob medida.
 - Rate limiting.
 - Disponibilidade de datas.
 - Transições de status de reserva.

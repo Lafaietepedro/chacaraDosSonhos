@@ -151,8 +151,46 @@ model Booking {
   package       BookingPackage? @relation(fields: [packageId], references: [id])
   payments      Payment[]
   bookingExtras BookingExtra[]
+  customQuote   CustomQuote?
 
   @@map("bookings")
+}
+
+model CustomQuote {
+  id              String   @id @default(cuid())
+  bookingId       String   @unique
+  eventType       String?
+  desiredDuration String?
+  budgetRange     String?
+  requirements    String?
+  estimatedAmount Float?
+  finalAmount     Float?
+  status          String   @default("DRAFT")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  booking Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  items   QuoteLineItem[]
+
+  @@map("custom_quotes")
+}
+
+model QuoteLineItem {
+  id            String   @id @default(cuid())
+  label         String
+  quantity      Float
+  unit          String
+  unitPrice     Float
+  total         Float
+  source        String?
+  createdAt     DateTime @default(now())
+
+  // Relations
+  customQuoteId String
+  customQuote   CustomQuote @relation(fields: [customQuoteId], references: [id], onDelete: Cascade)
+
+  @@map("quote_line_items")
 }
 
 model BookingExtra {

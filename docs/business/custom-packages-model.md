@@ -163,12 +163,13 @@ model QuoteLineItem {
 - Campos iniciais para tipo de evento, duração desejada, faixa de investimento e necessidades principais.
 - Adicionais selecionáveis entram na estimativa e são persistidos na reserva.
 - Resumo como estimativa, com aviso de que a proposta final pode variar.
-- Briefing salvo em `notes` estruturado enquanto `CustomQuote` ainda não existe.
+- Briefing salvo em `notes` estruturado e convertido em `CustomQuote` quando o pedido é sob medida.
 
 ### Dashboard
 
 - Concluído na fase inicial: badge `Sob medida`, prévia do briefing na lista de reservas e briefing estruturado no modal de detalhes.
 - Concluído na fase inicial: adicionais selecionados aparecem na lista e nos detalhes da reserva.
+- Concluído na fase inicial: proposta sob medida aparece nos detalhes com linhas de composição.
 - Próximo passo: aba de proposta dentro dos detalhes da reserva.
 - Campos para ajustar valores manualmente.
 - Status de proposta.
@@ -181,9 +182,10 @@ model QuoteLineItem {
 3. Concluído: exibir o briefing sob medida de forma destacada no dashboard.
 4. Concluído parcialmente: usar `Extra`/`BookingExtra` para adicionais selecionáveis e persistidos.
 5. Concluído: tornar adicionais editáveis no dashboard.
-6. Criar `CustomQuote` e `QuoteLineItem`.
-7. Gerar proposta PDF.
-8. Conectar pagamento de sinal.
+6. Concluído parcialmente: criar `CustomQuote` e `QuoteLineItem` para propostas geradas.
+7. Editar valor final e status da proposta no dashboard.
+8. Gerar proposta PDF.
+9. Conectar pagamento de sinal.
 
 ## Decisão Recomendada
 

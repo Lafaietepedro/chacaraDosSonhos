@@ -99,6 +99,13 @@ export async function GET(request: Request) {
           bookingExtras: {
             include: { extra: true },
           },
+          customQuote: {
+            include: {
+              items: {
+                orderBy: { createdAt: 'asc' },
+              },
+            },
+          },
         },
       }),
       prisma.booking.count({ where: bookingWhere }),
@@ -154,6 +161,25 @@ export async function GET(request: Request) {
         quantity: bookingExtra.quantity,
         total: bookingExtra.extra.price * bookingExtra.quantity,
       })),
+      customQuote: b.customQuote ? {
+        id: b.customQuote.id,
+        eventType: b.customQuote.eventType,
+        desiredDuration: b.customQuote.desiredDuration,
+        budgetRange: b.customQuote.budgetRange,
+        requirements: b.customQuote.requirements,
+        estimatedAmount: b.customQuote.estimatedAmount,
+        finalAmount: b.customQuote.finalAmount,
+        status: b.customQuote.status,
+        items: b.customQuote.items.map((item) => ({
+          id: item.id,
+          label: item.label,
+          quantity: item.quantity,
+          unit: item.unit,
+          unitPrice: item.unitPrice,
+          total: item.total,
+          source: item.source,
+        })),
+      } : null,
     }))
 
     const stats = {

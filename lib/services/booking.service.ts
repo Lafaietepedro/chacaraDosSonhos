@@ -3,6 +3,7 @@ import { parseLocalDate } from '@/lib/utils'
 import { checkDateAvailability } from '@/lib/services/availability'
 import { calculateBookingPrice } from '@/lib/services/pricing'
 import { ensureDefaultProperty } from '@/lib/services/property.service'
+import { buildCustomQuoteDraft } from '@/lib/services/custom-quote.service'
 
 export class BookingServiceError extends Error {
   constructor(
@@ -75,6 +76,7 @@ export async function createBookingRequest(input: CreateBookingInput) {
 
     return {
       id: addon.id,
+      name: addon.name,
       price: addon.price,
       quantity,
     }
@@ -85,6 +87,15 @@ export async function createBookingRequest(input: CreateBookingInput) {
     package: selectedPackage,
     guestCount: input.guests,
     operationalFee: property.operationalFee,
+    addons: selectedAddons,
+  })
+  const customQuoteDraft = buildCustomQuoteDraft({
+    notes: input.customer.notes,
+    packageName: selectedPackage.name,
+    basePrice: selectedPackage.basePrice,
+    operationalFee: property.operationalFee,
+    extraGuests: quote.extraGuests,
+    extraGuestFee: selectedPackage.extraGuestFee,
     addons: selectedAddons,
   })
 
@@ -108,7 +119,7 @@ export async function createBookingRequest(input: CreateBookingInput) {
       },
     })
 
-    return tx.booking.create({
+    const createdBooking = await tx.booking.create({
       data: {
         startDate: bookingDate,
         endDate: bookingDate,
@@ -139,6 +150,41 @@ export async function createBookingRequest(input: CreateBookingInput) {
         package: true,
         bookingExtras: {
           include: { extra: true },
+        },
+        customQuote: {
+          include: { items: true },
+        },
+      },
+    })
+
+    if (customQuoteDraft) {
+      await tx.customQuote.create({
+        data: {
+          bookingId: createdBooking.id,
+          eventType: customQuoteDraft.eventType,
+          desiredDuration: customQuoteDraft.desiredDuration,
+          budgetRange: customQuoteDraft.budgetRange,
+          requirements: customQuoteDraft.requirements,
+          estimatedAmount: customQuoteDraft.estimatedAmount,
+          status: 'DRAFT',
+          items: {
+            create: customQuoteDraft.items,
+          },
+        },
+      })
+    }
+
+    return tx.booking.findUniqueOrThrow({
+      where: { id: createdBooking.id },
+      include: {
+        user: true,
+        property: true,
+        package: true,
+        bookingExtras: {
+          include: { extra: true },
+        },
+        customQuote: {
+          include: { items: true },
         },
       },
     })

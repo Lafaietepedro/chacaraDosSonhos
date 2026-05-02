@@ -43,6 +43,28 @@ export type SelectedBookingAddon = AddonOption & {
   total: number
 }
 
+export type QuoteLineItem = {
+  id: string
+  label: string
+  quantity: number
+  unit: string
+  unitPrice: number
+  total: number
+  source: string | null
+}
+
+export type DashboardCustomQuote = {
+  id: string
+  eventType: string | null
+  desiredDuration: string | null
+  budgetRange: string | null
+  requirements: string | null
+  estimatedAmount: number | null
+  finalAmount: number | null
+  status: string
+  items: QuoteLineItem[]
+}
+
 export type DashboardBooking = {
   id: string
   customer: string
@@ -58,6 +80,7 @@ export type DashboardBooking = {
   createdAt: string
   notes: string | null
   addons: SelectedBookingAddon[]
+  customQuote: DashboardCustomQuote | null
 }
 
 export type DashboardStats = {

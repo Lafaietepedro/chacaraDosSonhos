@@ -336,6 +336,78 @@ function BookingAddonsPanel({ addons }: { addons: DashboardBooking['addons'] }) 
   )
 }
 
+function BookingCustomQuotePanel({ quote }: { quote: DashboardBooking['customQuote'] }) {
+  if (!quote) return null
+
+  const statusLabel = {
+    DRAFT: 'Rascunho',
+    SENT: 'Enviada',
+    ACCEPTED: 'Aceita',
+    REJECTED: 'Recusada',
+  }[quote.status] ?? quote.status
+  const displayedAmount = quote.finalAmount ?? quote.estimatedAmount ?? 0
+
+  return (
+    <div className="rounded-md border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase text-emerald-700">Proposta sob medida</p>
+          <h4 className="mt-1 text-lg font-bold text-slate-950">{formatCurrency(displayedAmount)}</h4>
+          <p className="mt-1 text-sm text-slate-500">
+            {quote.finalAmount ? 'Valor final definido no painel.' : 'Estimativa gerada a partir do briefing e adicionais.'}
+          </p>
+        </div>
+        <span className="inline-flex w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 ring-1 ring-inset ring-slate-200">
+          {statusLabel}
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {quote.eventType && (
+          <div className="rounded-md bg-slate-50 p-3">
+            <p className="text-xs font-semibold uppercase text-slate-500">Tipo</p>
+            <p className="mt-1 text-sm font-medium text-slate-950">{quote.eventType}</p>
+          </div>
+        )}
+        {quote.desiredDuration && (
+          <div className="rounded-md bg-slate-50 p-3">
+            <p className="text-xs font-semibold uppercase text-slate-500">Duração</p>
+            <p className="mt-1 text-sm font-medium text-slate-950">{quote.desiredDuration}</p>
+          </div>
+        )}
+        {quote.budgetRange && (
+          <div className="rounded-md bg-slate-50 p-3">
+            <p className="text-xs font-semibold uppercase text-slate-500">Investimento</p>
+            <p className="mt-1 text-sm font-medium text-slate-950">{quote.budgetRange}</p>
+          </div>
+        )}
+        {quote.requirements && (
+          <div className="rounded-md bg-slate-50 p-3">
+            <p className="text-xs font-semibold uppercase text-slate-500">Necessidades</p>
+            <p className="mt-1 text-sm font-medium leading-6 text-slate-950">{quote.requirements}</p>
+          </div>
+        )}
+      </div>
+
+      {quote.items.length > 0 && (
+        <div className="mt-4 space-y-2">
+          {quote.items.map((item) => (
+            <div key={item.id} className="flex items-start justify-between gap-4 rounded-md border border-slate-200 bg-slate-50 p-3 text-sm">
+              <div>
+                <p className="font-medium text-slate-950">{item.label}</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {item.quantity} {item.unit} x {formatCurrency(item.unitPrice)}
+                </p>
+              </div>
+              <span className="shrink-0 font-semibold text-slate-950">{formatCurrency(item.total)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function getStatusUpdateSuccessMessage(status: BookingStatusUpdate) {
   const messages: Record<BookingStatusUpdate, string> = {
     CONFIRMED: 'Reserva aprovada com sucesso.',
@@ -1296,6 +1368,14 @@ export default function DashboardPage() {
                       </div>
 
                       <CustomBriefingPreview notes={booking.notes} />
+                      {booking.customQuote && (
+                        <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3">
+                          <p className="text-xs font-semibold uppercase text-emerald-700">Proposta</p>
+                          <p className="mt-1 text-sm leading-6 text-emerald-900">
+                            {booking.customQuote.status} · {formatCurrency(booking.customQuote.finalAmount ?? booking.customQuote.estimatedAmount ?? booking.total)}
+                          </p>
+                        </div>
+                      )}
                       {booking.addons.length > 0 && (
                         <div className="mb-4 rounded-md border border-slate-200 bg-slate-50 p-3">
                           <p className="text-xs font-semibold uppercase text-slate-500">Adicionais</p>
@@ -2130,6 +2210,7 @@ export default function DashboardPage() {
                 </div>
 
                 <BookingNotesPanel notes={selectedBooking.notes} />
+                <BookingCustomQuotePanel quote={selectedBooking.customQuote} />
                 <BookingAddonsPanel addons={selectedBooking.addons} />
 
                     {/* Botões de Ação */}
