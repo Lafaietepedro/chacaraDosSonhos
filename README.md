@@ -65,7 +65,7 @@ A evolução recomendada é um modelo híbrido de pacotes fixos e orçamento sob
 - Tailwind CSS
 - Prisma ORM
 - SQLite em desenvolvimento
-- Schema alternativo para PostgreSQL
+- Schema alternativo para Supabase/PostgreSQL
 - API routes do próprio Next.js
 - ESLint 9 flat config
 - Node 24 recomendado
@@ -209,6 +209,9 @@ Configure `.env` ou `.env.local`:
 
 ```env
 DATABASE_URL="file:./dev.db"
+# Para Supabase em produção:
+# DATABASE_URL="postgresql://postgres.PROJECT_REF:SENHA@REGION.pooler.supabase.com:6543/postgres?pgbouncer=true"
+# DIRECT_URL="postgresql://postgres:SENHA@db.PROJECT_REF.supabase.co:5432/postgres"
 DASHBOARD_USERNAME="admin"
 DASHBOARD_PASSWORD="troque-esta-senha"
 AUTH_SECRET="gere-uma-string-longa-e-aleatoria"
@@ -257,8 +260,10 @@ npx -p node@24 npm run build
 Para uma demonstração pública de portfólio:
 
 - Vercel para aplicação Next.js.
-- Supabase, Neon ou Railway para PostgreSQL.
+- Supabase para PostgreSQL gerenciado.
 - `schema-production.prisma` como base da migração.
+- `DATABASE_URL` apontando para o Transaction Pooler do Supabase.
+- `DIRECT_URL` apontando para conexão direta ou Session Pooler.
 - `AUTH_SECRET` obrigatório em produção.
 - Seed inicial rodado uma vez no ambiente remoto.
 
@@ -315,7 +320,7 @@ Stack atual:
 - Tailwind CSS
 - Prisma
 - SQLite em desenvolvimento
-- Schema alternativo para PostgreSQL
+- Schema alternativo para Supabase/PostgreSQL
 - API routes do Next.js
 - Autenticação administrativa com senha hasheada por scrypt e sessão assinada por HMAC
 - Testes com node:test

@@ -8,8 +8,11 @@ if [ "$NODE_ENV" = "production" ]; then
   if [ -z "$DATABASE_URL" ]; then
     echo "DATABASE_URL must be configured for production builds"
     exit 1
+  elif [ -z "$DIRECT_URL" ]; then
+    echo "DIRECT_URL must be configured for Prisma production schema"
+    exit 1
   else
-    echo "DATABASE_URL found, using PostgreSQL"
+    echo "DATABASE_URL and DIRECT_URL found, using PostgreSQL"
   fi
 
   PRISMA_SCHEMA="prisma/schema-production.prisma"
