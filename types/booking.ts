@@ -118,3 +118,10 @@ export type PackageSettingsInput = {
   isActive: boolean
   sortOrder: number
 }
+
+export type AddonSettingsInput = {
+  name: string
+  description: string
+  price: number
+  isActive: boolean
+}

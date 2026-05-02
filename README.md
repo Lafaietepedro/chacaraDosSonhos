@@ -100,6 +100,7 @@ Node 25 é uma release Current e apresentou instabilidade na geração do Prisma
 - Gestão de mensagens de contato.
 - Configuração do espaço: nome, descrição, capacidade, taxa, contato e endereço.
 - Gestão de pacotes: preço, duração, capacidade, convidado extra, itens incluídos, destaque, ordem e ativação.
+- Gestão de adicionais: nome, descrição, preço e ativação.
 - Visualização de adicionais selecionados e briefing sob medida nas reservas.
 - Troca de senha pelo painel.
 
@@ -140,6 +141,7 @@ lib/
     availability.ts            Regra de disponibilidade
     booking.service.ts         Criação transacional de reserva
     booking-status.ts          Fluxo permitido de status
+    addon.service.ts           Criação e edição administrativa de adicionais
     notification.service.ts    Email transacional opcional
     pricing.ts                 Cálculo de preço
     property.service.ts        Bootstrap e consulta da propriedade padrão

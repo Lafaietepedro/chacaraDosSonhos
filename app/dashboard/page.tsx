@@ -37,6 +37,8 @@ import { formatCurrency, formatDate, parseLocalDate } from '@/lib/utils'
 import { siteConfig } from '@/lib/site'
 import { parseCustomBookingNotes } from '@/lib/custom-briefing'
 import type {
+  AddonOption,
+  AddonSettingsInput,
   CatalogResponse,
   DashboardBlockedDate,
   DashboardBooking,
@@ -87,6 +89,13 @@ const emptyPackageForm: PackageSettingsInput = {
   popular: false,
   isActive: true,
   sortOrder: 0,
+}
+
+const emptyAddonForm: AddonSettingsInput = {
+  name: '',
+  description: '',
+  price: 0,
+  isActive: true,
 }
 
 type BookingFilterState = {
@@ -381,8 +390,11 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>(emptyStats)
   const [propertySettings, setPropertySettings] = useState<PropertySettingsInput>(defaultPropertySettings)
   const [packages, setPackages] = useState<PackageOption[]>([])
+  const [addons, setAddons] = useState<AddonOption[]>([])
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null)
+  const [selectedAddonId, setSelectedAddonId] = useState<string | null>(null)
   const [packageForm, setPackageForm] = useState<PackageSettingsInput>(emptyPackageForm)
+  const [addonForm, setAddonForm] = useState<AddonSettingsInput>(emptyAddonForm)
   const [bookingFilters, setBookingFilters] = useState<BookingFilterState>(emptyBookingFilters)
   const [filterDraft, setFilterDraft] = useState<BookingFilterState>(emptyBookingFilters)
   const [passwordForm, setPasswordForm] = useState({
@@ -392,6 +404,7 @@ export default function DashboardPage() {
   })
   const [isSavingSettings, setIsSavingSettings] = useState(false)
   const [isSavingPackage, setIsSavingPackage] = useState(false)
+  const [isSavingAddon, setIsSavingAddon] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   const showNotice = useCallback((nextNotice: DashboardNotice) => {
@@ -513,6 +526,22 @@ export default function DashboardPage() {
         address: data.property.address,
       })
       setPackages(data.packages)
+
+      const addonsRes = await fetch('/api/dashboard/addons', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+      if (addonsRes.ok) {
+        const addonsData = await addonsRes.json() as { addons: AddonOption[] }
+        setAddons(addonsData.addons)
+      } else if (addonsRes.status === 401) {
+        authRef.current.logout()
+        return
+      } else {
+        setAddons(data.addons)
+      }
+
       if (data.packages.length > 0) {
         setSelectedPackageId((current) => {
           if (current) return current
@@ -669,6 +698,26 @@ export default function DashboardPage() {
     }
   }
 
+  const fetchAddons = async () => {
+    try {
+      const token = getToken()
+      const res = await fetch('/api/dashboard/addons', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (!res.ok) throw new Error('Falha ao carregar adicionais')
+
+      const data = await res.json() as { addons: AddonOption[] }
+      setAddons(data.addons)
+      return data.addons
+    } catch (error) {
+      console.error(error)
+      return addons
+    }
+  }
+
   const handleSelectPackage = (pkg: PackageOption) => {
     setSelectedPackageId(pkg.id)
     setPackageForm(packageToForm(pkg))
@@ -682,11 +731,33 @@ export default function DashboardPage() {
     })
   }
 
+  const handleSelectAddon = (addon: AddonOption) => {
+    setSelectedAddonId(addon.id)
+    setAddonForm({
+      name: addon.name,
+      description: addon.description,
+      price: addon.price,
+      isActive: addon.isActive ?? true,
+    })
+  }
+
+  const handleNewAddon = () => {
+    setSelectedAddonId(null)
+    setAddonForm(emptyAddonForm)
+  }
+
   const updatePackageForm = <Key extends keyof PackageSettingsInput>(
     key: Key,
     value: PackageSettingsInput[Key]
   ) => {
     setPackageForm((current) => ({ ...current, [key]: value }))
+  }
+
+  const updateAddonForm = <Key extends keyof AddonSettingsInput>(
+    key: Key,
+    value: AddonSettingsInput[Key]
+  ) => {
+    setAddonForm((current) => ({ ...current, [key]: value }))
   }
 
   const handleSavePackage = async () => {
@@ -723,6 +794,49 @@ export default function DashboardPage() {
       })
     } finally {
       setIsSavingPackage(false)
+    }
+  }
+
+  const handleSaveAddon = async () => {
+    try {
+      setIsSavingAddon(true)
+      const token = getToken()
+      const endpoint = selectedAddonId
+        ? `/api/dashboard/addons/${selectedAddonId}`
+        : '/api/dashboard/addons'
+      const res = await fetch(endpoint, {
+        method: selectedAddonId ? 'PATCH' : 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(addonForm),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Falha ao salvar adicional')
+      }
+
+      const data = await res.json() as { addon: AddonOption }
+      const updatedAddons = await fetchAddons()
+      setSelectedAddonId(data.addon.id)
+      const currentAddon = updatedAddons.find((addon) => addon.id === data.addon.id) ?? data.addon
+      setAddonForm({
+        name: currentAddon.name,
+        description: currentAddon.description,
+        price: currentAddon.price,
+        isActive: currentAddon.isActive ?? true,
+      })
+      showNotice({ type: 'success', message: 'Adicional salvo com sucesso.' })
+    } catch (error) {
+      console.error(error)
+      showNotice({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Não foi possível salvar o adicional.',
+      })
+    } finally {
+      setIsSavingAddon(false)
     }
   }
 
@@ -1786,6 +1900,99 @@ export default function DashboardPage() {
 
                   <Button onClick={handleSavePackage} disabled={isSavingPackage} className="w-full">
                     {isSavingPackage ? 'Salvando...' : 'Salvar Pacote'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Adicionais</CardTitle>
+                    <Button size="sm" variant="outline" onClick={handleNewAddon}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Novo
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {addons.length === 0 ? (
+                    <p className="text-sm text-gray-500">Nenhum adicional cadastrado.</p>
+                  ) : (
+                    addons.map((addon) => (
+                      <button
+                        key={addon.id}
+                        type="button"
+                        onClick={() => handleSelectAddon(addon)}
+                        className={`w-full rounded-lg border p-4 text-left transition-colors ${
+                          selectedAddonId === addon.id ? 'border-primary bg-primary/5' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-gray-900">{addon.name}</p>
+                            <p className="line-clamp-2 text-sm text-gray-500">{addon.description || 'Sem descrição'}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold text-primary">{formatCurrency(addon.price)}</p>
+                            <p className={`text-xs ${addon.isActive === false ? 'text-red-600' : 'text-green-600'}`}>
+                              {addon.isActive === false ? 'Inativo' : 'Ativo'}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>{selectedAddonId ? 'Editar Adicional' : 'Novo Adicional'}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="addon-name">Nome</Label>
+                    <Input
+                      id="addon-name"
+                      value={addonForm.name}
+                      onChange={(event) => updateAddonForm('name', event.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="addon-price">Preço</Label>
+                    <Input
+                      id="addon-price"
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={addonForm.price}
+                      onChange={(event) => updateAddonForm('price', Number(event.target.value))}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="addon-description">Descrição</Label>
+                    <textarea
+                      id="addon-description"
+                      rows={3}
+                      className="w-full px-3 py-2 border border-input bg-background rounded-md text-sm"
+                      value={addonForm.description}
+                      onChange={(event) => updateAddonForm('description', event.target.value)}
+                    />
+                  </div>
+
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={addonForm.isActive}
+                      onChange={(event) => updateAddonForm('isActive', event.target.checked)}
+                    />
+                    Ativo
+                  </label>
+
+                  <Button onClick={handleSaveAddon} disabled={isSavingAddon} className="w-full">
+                    {isSavingAddon ? 'Salvando...' : 'Salvar Adicional'}
                   </Button>
                 </CardContent>
               </Card>

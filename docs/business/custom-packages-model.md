@@ -180,7 +180,7 @@ model QuoteLineItem {
 2. Concluído: adicionar `notes` estruturado no booking para capturar necessidades especiais.
 3. Concluído: exibir o briefing sob medida de forma destacada no dashboard.
 4. Concluído parcialmente: usar `Extra`/`BookingExtra` para adicionais selecionáveis e persistidos.
-5. Tornar adicionais editáveis no dashboard.
+5. Concluído: tornar adicionais editáveis no dashboard.
 6. Criar `CustomQuote` e `QuoteLineItem`.
 7. Gerar proposta PDF.
 8. Conectar pagamento de sinal.
