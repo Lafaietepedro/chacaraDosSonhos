@@ -31,6 +31,19 @@ test('bookingRequestSchema accepts numeric guest values as strings', () => {
   assert.equal(parsed.guests, 120)
 })
 
+test('bookingRequestSchema accepts selected add-ons with quantities', () => {
+  const parsed = bookingRequestSchema.parse({
+    ...validPayload,
+    addons: [
+      { id: 'addon-1', quantity: '2' },
+    ],
+  })
+
+  assert.deepEqual(parsed.addons, [
+    { id: 'addon-1', quantity: 2 },
+  ])
+})
+
 test('bookingRequestSchema accepts structured custom package notes', () => {
   const parsed = bookingRequestSchema.parse({
     ...validPayload,

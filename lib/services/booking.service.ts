@@ -17,6 +17,10 @@ export type CreateBookingInput = {
   date: string
   guests: number
   packageId: string
+  addons?: Array<{
+    id: string
+    quantity: number
+  }>
   customer: {
     name: string
     email: string
@@ -50,11 +54,38 @@ export async function createBookingRequest(input: CreateBookingInput) {
     throw new BookingServiceError('PACKAGE_NOT_FOUND', 'Selected package was not found')
   }
 
+  const addonQuantities = new Map<string, number>()
+  for (const requestedAddon of input.addons ?? []) {
+    addonQuantities.set(
+      requestedAddon.id,
+      (addonQuantities.get(requestedAddon.id) ?? 0) + requestedAddon.quantity
+    )
+  }
+
+  const selectedAddons = Array.from(addonQuantities.entries()).map(([addonId, quantity]) => {
+    if (quantity > 20) {
+      throw new BookingServiceError('INVALID_INPUT', 'Selected add-on quantity is too high')
+    }
+
+    const addon = property.extras.find((item) => item.id === addonId && item.isActive)
+
+    if (!addon) {
+      throw new BookingServiceError('INVALID_INPUT', 'Selected add-on was not found')
+    }
+
+    return {
+      id: addon.id,
+      price: addon.price,
+      quantity,
+    }
+  })
+
   const bookingDate = parseLocalDate(input.date)
   const quote = calculateBookingPrice({
     package: selectedPackage,
     guestCount: input.guests,
     operationalFee: property.operationalFee,
+    addons: selectedAddons,
   })
 
   const booking = await prisma.$transaction(async (tx) => {
@@ -93,11 +124,22 @@ export async function createBookingRequest(input: CreateBookingInput) {
         notes: input.customer.notes,
         userId: user.id,
         propertyId: property.id,
+        bookingExtras: selectedAddons.length > 0
+          ? {
+              create: selectedAddons.map((addon) => ({
+                extraId: addon.id,
+                quantity: addon.quantity,
+              })),
+            }
+          : undefined,
       },
       include: {
         user: true,
         property: true,
         package: true,
+        bookingExtras: {
+          include: { extra: true },
+        },
       },
     })
   })

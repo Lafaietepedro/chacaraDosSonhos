@@ -64,6 +64,10 @@ export async function PATCH(request: Request) {
         where: { isActive: true },
         orderBy: { sortOrder: 'asc' },
       },
+      extras: {
+        where: { isActive: true },
+        orderBy: { name: 'asc' },
+      },
     },
   })
 

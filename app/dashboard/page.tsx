@@ -304,6 +304,29 @@ function BookingNotesPanel({ notes }: { notes: string | null }) {
   )
 }
 
+function BookingAddonsPanel({ addons }: { addons: DashboardBooking['addons'] }) {
+  if (addons.length === 0) return null
+
+  return (
+    <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
+      <h4 className="font-semibold text-slate-950">Adicionais selecionados</h4>
+      <div className="mt-3 space-y-2">
+        {addons.map((addon) => (
+          <div key={addon.id} className="flex items-start justify-between gap-4 rounded-md bg-white p-3 text-sm ring-1 ring-inset ring-slate-200">
+            <div>
+              <p className="font-medium text-slate-950">{addon.quantity}x {addon.name}</p>
+              {addon.description && (
+                <p className="mt-1 leading-5 text-slate-500">{addon.description}</p>
+              )}
+            </div>
+            <span className="shrink-0 font-semibold text-slate-950">{formatCurrency(addon.total)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function getStatusUpdateSuccessMessage(status: BookingStatusUpdate) {
   const messages: Record<BookingStatusUpdate, string> = {
     CONFIRMED: 'Reserva aprovada com sucesso.',
@@ -1159,6 +1182,14 @@ export default function DashboardPage() {
                       </div>
 
                       <CustomBriefingPreview notes={booking.notes} />
+                      {booking.addons.length > 0 && (
+                        <div className="mb-4 rounded-md border border-slate-200 bg-slate-50 p-3">
+                          <p className="text-xs font-semibold uppercase text-slate-500">Adicionais</p>
+                          <p className="mt-1 text-sm leading-6 text-slate-700">
+                            {booking.addons.map((addon) => `${addon.quantity}x ${addon.name}`).join(' · ')}
+                          </p>
+                        </div>
+                      )}
                       
                       <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
                         <div className="rounded-md bg-slate-50 p-3">
@@ -1892,6 +1923,7 @@ export default function DashboardPage() {
                 </div>
 
                 <BookingNotesPanel notes={selectedBooking.notes} />
+                <BookingAddonsPanel addons={selectedBooking.addons} />
 
                     {/* Botões de Ação */}
                     <div className="flex flex-wrap gap-2 border-t border-slate-200 pt-4">

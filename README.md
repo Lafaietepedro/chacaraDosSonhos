@@ -19,7 +19,7 @@ Operadores de espaços de eventos normalmente recebem pedidos por WhatsApp, calc
 O Venue Eventos centraliza o fluxo mínimo de operação:
 
 - Página pública para apresentar o espaço, pacotes e canais de contato.
-- Formulário de reserva em etapas, com pacote, data, convidados e dados do cliente.
+- Formulário de reserva em etapas, com pacote, adicionais, data, convidados e dados do cliente.
 - Regra de preço isolada em serviço testável.
 - Validação de disponibilidade no backend antes de criar reservas.
 - Dashboard para aprovar, recusar, cancelar, concluir e excluir reservas.
@@ -80,7 +80,7 @@ Node 25 é uma release Current e apresentou instabilidade na geração do Prisma
 - Catálogo público carregado do banco, com fallback inicial de configuração.
 - Formulário de contato persistido no banco.
 - Solicitação de reserva em 3 etapas.
-- Cálculo automático de pacote, taxa operacional e convidados extras.
+- Cálculo automático de pacote, taxa operacional, convidados extras e adicionais.
 - Rate limiting em memória nos endpoints públicos.
 - Notificação opcional por email via Resend.
 - Notificação opcional por WhatsApp via webhook ou CallMeBot.
@@ -100,6 +100,7 @@ Node 25 é uma release Current e apresentou instabilidade na geração do Prisma
 - Gestão de mensagens de contato.
 - Configuração do espaço: nome, descrição, capacidade, taxa, contato e endereço.
 - Gestão de pacotes: preço, duração, capacidade, convidado extra, itens incluídos, destaque, ordem e ativação.
+- Visualização de adicionais selecionados e briefing sob medida nas reservas.
 - Troca de senha pelo painel.
 
 ## Decisões Técnicas
@@ -163,7 +164,7 @@ tests/
 
 Cobertura automatizada atual:
 
-- Cálculo de preço.
+- Cálculo de preço com convidados extras e adicionais.
 - Rate limiting.
 - Disponibilidade de datas.
 - Transições de status de reserva.

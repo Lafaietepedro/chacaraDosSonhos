@@ -27,6 +27,20 @@ export type CatalogResponse = {
     address: string
   }
   packages: PackageOption[]
+  addons: AddonOption[]
+}
+
+export type AddonOption = {
+  id: string
+  name: string
+  description: string
+  price: number
+  isActive?: boolean
+}
+
+export type SelectedBookingAddon = AddonOption & {
+  quantity: number
+  total: number
 }
 
 export type DashboardBooking = {
@@ -43,6 +57,7 @@ export type DashboardBooking = {
   total: number
   createdAt: string
   notes: string | null
+  addons: SelectedBookingAddon[]
 }
 
 export type DashboardStats = {

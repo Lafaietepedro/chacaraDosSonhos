@@ -9,6 +9,10 @@ export const bookingRequestSchema = z.object({
   date: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/).refine(isValidLocalDate),
   guests: z.coerce.number().int().min(1).max(1000),
   packageId: z.string().trim().min(1).max(120),
+  addons: z.array(z.object({
+    id: z.string().trim().min(1).max(120),
+    quantity: z.coerce.number().int().min(1).max(20),
+  })).max(12).optional().default([]),
   customer: z.object({
     name: z.string().trim().min(2).max(120),
     email: z.string().trim().toLowerCase().email().max(160),

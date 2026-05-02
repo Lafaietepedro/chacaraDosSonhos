@@ -1,11 +1,11 @@
 import { Prisma, PrismaClient } from '@prisma/client'
-import { bookingPackages, siteConfig } from '@/lib/site'
-import type { CatalogResponse, PackageOption } from '@/types/booking'
+import { bookingAddons, bookingPackages, siteConfig } from '@/lib/site'
+import type { AddonOption, CatalogResponse, PackageOption } from '@/types/booking'
 
 type DbClient = PrismaClient | Prisma.TransactionClient
 
 export type PropertyWithPackages = Prisma.PropertyGetPayload<{
-  include: { packages: true }
+  include: { packages: true; extras: true }
 }>
 
 function stringifyList(items: readonly string[]) {
@@ -55,6 +55,22 @@ export function mapPackageToOption(pkg: {
   }
 }
 
+export function mapAddonToOption(addon: {
+  id: string
+  name: string
+  description: string | null
+  price: number
+  isActive?: boolean
+}): AddonOption {
+  return {
+    id: addon.id,
+    name: addon.name,
+    description: addon.description ?? '',
+    price: addon.price,
+    isActive: addon.isActive,
+  }
+}
+
 export function mapPropertyToCatalog(property: PropertyWithPackages): CatalogResponse {
   return {
     property: {
@@ -69,7 +85,34 @@ export function mapPropertyToCatalog(property: PropertyWithPackages): CatalogRes
       address: property.address,
     },
     packages: property.packages.map(mapPackageToOption),
+    addons: property.extras.map(mapAddonToOption),
   }
+}
+
+async function ensureDefaultAddons(db: DbClient, propertyId: string) {
+  const existingAddons = await db.extra.findMany({
+    where: { propertyId },
+    select: { name: true },
+  })
+  const existingNames = new Set(existingAddons.map((addon) => addon.name))
+  const missingAddons = bookingAddons.filter((addon) => !existingNames.has(addon.name))
+
+  if (missingAddons.length === 0) return false
+
+  await Promise.all(
+    missingAddons.map((addon) =>
+      db.extra.create({
+        data: {
+          propertyId,
+          name: addon.name,
+          description: addon.description,
+          price: addon.price,
+        },
+      })
+    )
+  )
+
+  return true
 }
 
 export async function ensureDefaultProperty(db: DbClient): Promise<PropertyWithPackages> {
@@ -79,6 +122,10 @@ export async function ensureDefaultProperty(db: DbClient): Promise<PropertyWithP
       packages: {
         where: { isActive: true },
         orderBy: { sortOrder: 'asc' },
+      },
+      extras: {
+        where: { isActive: true },
+        orderBy: { name: 'asc' },
       },
     },
   })
@@ -109,11 +156,22 @@ export async function ensureDefaultProperty(db: DbClient): Promise<PropertyWithP
             sortOrder: index,
           })),
         },
+        extras: {
+          create: bookingAddons.map((addon) => ({
+            name: addon.name,
+            description: addon.description,
+            price: addon.price,
+          })),
+        },
       },
       include: {
         packages: {
           where: { isActive: true },
           orderBy: { sortOrder: 'asc' },
+        },
+        extras: {
+          where: { isActive: true },
+          orderBy: { name: 'asc' },
         },
       },
     })
@@ -156,6 +214,28 @@ export async function ensureDefaultProperty(db: DbClient): Promise<PropertyWithP
         packages: {
           where: { isActive: true },
           orderBy: { sortOrder: 'asc' },
+        },
+        extras: {
+          where: { isActive: true },
+          orderBy: { name: 'asc' },
+        },
+      },
+    })
+  }
+
+  const createdMissingAddons = await ensureDefaultAddons(db, currentProperty.id)
+
+  if (createdMissingAddons) {
+    property = await db.property.findUniqueOrThrow({
+      where: { id: currentProperty.id },
+      include: {
+        packages: {
+          where: { isActive: true },
+          orderBy: { sortOrder: 'asc' },
+        },
+        extras: {
+          where: { isActive: true },
+          orderBy: { name: 'asc' },
         },
       },
     })

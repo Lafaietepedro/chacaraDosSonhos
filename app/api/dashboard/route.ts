@@ -93,7 +93,13 @@ export async function GET(request: Request) {
         orderBy: { createdAt: 'desc' },
         skip,
         take: pageSize,
-        include: { user: true, package: true },
+        include: {
+          user: true,
+          package: true,
+          bookingExtras: {
+            include: { extra: true },
+          },
+        },
       }),
       prisma.booking.count({ where: bookingWhere }),
       prisma.booking.aggregate({
@@ -138,7 +144,16 @@ export async function GET(request: Request) {
       status: b.status.toLowerCase(),
       total: b.totalPrice,
       createdAt: b.createdAt.toISOString(),
-      notes: b.notes || null
+      notes: b.notes || null,
+      addons: b.bookingExtras.map((bookingExtra) => ({
+        id: bookingExtra.extra.id,
+        name: bookingExtra.extra.name,
+        description: bookingExtra.extra.description ?? '',
+        price: bookingExtra.extra.price,
+        isActive: bookingExtra.extra.isActive,
+        quantity: bookingExtra.quantity,
+        total: bookingExtra.extra.price * bookingExtra.quantity,
+      })),
     }))
 
     const stats = {

@@ -90,6 +90,29 @@ export const bookingPackages = [
   },
 ] as const
 
+export const bookingAddons = [
+  {
+    name: 'Hora extra',
+    description: 'Extensão de uso do espaço para eventos que precisam passar do horário contratado.',
+    price: 180,
+  },
+  {
+    name: 'Apoio operacional',
+    description: 'Profissional de apoio para recepção, organização de acesso e acompanhamento do evento.',
+    price: 320,
+  },
+  {
+    name: 'Limpeza reforçada',
+    description: 'Equipe adicional para eventos maiores, montagem prolongada ou uso intenso de áreas comuns.',
+    price: 260,
+  },
+  {
+    name: 'Som e iluminação base',
+    description: 'Estrutura básica para cerimônias, confraternizações e apresentações de pequeno porte.',
+    price: 450,
+  },
+] as const
+
 export function buildWhatsAppUrl(message: string) {
   return `https://wa.me/${siteConfig.whatsappPhone}?text=${encodeURIComponent(message)}`
 }

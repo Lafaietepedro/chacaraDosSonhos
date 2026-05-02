@@ -18,6 +18,7 @@ test('calculateBookingPrice keeps base price when guests fit package capacity', 
   assert.deepEqual(quote, {
     extraGuests: 0,
     extraGuestsCost: 0,
+    addonsCost: 0,
     totalAmount: 1350,
   })
 })
@@ -32,6 +33,26 @@ test('calculateBookingPrice charges only guests above package capacity', () => {
   assert.deepEqual(quote, {
     extraGuests: 12,
     extraGuestsCost: 216,
+    addonsCost: 0,
     totalAmount: 1566,
+  })
+})
+
+test('calculateBookingPrice includes selected add-ons', () => {
+  const quote = calculateBookingPrice({
+    package: packageOption,
+    guestCount: 80,
+    operationalFee: 150,
+    addons: [
+      { price: 180, quantity: 2 },
+      { price: 450, quantity: 1 },
+    ],
+  })
+
+  assert.deepEqual(quote, {
+    extraGuests: 0,
+    extraGuestsCost: 0,
+    addonsCost: 810,
+    totalAmount: 2160,
   })
 })

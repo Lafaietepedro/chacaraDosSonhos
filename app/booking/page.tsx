@@ -24,10 +24,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { fallbackPackageOptions } from '@/lib/catalog'
+import { fallbackAddonOptions, fallbackPackageOptions } from '@/lib/catalog'
 import { siteConfig } from '@/lib/site'
 import { cn, formatCurrency, formatDate, parseLocalDate } from '@/lib/utils'
-import type { CatalogResponse, PackageOption } from '@/types/booking'
+import type { AddonOption, CatalogResponse, PackageOption } from '@/types/booking'
 
 const stepLabels = ['Agenda', 'Pacote', 'Contato']
 
@@ -77,8 +77,10 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
   const [dateError, setDateError] = useState('')
   const [guests, setGuests] = useState(50)
   const [packages, setPackages] = useState<PackageOption[]>(fallbackPackageOptions)
+  const [addons, setAddons] = useState<AddonOption[]>(fallbackAddonOptions)
   const [operationalFee, setOperationalFee] = useState(siteConfig.cleaningFee)
   const [selectedPackage, setSelectedPackage] = useState<string>(fallbackPackageOptions[1].id)
+  const [selectedAddons, setSelectedAddons] = useState<Record<string, number>>({})
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
@@ -107,6 +109,7 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
         const data = (await res.json()) as CatalogResponse
         if (data.packages.length > 0) {
           setPackages(data.packages)
+          setAddons(data.addons?.length > 0 ? data.addons : fallbackAddonOptions)
           setOperationalFee(data.property.operationalFee)
           setSelectedPackage((current) =>
             data.packages.some((pkg) => pkg.id === current) ? current : data.packages[0].id
@@ -130,7 +133,14 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
   const currentPackage = packages.find((pkg) => pkg.id === selectedPackage) ?? packages[0]
   const extraGuests = Math.max(0, guests - currentPackage.capacity)
   const extraGuestsCost = extraGuests * currentPackage.extraPerGuest
-  const totalPrice = currentPackage.price + operationalFee + extraGuestsCost
+  const selectedAddonEntries = addons
+    .map((addon) => ({
+      ...addon,
+      quantity: selectedAddons[addon.id] ?? 0,
+    }))
+    .filter((addon) => addon.quantity > 0)
+  const addonsCost = selectedAddonEntries.reduce((sum, addon) => sum + addon.price * addon.quantity, 0)
+  const totalPrice = currentPackage.price + operationalFee + extraGuestsCost + addonsCost
   const selectedDateLabel = selectedDate ? formatDate(parseLocalDate(selectedDate)) : 'A definir'
 
   const reservationNotes = useMemo(() => {
@@ -164,6 +174,21 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
     }
   }
 
+  const updateAddonQuantity = (addonId: string, quantity: number) => {
+    setSelectedAddons((current) => {
+      const next = { ...current }
+      const normalizedQuantity = Math.max(0, Math.min(20, Math.round(quantity)))
+
+      if (normalizedQuantity === 0) {
+        delete next[addonId]
+      } else {
+        next[addonId] = normalizedQuantity
+      }
+
+      return next
+    })
+  }
+
   const handleSubmit = async () => {
     setSubmitError('')
 
@@ -184,6 +209,10 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
       date: selectedDate,
       guests,
       packageId: selectedPackage,
+      addons: selectedAddonEntries.map((addon) => ({
+        id: addon.id,
+        quantity: addon.quantity,
+      })),
       customer: {
         name: customerInfo.name,
         email: customerInfo.email,
@@ -468,6 +497,57 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
                         ))}
                       </div>
 
+                      {addons.length > 0 && (
+                        <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
+                          <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                            <div>
+                              <p className="text-sm font-semibold uppercase text-emerald-700">Adicionais</p>
+                              <h3 className="mt-1 text-xl font-bold text-slate-950">Monte uma estimativa mais completa</h3>
+                            </div>
+                            <p className="text-sm font-semibold text-slate-950">{formatCurrency(addonsCost)}</p>
+                          </div>
+
+                          <div className="grid gap-3 md:grid-cols-2">
+                            {addons.map((addon) => {
+                              const quantity = selectedAddons[addon.id] ?? 0
+                              return (
+                                <div key={addon.id} className="rounded-md border border-slate-200 bg-white p-4">
+                                  <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                      <p className="font-semibold text-slate-950">{addon.name}</p>
+                                      <p className="mt-1 text-sm leading-6 text-slate-600">{addon.description}</p>
+                                      <p className="mt-2 text-sm font-semibold text-slate-950">{formatCurrency(addon.price)}</p>
+                                    </div>
+                                    <div className="flex shrink-0 items-center rounded-md border border-slate-200">
+                                      <button
+                                        type="button"
+                                        className="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-40"
+                                        onClick={() => updateAddonQuantity(addon.id, quantity - 1)}
+                                        disabled={quantity === 0}
+                                        aria-label={`Remover ${addon.name}`}
+                                      >
+                                        -
+                                      </button>
+                                      <span className="flex h-9 w-9 items-center justify-center border-x border-slate-200 text-sm font-semibold text-slate-950">
+                                        {quantity}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        className="flex h-9 w-9 items-center justify-center text-slate-600 transition-colors hover:bg-slate-50"
+                                        onClick={() => updateAddonQuantity(addon.id, quantity + 1)}
+                                        aria-label={`Adicionar ${addon.name}`}
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
+
                       {isCustomMode && (
                         <div className="grid gap-4 rounded-md border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
                           <div>
@@ -672,6 +752,12 @@ export default function BookingPage({ searchParams }: BookingPageProps) {
                           <span className="font-medium text-slate-950">{formatCurrency(extraGuestsCost)}</span>
                         </div>
                       )}
+                      {selectedAddonEntries.map((addon) => (
+                        <div key={addon.id} className="flex justify-between gap-4 text-sm">
+                          <span className="text-slate-600">{addon.quantity}x {addon.name}</span>
+                          <span className="font-medium text-slate-950">{formatCurrency(addon.price * addon.quantity)}</span>
+                        </div>
+                      ))}
                     </div>
 
                     <div className="border-t border-slate-200 pt-4">
