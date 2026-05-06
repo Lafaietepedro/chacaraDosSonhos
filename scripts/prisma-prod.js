@@ -58,6 +58,7 @@ const result = spawnSync(prismaBin, prismaArgs, {
   env: {
     ...fileEnv,
     ...process.env,
+    NODE_ENV: process.env.NODE_ENV || 'production',
   },
   stdio: 'inherit',
 })
