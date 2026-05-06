@@ -239,6 +239,7 @@ Para validar e aplicar o schema em Supabase/PostgreSQL usando `.env.local`:
 npm run db:validate:prod
 npm run db:generate:prod
 npm run db:push:prod
+npm run db:seed:prod
 ```
 
 Rode em desenvolvimento:

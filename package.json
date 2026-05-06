@@ -24,6 +24,7 @@
     "db:push:prod": "node scripts/prisma-prod.js db push",
     "db:validate:prod": "node scripts/prisma-prod.js validate",
     "db:seed": "prisma db seed",
+    "db:seed:prod": "node scripts/prisma-prod.js db seed",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"

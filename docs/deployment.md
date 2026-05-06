@@ -44,7 +44,7 @@ MERCADO_PAGO_WEBHOOK_SECRET=""
 5. Defina o build command como `npm run build:vercel`.
 6. Faça o primeiro deploy.
 7. Rode a criação do schema no banco remoto com `npm run db:push:prod` usando as variáveis de produção carregadas no ambiente local.
-8. Rode `npm run db:seed` uma vez apontando para o banco remoto.
+8. Rode `npm run db:seed:prod` uma vez apontando para o banco remoto.
 9. Troque a senha administrativa no painel após o primeiro login.
 
 ## Rodando O Schema No Supabase
@@ -55,7 +55,7 @@ Antes de executar comandos contra produção, confira se `DATABASE_URL` e `DIREC
 npm run db:validate:prod
 npm run db:generate:prod
 npm run db:push:prod
-npm run db:seed
+npm run db:seed:prod
 ```
 
 Os scripts `db:*:prod` carregam `.env` e `.env.local`, com `.env.local` tendo prioridade para desenvolvimento local. Em deploy, as variáveis configuradas no provedor continuam tendo prioridade.
