@@ -47,6 +47,12 @@ Login administrativo:
 
 ![Login administrativo](docs/screenshots/dashboard-login.png)
 
+Dashboard administrativo:
+
+![Dashboard administrativo do Venue Eventos](docs/screenshots/dashboard-overview.png)
+
+Tour rápido do dashboard: [`docs/media/dashboard-tour.mp4`](docs/media/dashboard-tour.mp4)
+
 ## Design
 
 O redesign atual reposiciona a interface pública como produto operacional premium para espaços de eventos. Para comparar com uma proposta externa, use o briefing em [`docs/design/original-project-overview.md`](docs/design/original-project-overview.md), que descreve o design anterior, pontos fracos e restrições para uma segunda leitura.
