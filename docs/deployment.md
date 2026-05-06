@@ -52,10 +52,13 @@ MERCADO_PAGO_WEBHOOK_SECRET=""
 Antes de executar comandos contra produção, confira se `DATABASE_URL` e `DIRECT_URL` apontam para o Supabase:
 
 ```bash
+npm run db:validate:prod
 npm run db:generate:prod
 npm run db:push:prod
 npm run db:seed
 ```
+
+Os scripts `db:*:prod` carregam `.env` e `.env.local`, com `.env.local` tendo prioridade para desenvolvimento local. Em deploy, as variáveis configuradas no provedor continuam tendo prioridade.
 
 ## Observações
 

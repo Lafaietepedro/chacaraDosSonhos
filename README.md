@@ -233,6 +233,14 @@ npm run db:push
 npm run db:seed
 ```
 
+Para validar e aplicar o schema em Supabase/PostgreSQL usando `.env.local`:
+
+```bash
+npm run db:validate:prod
+npm run db:generate:prod
+npm run db:push:prod
+```
+
 Rode em desenvolvimento:
 
 ```bash
