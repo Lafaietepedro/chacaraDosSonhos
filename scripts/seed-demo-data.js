@@ -47,8 +47,8 @@ function customNotes() {
 }
 
 async function main() {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('Demo seed is not allowed in production')
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_SEED !== 'true') {
+    throw new Error('Set ALLOW_DEMO_SEED=true to explicitly seed demonstration data in production')
   }
 
   const property = await prisma.property.findFirst({
@@ -211,6 +211,13 @@ async function main() {
       })
     }
   }
+
+  await prisma.blockedDate.deleteMany({
+    where: {
+      propertyId: property.id,
+      reason: 'Manutenção preventiva',
+    },
+  })
 
   await prisma.blockedDate.create({
     data: {

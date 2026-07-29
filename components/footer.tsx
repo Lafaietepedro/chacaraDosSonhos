@@ -68,20 +68,24 @@ export function Footer() {
                   {siteConfig.city}
                 </span>
               </div>
-              <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 shrink-0 text-emerald-300" />
-                <span>{siteConfig.phone}</span>
-              </div>
+              {siteConfig.phone && (
+                <div className="flex items-center gap-3">
+                  <Phone className="h-4 w-4 shrink-0 text-emerald-300" />
+                  <span>{siteConfig.phone}</span>
+                </div>
+              )}
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 shrink-0 text-emerald-300" />
-                <span>{siteConfig.email}</span>
+                <a href={`mailto:${siteConfig.email}`} className="transition-colors hover:text-white">
+                  {siteConfig.email}
+                </a>
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
-          <p>© {currentYear} {siteConfig.appName}. Projeto de portfólio técnico.</p>
+          <p>© {currentYear} {siteConfig.appName}. {siteConfig.demoLabel}.</p>
           <Link href="/dashboard" className="transition-colors hover:text-white">
             Área administrativa
           </Link>

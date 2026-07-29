@@ -129,7 +129,7 @@ export function Pricing() {
         </div>
 
         <p className="mt-8 max-w-3xl text-sm leading-6 text-slate-500">
-          Preços sujeitos à confirmação do anfitrião. A estrutura está pronta para evoluir para pagamento de sinal e contrato PDF.
+          Valores sujeitos à confirmação do anfitrião. Depois da análise, a equipe formaliza a proposta e orienta os próximos passos da contratação.
         </p>
       </div>
     </section>

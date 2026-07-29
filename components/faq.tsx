@@ -6,28 +6,28 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 
 const faqs = [
   {
-    question: 'A plataforma impede reserva em data ocupada?',
-    answer: 'Sim. O backend verifica reservas pendentes ou confirmadas e datas bloqueadas antes de criar uma nova solicitação.',
+    question: 'Como verifico se a data está disponível?',
+    answer: 'Informe a data desejada no fluxo de reserva. O sistema consulta a agenda e avisa imediatamente quando já existe uma solicitação ativa ou um bloqueio operacional.',
   },
   {
-    question: 'Os valores mudam reservas antigas?',
-    answer: 'Não. A reserva grava snapshots de pacote, preço base, taxa operacional e convidado extra no momento da criação.',
+    question: 'Como o orçamento é calculado?',
+    answer: 'O valor considera o pacote escolhido, a quantidade de convidados, a taxa operacional e os adicionais selecionados. Você confere o resumo antes de enviar a solicitação.',
   },
   {
-    question: 'O painel permite encerrar o ciclo da reserva?',
-    answer: 'Sim. O anfitrião pode aprovar, recusar, cancelar e concluir reservas com transições validadas no backend.',
+    question: 'A reserva é confirmada imediatamente?',
+    answer: 'A solicitação entra como pendente para análise do anfitrião. Depois da conferência dos detalhes, você recebe o retorno com a confirmação e os próximos passos.',
   },
   {
-    question: 'Existe pagamento online implementado?',
-    answer: 'Ainda não. A estrutura está pronta para evoluir para sinal, PIX, cartão e confirmação por webhook.',
+    question: 'Posso solicitar um pacote personalizado?',
+    answer: 'Sim. O modo sob medida permite informar tipo de evento, duração, faixa de investimento e necessidades especiais para receber uma proposta adequada.',
   },
   {
-    question: 'Funciona para mais de um espaço?',
-    answer: 'O schema suporta propriedades, mas a interface atual opera como instalação de um espaço principal. Multiunidade deve entrar como fase posterior.',
+    question: 'O que acontece depois do envio?',
+    answer: 'A equipe recebe os dados no painel, analisa agenda e estrutura, ajusta o orçamento quando necessário e acompanha a solicitação até a conclusão.',
   },
   {
-    question: 'O projeto está pronto para vender como SaaS?',
-    answer: 'Ainda não. Para SaaS faltam onboarding, permissões, auditoria, cobrança, isolamento de dados e suporte operacional.',
+    question: 'Meus dados ficam organizados com segurança?',
+    answer: 'As solicitações são validadas antes do registro e o painel administrativo exige uma sessão protegida. Os dados são usados apenas para o atendimento e a gestão da reserva.',
   },
 ]
 
@@ -45,12 +45,12 @@ export function FAQ() {
       <div className="container mx-auto px-4">
         <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr]">
           <div>
-            <p className="text-sm font-semibold uppercase text-emerald-700">Dúvidas técnicas</p>
+            <p className="text-sm font-semibold uppercase text-emerald-700">Dúvidas frequentes</p>
             <h2 className="mt-3 text-4xl font-bold leading-tight text-slate-950 md:text-5xl">
-              O que já está pronto e o que ainda é roadmap.
+              Tudo o que você precisa saber antes de solicitar uma data.
             </h2>
             <p className="mt-5 text-sm leading-6 text-slate-600">
-              A leitura honesta do estado atual evita vender o projeto como mais maduro do que ele é, e ajuda a priorizar o que realmente melhora o produto.
+              O fluxo foi desenhado para deixar valores, disponibilidade e próximos passos claros desde o primeiro contato.
             </p>
           </div>
 

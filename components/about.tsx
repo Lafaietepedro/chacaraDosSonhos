@@ -28,8 +28,8 @@ const workflow = [
 const metrics = [
   { value: `${siteConfig.capacity}`, label: 'capacidade configurada' },
   { value: '3', label: 'pacotes iniciais' },
-  { value: '24h', label: 'sessão administrativa' },
-  { value: '6', label: 'regras testadas' },
+  { value: '4', label: 'etapas automatizadas' },
+  { value: '1', label: 'painel centralizado' },
 ]
 
 export function About() {
@@ -74,10 +74,10 @@ export function About() {
             <div className="rounded-md border border-amber-200/20 bg-amber-100/10 p-6 md:col-span-2">
               <div className="flex items-center gap-3 text-amber-100">
                 <LockKeyhole className="h-5 w-5" />
-                <h3 className="font-semibold">Base pronta para evoluir</h3>
+                <h3 className="font-semibold">Proposta e contrato no mesmo fluxo</h3>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-200">
-                A arquitetura já separa preço, disponibilidade, status, validação e notificação em serviços testáveis. Pagamentos, contrato PDF e gestão de fotos podem entrar como módulos posteriores.
+                Solicitações sob medida podem receber itens, valor final e status comercial. A proposta e o contrato são gerados em PDF diretamente pelo painel.
               </p>
             </div>
 

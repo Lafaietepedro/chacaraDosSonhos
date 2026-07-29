@@ -1,6 +1,16 @@
 # Galeria de Imagens
 
-Este diretório contém as imagens da galeria demonstrativa do espaço de eventos.
+Este diretório contém as imagens locais usadas na demonstração do espaço de eventos.
+
+As fotografias foram obtidas no Unsplash e permanecem sob a licença da plataforma:
+
+- `venue-exterior.jpg`: Alef Morais — https://unsplash.com/photos/w1BuW8zMNpw
+- `reception-hall.jpg`: Mathis Payet Descombes — https://unsplash.com/photos/wYWeVmlGWHM
+- `pool-garden.jpg`: Merve Kalafat Yılmaz — https://unsplash.com/photos/ndSggxjzBGY
+- `venue-interior.jpg`: imagem gratuita do catálogo Unsplash.
+- `landscaping.jpg`: imagem gratuita do catálogo Unsplash.
+
+As imagens representam uma marca fictícia e não devem ser apresentadas como fotografias de um espaço real.
 
 ## Imagens necessárias:
 

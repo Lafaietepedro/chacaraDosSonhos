@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { checkRateLimit, getClientIp, rateLimitHeaders } from '../lib/rate-limit'
+import { checkRateLimit, clearRateLimit, getClientIp, rateLimitHeaders } from '../lib/rate-limit'
 
 test('checkRateLimit allows requests until the configured limit is reached', () => {
   const key = `booking:test:${crypto.randomUUID()}`
@@ -33,6 +33,17 @@ test('checkRateLimit resets the bucket after the window expires', () => {
   } finally {
     Date.now = originalNow
   }
+})
+
+test('clearRateLimit releases a bucket after a successful action', () => {
+  const key = `admin-login:test:${crypto.randomUUID()}`
+
+  assert.equal(checkRateLimit({ key, limit: 1, windowMs: 60_000 }).allowed, true)
+  assert.equal(checkRateLimit({ key, limit: 1, windowMs: 60_000 }).allowed, false)
+
+  clearRateLimit(key)
+
+  assert.equal(checkRateLimit({ key, limit: 1, windowMs: 60_000 }).allowed, true)
 })
 
 test('getClientIp prefers the first forwarded IP and falls back to x-real-ip', () => {

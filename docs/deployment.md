@@ -26,6 +26,9 @@ DASHBOARD_USERNAME="admin"
 DASHBOARD_PASSWORD="defina-uma-senha-forte"
 AUTH_SECRET="gere-uma-string-longa-e-aleatoria"
 NEXT_PUBLIC_SITE_URL="https://seu-deploy.vercel.app"
+NEXT_PUBLIC_CONTACT_EMAIL="contato@lpemsoftware.com.br"
+NEXT_PUBLIC_CONTACT_PHONE=""
+NEXT_PUBLIC_WHATSAPP_PHONE=""
 RESEND_API_KEY=""
 RESEND_FROM_EMAIL="Venue Eventos <reservas@seudominio.com.br>"
 WHATSAPP_PHONE="5561999999999"
@@ -46,6 +49,16 @@ MERCADO_PAGO_WEBHOOK_SECRET=""
 7. Rode a criação do schema no banco remoto com `npm run db:push:prod` usando as variáveis de produção carregadas no ambiente local.
 8. Rode `npm run db:seed:prod` uma vez apontando para o banco remoto.
 9. Troque a senha administrativa no painel após o primeiro login.
+
+## Dados Para A Demonstração Pública
+
+Depois de criar o schema e executar o seed principal, a vitrine pode receber reservas, contatos, receita e bloqueios fictícios:
+
+```bash
+ALLOW_DEMO_SEED=true NODE_ENV=production npm run demo:seed
+```
+
+O comando é idempotente para os registros de demonstração e exige a autorização explícita por variável de ambiente. Não use esse seed em um banco que já esteja atendendo clientes reais.
 
 ## Rodando O Schema No Supabase
 

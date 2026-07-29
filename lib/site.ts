@@ -1,6 +1,7 @@
 export const siteConfig = {
   appName: 'Venue Eventos',
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  demoLabel: 'Demonstração funcional criada pela LPeM Software',
   appDescription:
     'Plataforma operacional para divulgar espaços de eventos, receber reservas qualificadas e acompanhar a agenda do anfitrião.',
   venueName: 'Venue Eventos',
@@ -8,17 +9,16 @@ export const siteConfig = {
     'Reservas online para espaços de eventos com vitrine pública, cálculo de orçamento, agenda e painel do anfitrião.',
   longPitch:
     'Uma base profissional para operadores de salões, espaços ao ar livre e áreas de lazer que precisam reduzir atendimento manual, organizar solicitações e manter uma visão clara de disponibilidade, receita e próximos eventos.',
-  email: 'contato@venueeventos.com.br',
-  phone: '(61) 99999-9999',
-  whatsappPhone: '5561999999999',
-  address: 'Endereço comercial configurável',
-  city: 'Brasília - DF',
+  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'contato@lpemsoftware.com.br',
+  phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || '',
+  whatsappPhone: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '',
+  address: 'Projeto demonstrativo da LPeM Software',
+  city: 'Atendimento nacional',
   capacity: 150,
   area: '5.000 m²',
   parkingSpots: 30,
   cleaningFee: 150,
-  heroImage:
-    'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1920&h=1080&fit=crop',
+  heroImage: '/gallery/venue-exterior.jpg',
   keywords:
     'reservas para eventos, gestão de espaços, aluguel de espaço para eventos, agenda de reservas, painel do anfitrião',
 }
@@ -114,5 +114,6 @@ export const bookingAddons = [
 ] as const
 
 export function buildWhatsAppUrl(message: string) {
+  if (!siteConfig.whatsappPhone) return ''
   return `https://wa.me/${siteConfig.whatsappPhone}?text=${encodeURIComponent(message)}`
 }

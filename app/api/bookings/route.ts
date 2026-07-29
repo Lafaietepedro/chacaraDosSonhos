@@ -44,12 +44,12 @@ export async function POST(request: Request) {
       notifications,
     })
   } catch (e) {
-    console.error('POST /api/bookings error:', e)
     if (e instanceof BookingServiceError) {
       const status = e.code === 'DATE_UNAVAILABLE' ? 409 : e.code === 'DATABASE_UNAVAILABLE' ? 500 : 400
       return NextResponse.json({ error: e.message, code: e.code }, { status })
     }
 
+    console.error('POST /api/bookings error:', e)
     const message = e instanceof Error ? e.message : 'Server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }

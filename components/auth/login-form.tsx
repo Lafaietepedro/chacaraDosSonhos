@@ -12,7 +12,7 @@ import { BrandLogo } from '@/components/brand-logo'
 
 
 interface LoginFormProps {
-  onLogin: (token: string) => void
+  onLogin: () => void
 }
 
 export function LoginForm({ onLogin }: LoginFormProps) {
@@ -37,7 +37,7 @@ export function LoginForm({ onLogin }: LoginFormProps) {
       const data = await response.json()
 
       if (data.success) {
-        onLogin(data.token)
+        onLogin()
       } else {
         setError(data.error || 'Erro ao fazer login')
       }

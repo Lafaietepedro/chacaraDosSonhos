@@ -2,7 +2,8 @@ import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'crypto'
 import type { AdminUser, Prisma, PrismaClient } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 
-const TOKEN_TTL_SECONDS = 24 * 60 * 60
+export const ADMIN_SESSION_COOKIE = 'venue_admin_session'
+export const TOKEN_TTL_SECONDS = 24 * 60 * 60
 const HASH_PREFIX = 'scrypt'
 const HASH_KEY_LENGTH = 64
 
@@ -118,6 +119,28 @@ export function verifyAuthorizationHeader(authHeader: string | null): AuthResult
   }
 
   return verifyAdminToken(authHeader.slice('Bearer '.length))
+}
+
+function getCookieValue(cookieHeader: string | null, name: string) {
+  if (!cookieHeader) return null
+
+  for (const cookie of cookieHeader.split(';')) {
+    const [cookieName, ...valueParts] = cookie.trim().split('=')
+    if (cookieName === name) {
+      return decodeURIComponent(valueParts.join('='))
+    }
+  }
+
+  return null
+}
+
+export function verifyAdminRequest(request: Request): AuthResult {
+  const cookieToken = getCookieValue(request.headers.get('cookie'), ADMIN_SESSION_COOKIE)
+  if (cookieToken) {
+    return verifyAdminToken(cookieToken)
+  }
+
+  return verifyAuthorizationHeader(request.headers.get('authorization'))
 }
 
 export async function ensureBootstrapAdmin(db: DbClient) {

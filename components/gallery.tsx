@@ -8,32 +8,32 @@ import { ChevronLeft, ChevronRight, Expand, X } from 'lucide-react'
 const images = [
   {
     id: 1,
-    src: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=900&fit=crop',
-    alt: 'Fachada de espaço de eventos com área externa',
+    src: '/gallery/venue-exterior.jpg',
+    alt: 'Espaço contemporâneo com piscina e área externa',
     category: 'Exterior',
   },
   {
     id: 2,
-    src: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1200&h=900&fit=crop',
-    alt: 'Mesa de evento montada em salão',
+    src: '/gallery/reception-hall.jpg',
+    alt: 'Salão preparado para uma recepção elegante',
     category: 'Eventos',
   },
   {
     id: 3,
-    src: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1000&h=800&fit=crop',
-    alt: 'Piscina e área de convivência',
+    src: '/gallery/pool-garden.jpg',
+    alt: 'Piscina integrada ao jardim e à área de convivência',
     category: 'Lazer',
   },
   {
     id: 4,
-    src: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1000&h=800&fit=crop',
-    alt: 'Interior de casa de apoio',
+    src: '/gallery/venue-interior.jpg',
+    alt: 'Ambiente interno de apoio aos convidados',
     category: 'Interior',
   },
   {
     id: 5,
-    src: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1000&h=800&fit=crop',
-    alt: 'Jardim e paisagismo',
+    src: '/gallery/landscaping.jpg',
+    alt: 'Jardim amplo com paisagismo para celebrações',
     category: 'Exterior',
   },
 ]
@@ -54,13 +54,13 @@ export function Gallery() {
       <div className="container mx-auto px-4">
         <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase text-emerald-700">Vitrine pública</p>
+            <p className="text-sm font-semibold uppercase text-emerald-700">Conheça o espaço</p>
             <h2 className="mt-3 max-w-2xl text-4xl font-bold leading-tight text-slate-950 md:text-5xl">
               Imagens que vendem o espaço antes da conversa.
             </h2>
           </div>
           <p className="max-w-md text-sm leading-6 text-slate-600">
-            A galeria usa imagens demonstrativas e já está preparada para evoluir para upload real com ordenação pelo painel.
+            Explore os ambientes pensados para receber celebrações, encontros corporativos e produções com conforto.
           </p>
         </div>
 
@@ -98,7 +98,12 @@ export function Gallery() {
         </div>
 
         {selectedImage !== null && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 p-4">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Visualização ampliada da galeria"
+          >
             <div className="relative max-h-full max-w-5xl">
               <Image
                 src={images[selectedImage].src}

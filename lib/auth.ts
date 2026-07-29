@@ -6,21 +6,11 @@ export const useAuth = () => {
 
   const checkAuth = useCallback(async () => {
     try {
-      const token = localStorage.getItem('dashboard_token')
-      if (!token) {
-        setIsAuthenticated(false)
-        setIsLoading(false)
-        return
-      }
-
-      const response = await fetch('/api/auth/verify', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
+      const response = await fetch('/api/auth/verify', { cache: 'no-store' })
 
       if (response.ok) {
         setIsAuthenticated(true)
       } else {
-        localStorage.removeItem('dashboard_token')
         setIsAuthenticated(false)
       }
     } catch {
@@ -34,19 +24,18 @@ export const useAuth = () => {
     checkAuth()
   }, [checkAuth])
 
-  const login = (token: string) => {
-    localStorage.setItem('dashboard_token', token)
+  const login = useCallback(() => {
     setIsAuthenticated(true)
-  }
+  }, [])
 
-  const logout = () => {
-    localStorage.removeItem('dashboard_token')
+  const logout = useCallback(() => {
+    void fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined)
     setIsAuthenticated(false)
-  }
+  }, [])
 
-  const getToken = () => {
-    return typeof window !== 'undefined' ? localStorage.getItem('dashboard_token') : null
-  }
+  // Compatibilidade temporária com chamadas existentes. A autenticação real
+  // acontece pelo cookie HttpOnly, que o navegador envia automaticamente.
+  const getToken = useCallback(() => null, [])
 
   return {
     isAuthenticated,

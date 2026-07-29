@@ -7,10 +7,10 @@ const siteConfig = {
   venueName: 'Venue Eventos',
   appDescription:
     'Plataforma operacional para divulgar espaços de eventos, receber reservas qualificadas e acompanhar a agenda do anfitrião.',
-  email: 'contato@venueeventos.com.br',
-  phone: '(61) 99999-9999',
-  address: 'Endereço comercial configurável',
-  city: 'Brasília - DF',
+  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'contato@lpemsoftware.com.br',
+  phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || null,
+  address: 'Projeto demonstrativo da LPeM Software',
+  city: 'Atendimento nacional',
   capacity: 150,
   cleaningFee: 150,
 }

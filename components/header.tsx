@@ -40,12 +40,14 @@ export function Header() {
           </nav>
 
           <div className="hidden items-center gap-2 md:flex">
-            <Button variant="outline" size="sm" asChild>
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="mr-2 h-4 w-4" />
-                WhatsApp
-              </a>
-            </Button>
+            {whatsappUrl && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  WhatsApp
+                </a>
+              </Button>
+            )}
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard">
                 <Settings className="mr-2 h-4 w-4" />
@@ -83,12 +85,14 @@ export function Header() {
                 </Link>
               ))}
               <div className="grid gap-2 pt-3">
-                <Button variant="outline" size="sm" asChild>
-                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    WhatsApp
-                  </a>
-                </Button>
+                {whatsappUrl && (
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      WhatsApp
+                    </a>
+                  </Button>
+                )}
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/dashboard">
                     <Settings className="mr-2 h-4 w-4" />

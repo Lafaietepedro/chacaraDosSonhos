@@ -195,7 +195,7 @@ npm audit
 npx -p node@24 npm run build
 ```
 
-Último estado validado: testes, lint, TypeScript, audit e build de produção passando.
+Último estado validado: testes, lint, TypeScript, auditoria das dependências de produção e build de produção passando.
 
 ## Como Rodar
 
@@ -222,9 +222,11 @@ DASHBOARD_USERNAME="admin"
 DASHBOARD_PASSWORD="troque-esta-senha"
 AUTH_SECRET="gere-uma-string-longa-e-aleatoria"
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+NEXT_PUBLIC_CONTACT_EMAIL="contato@lpemsoftware.com.br"
+NEXT_PUBLIC_CONTACT_PHONE=""
+NEXT_PUBLIC_WHATSAPP_PHONE=""
 RESEND_API_KEY=""
 RESEND_FROM_EMAIL="Venue Eventos <reservas@seudominio.com.br>"
-WHATSAPP_PHONE="5561999999999"
 WHATSAPP_WEBHOOK_URL=""
 CALLMEBOT_API_KEY=""
 MERCADO_PAGO_ACCESS_TOKEN=""

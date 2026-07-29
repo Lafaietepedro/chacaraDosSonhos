@@ -5,13 +5,15 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Clock, Mail, MapPin, MessageCircle, Phone } from 'lucide-react'
+import { Building2, Clock, Mail, MessageCircle, Phone } from 'lucide-react'
 import { buildWhatsAppUrl, siteConfig } from '@/lib/site'
 
 const contactInfo = [
-  { icon: Phone, title: 'Telefone', info: siteConfig.phone, description: 'WhatsApp disponível' },
-  { icon: Mail, title: 'Email', info: siteConfig.email, description: 'Retorno operacional' },
-  { icon: MapPin, title: 'Endereço', info: siteConfig.address, description: siteConfig.city },
+  ...(siteConfig.phone
+    ? [{ icon: Phone, title: 'Telefone', info: siteConfig.phone, description: 'WhatsApp disponível' }]
+    : []),
+  { icon: Mail, title: 'Email', info: siteConfig.email, description: 'Contato da LPeM Software' },
+  { icon: Building2, title: 'Projeto', info: 'Demonstração funcional', description: 'Solução criada pela LPeM Software' },
   { icon: Clock, title: 'Atendimento', info: 'Solicitação online', description: 'Painel disponível 24h' },
 ]
 
@@ -64,10 +66,10 @@ export function Contact() {
           <div>
             <p className="text-sm font-semibold uppercase text-emerald-300">Contato</p>
             <h2 className="mt-3 max-w-xl text-4xl font-bold leading-tight md:text-5xl">
-              Conversas entram no mesmo fluxo da operação.
+              Transforme cada contato em uma oportunidade organizada.
             </h2>
             <p className="mt-5 max-w-xl text-lg leading-8 text-slate-300">
-              Mensagens públicas são persistidas no banco e aparecem no dashboard para acompanhamento do anfitrião.
+              Nesta demonstração, as mensagens são registradas no painel para mostrar como a equipe acompanha cada oportunidade sem depender de planilhas ou conversas dispersas.
             </p>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
@@ -81,12 +83,21 @@ export function Contact() {
               ))}
             </div>
 
-            <Button className="mt-8 bg-white text-slate-950 hover:bg-slate-100" asChild>
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Abrir WhatsApp
-              </a>
-            </Button>
+            {whatsappUrl ? (
+              <Button className="mt-8 bg-white text-slate-950 hover:bg-slate-100" asChild>
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Abrir WhatsApp
+                </a>
+              </Button>
+            ) : (
+              <Button className="mt-8 bg-white text-slate-950 hover:bg-slate-100" asChild>
+                <a href={`mailto:${siteConfig.email}`}>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Falar com a LPeM
+                </a>
+              </Button>
+            )}
           </div>
 
           <Card className="border-white/10 bg-white text-slate-950 shadow-2xl">

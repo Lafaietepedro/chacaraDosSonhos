@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Calendar, CheckCircle2, MessageCircle, ShieldCheck, Sparkles } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { buildWhatsAppUrl, siteConfig } from '@/lib/site'
 
@@ -16,9 +17,14 @@ export function Hero() {
 
   return (
     <section id="home" className="relative min-h-[92vh] overflow-hidden bg-slate-950 pt-20 text-white">
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url('${siteConfig.heroImage}')` }}
+      <Image
+        src={siteConfig.heroImage}
+        alt="Espaço contemporâneo com piscina e área externa para eventos"
+        fill
+        priority
+        quality={82}
+        sizes="100vw"
+        className="object-cover object-center"
       />
       <div className="absolute inset-0 bg-slate-950/[0.72]" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-slate-950 to-transparent" />
@@ -45,12 +51,21 @@ export function Hero() {
                   Solicitar reserva
                 </Link>
               </Button>
-              <Button variant="outline" className="h-12 w-full border-white/70 bg-white px-6 text-base text-slate-950 hover:bg-slate-100 sm:w-auto" asChild>
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="mr-2 h-5 w-5" />
-                  Falar no WhatsApp
-                </a>
-              </Button>
+              {whatsappUrl ? (
+                <Button variant="outline" className="h-12 w-full border-white/70 bg-white px-6 text-base text-slate-950 hover:bg-slate-100 sm:w-auto" asChild>
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="mr-2 h-5 w-5" />
+                    Falar no WhatsApp
+                  </a>
+                </Button>
+              ) : (
+                <Button variant="outline" className="h-12 w-full border-white/70 bg-white px-6 text-base text-slate-950 hover:bg-slate-100 sm:w-auto" asChild>
+                  <Link href="#contact">
+                    <MessageCircle className="mr-2 h-5 w-5" />
+                    Falar sobre o projeto
+                  </Link>
+                </Button>
+              )}
               <Button variant="ghost" className="h-12 w-full px-6 text-base text-white hover:bg-white/10 hover:text-white sm:w-auto" asChild>
                 <Link href="#pricing">
                   Ver pacotes

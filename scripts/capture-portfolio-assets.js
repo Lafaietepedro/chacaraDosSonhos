@@ -3,7 +3,6 @@
 const { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } = require('fs')
 const { join } = require('path')
 const { spawn } = require('child_process')
-const { createHmac } = require('crypto')
 
 const baseUrl = process.env.CAPTURE_BASE_URL || 'http://127.0.0.1:3000'
 const screenshotDir = join(process.cwd(), 'docs', 'screenshots')
@@ -52,7 +51,7 @@ async function waitForServer() {
   throw new Error(`Server did not respond at ${baseUrl}`)
 }
 
-async function getDashboardToken() {
+async function getDashboardSessionToken() {
   const env = {
     ...parseEnvFile(join(process.cwd(), '.env')),
     ...parseEnvFile(join(process.cwd(), '.env.local')),
@@ -73,26 +72,14 @@ async function getDashboardToken() {
   })
 
   const data = await response.json().catch(() => null)
-  if (response.ok && data?.token) {
-    return data.token
-  }
+  const setCookie = response.headers.get('set-cookie')
+  const sessionToken = setCookie?.match(/venue_admin_session=([^;]+)/)?.[1]
 
-  if (!env.AUTH_SECRET) {
+  if (!response.ok || !sessionToken) {
     throw new Error(data?.error || 'Dashboard login failed')
   }
 
-  const now = Math.floor(Date.now() / 1000)
-  const payload = {
-    sub: 'portfolio-capture',
-    email: env.DASHBOARD_USERNAME,
-    name: 'Portfolio Capture',
-    iat: now,
-    exp: now + 60 * 60,
-  }
-  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url')
-  const signature = createHmac('sha256', env.AUTH_SECRET).update(encodedPayload).digest('base64url')
-
-  return `${encodedPayload}.${signature}`
+  return decodeURIComponent(sessionToken)
 }
 
 function launchBrowser() {
@@ -198,7 +185,7 @@ async function main() {
   mkdirSync(frameDir, { recursive: true })
 
   await waitForServer()
-  const token = await getDashboardToken()
+  const sessionToken = await getDashboardSessionToken()
   const browser = launchBrowser()
 
   try {
@@ -206,6 +193,7 @@ async function main() {
     const client = createCdpClient(webSocketDebuggerUrl)
     await client.ready
     await client.send('Page.enable')
+    await client.send('Network.enable')
     await client.send('Runtime.enable')
     await client.send('Emulation.setDeviceMetricsOverride', {
       width: 1440,
@@ -218,11 +206,17 @@ async function main() {
     await capturePage(client, `${baseUrl}/booking`, join(screenshotDir, 'booking.png'), 3000)
     await capturePage(client, `${baseUrl}/dashboard`, join(screenshotDir, 'dashboard-login.png'), 4000)
 
-    await client.send('Page.navigate', { url: `${baseUrl}/dashboard` })
-    await delay(1000)
-    await client.send('Runtime.evaluate', {
-      expression: `localStorage.setItem('dashboard_token', ${JSON.stringify(token)}); location.reload();`,
+    const captureUrl = new URL(baseUrl)
+    await client.send('Network.setCookie', {
+      name: 'venue_admin_session',
+      value: sessionToken,
+      domain: captureUrl.hostname,
+      path: '/',
+      httpOnly: true,
+      secure: captureUrl.protocol === 'https:',
+      sameSite: 'Lax',
     })
+    await client.send('Page.navigate', { url: `${baseUrl}/dashboard` })
     await delay(3500)
 
     const frames = [

@@ -25,11 +25,20 @@ export const metadata: Metadata = {
     siteName: siteConfig.appName,
     type: 'website',
     locale: 'pt_BR',
+    images: [
+      {
+        url: '/og.png',
+        width: 1200,
+        height: 630,
+        alt: 'Venue Eventos — reservas, agenda e operação em um só lugar',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: `${siteConfig.appName} - Reservas para espaços de eventos`,
     description: siteConfig.appDescription,
+    images: ['/og.png'],
   },
 }
 

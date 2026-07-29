@@ -51,6 +51,10 @@ export function checkRateLimit({ key, limit, windowMs }: RateLimitOptions) {
   }
 }
 
+export function clearRateLimit(key: string) {
+  buckets.delete(key)
+}
+
 export function rateLimitHeaders(result: { remaining: number; resetAt: number }) {
   return {
     'X-RateLimit-Remaining': String(result.remaining),
