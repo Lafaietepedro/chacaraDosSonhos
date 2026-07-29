@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const hasBackendProxy = Boolean(process.env.BACKEND_BASE_URL)
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -11,6 +13,20 @@ const nextConfig = {
   serverExternalPackages: ['@prisma/client'],
   typescript: {
     ignoreBuildErrors: false,
+  },
+  async rewrites() {
+    if (!hasBackendProxy) return []
+
+    return {
+      beforeFiles: [
+        {
+          source: '/api/:path*',
+          destination: '/backend-proxy/:path*',
+        },
+      ],
+      afterFiles: [],
+      fallback: [],
+    }
   },
 }
 

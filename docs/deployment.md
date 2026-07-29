@@ -29,6 +29,7 @@ NEXT_PUBLIC_SITE_URL="https://seu-deploy.vercel.app"
 NEXT_PUBLIC_CONTACT_EMAIL="contato@lpemsoftware.com.br"
 NEXT_PUBLIC_CONTACT_PHONE=""
 NEXT_PUBLIC_WHATSAPP_PHONE=""
+BACKEND_BASE_URL=""
 RESEND_API_KEY=""
 RESEND_FROM_EMAIL="Venue Eventos <reservas@seudominio.com.br>"
 WHATSAPP_PHONE="5561999999999"
@@ -49,6 +50,18 @@ MERCADO_PAGO_WEBHOOK_SECRET=""
 7. Rode a criação do schema no banco remoto com `npm run db:push:prod` usando as variáveis de produção carregadas no ambiente local.
 8. Rode `npm run db:seed:prod` uma vez apontando para o banco remoto.
 9. Troque a senha administrativa no painel após o primeiro login.
+
+## Migração Entre Projetos Da Vercel
+
+Variáveis marcadas como sensíveis na Vercel não podem ser lidas ou exportadas
+depois de criadas. Durante uma migração, configure temporariamente
+`BACKEND_BASE_URL` com a URL pública da implantação anterior. A nova versão
+encaminhará as rotas `/api` para a origem, mantendo reservas, contatos e o
+painel no mesmo banco enquanto as credenciais são cadastradas novamente.
+
+Quando `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET` e as credenciais
+administrativas estiverem configuradas no novo projeto, remova
+`BACKEND_BASE_URL` e faça outro deploy para voltar a executar a API localmente.
 
 ## Dados Para A Demonstração Pública
 

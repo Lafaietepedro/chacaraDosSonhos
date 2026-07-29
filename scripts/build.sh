@@ -5,7 +5,9 @@ echo "Starting build process..."
 if [ "$NODE_ENV" = "production" ]; then
   echo "Production build detected"
 
-  if [ -z "$DATABASE_URL" ]; then
+  if [ -n "$BACKEND_BASE_URL" ]; then
+    echo "Backend proxy configured; database access will remain in the origin deployment"
+  elif [ -z "$DATABASE_URL" ]; then
     echo "DATABASE_URL must be configured for production builds"
     exit 1
   elif [ -z "$DIRECT_URL" ]; then
