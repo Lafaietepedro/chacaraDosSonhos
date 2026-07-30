@@ -144,10 +144,12 @@ const emptyBookingFilters: BookingFilterState = {
 }
 
 const dashboardTabs = [
-  { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
+  { id: 'overview', label: 'Visão geral', icon: BarChart3 },
   { id: 'bookings', label: 'Reservas', icon: CalendarIcon },
+  { id: 'calendar', label: 'Agenda e bloqueios', icon: CalendarIcon },
+  { id: 'catalog', label: 'Pacotes e adicionais', icon: SlidersHorizontal },
+  { id: 'quotes', label: 'Orçamentos', icon: FileText },
   { id: 'contacts', label: 'Contatos', icon: Mail },
-  { id: 'calendar', label: 'Calendário', icon: CalendarIcon },
   { id: 'settings', label: 'Configurações', icon: Settings },
 ]
 
@@ -1231,38 +1233,43 @@ export default function DashboardPage() {
   ).length
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <div className="border-b border-slate-800 bg-slate-950 text-white">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <BrandLogo variant="light" markClassName="h-9 w-9" />
-              <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">Painel do Anfitrião</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-                Acompanhe solicitações, agenda, contatos e configurações do espaço em uma rotina operacional.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button variant="outline" onClick={() => setActiveTab('settings')} className="border-white/20 bg-white/10 text-white hover:bg-white hover:text-slate-950">
-                <Settings className="w-4 h-4 mr-2" />
-                Configurações
-              </Button>
-              <Button asChild className="bg-emerald-600 text-white hover:bg-emerald-700">
-                <Link href="/booking">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nova Reserva
-                </Link>
-              </Button>
-              <Button variant="outline" onClick={logout} className="border-white/20 bg-transparent text-slate-200 hover:bg-red-500 hover:text-white">
-                <LogOut className="w-4 h-4 mr-2" />
-                Sair
-              </Button>
-            </div>
-          </div>
+    <div className="va-admin-shell">
+      <aside className="va-admin-sidebar">
+        <BrandLogo />
+        <nav>
+          {dashboardTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={activeTab === tab.id ? 'is-active' : ''}
+            >
+              <tab.icon />
+              <span>{tab.label}</span>
+              {tab.id === 'bookings' && stats.pendingBookings > 0 && <b>{stats.pendingBookings}</b>}
+              {tab.id === 'contacts' && contactMessages.filter((message) => message.status === 'NEW').length > 0 && (
+                <b>{contactMessages.filter((message) => message.status === 'NEW').length}</b>
+              )}
+            </button>
+          ))}
+        </nav>
+        <div className="va-admin-sidebar-footer">
+          <Link href="/"><Eye />Ver o site público</Link>
+          <button type="button" onClick={logout}><LogOut />Encerrar sessão</button>
         </div>
-      </div>
+      </aside>
 
-      <div className="container mx-auto px-4 py-8">
+      <main className="va-admin-main">
+        <header className="va-admin-topbar">
+          <div>
+            <h1>{dashboardTabs.find((tab) => tab.id === activeTab)?.label ?? 'Visão geral'}</h1>
+            <p>Operação da Villa Aurora · dados fictícios de demonstração</p>
+          </div>
+          <Button asChild className="va-admin-primary">
+            <Link href="/#reservar"><Plus className="w-4 h-4 mr-2" />Nova reserva</Link>
+          </Button>
+        </header>
+
+      <div className="va-admin-content">
         {notice && (
           <div
             className={`mb-6 flex items-start justify-between rounded-lg border px-4 py-3 text-sm ${
@@ -1282,24 +1289,6 @@ export default function DashboardPage() {
             </button>
           </div>
         )}
-
-        {/* Navigation Tabs */}
-        <div className="mb-8 flex w-full gap-1 overflow-x-auto rounded-md border border-slate-200 bg-white p-1 shadow-sm lg:w-fit">
-          {dashboardTabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex shrink-0 items-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-slate-950 text-white shadow-sm'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950'
-              }`}
-            >
-              <tab.icon className="w-4 h-4 mr-2" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (
@@ -1646,6 +1635,36 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Quotes Tab */}
+        {activeTab === 'quotes' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Orçamentos personalizados</CardTitle>
+                <p className="text-sm text-slate-500">Pedidos sob medida recebidos pela página pública.</p>
+              </CardHeader>
+              <CardContent>
+                {recentBookings.filter((booking) => parseCustomBookingNotes(booking.notes).isCustom).length === 0 ? (
+                  <EmptyState icon={FileText} title="Nenhum orçamento aberto" description="Os pedidos personalizados aparecerão aqui para análise e preparação da proposta." />
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {recentBookings.filter((booking) => parseCustomBookingNotes(booking.notes).isCustom).map((booking) => (
+                      <button type="button" key={booking.id} onClick={() => showBookingDetails(booking)} className="rounded-xl border border-slate-200 bg-white p-5 text-left transition hover:bg-[#f4efe6]">
+                        <div className="flex items-start justify-between gap-4">
+                          <div><p className="font-semibold text-slate-950">{booking.customer}</p><p className="mt-1 text-sm text-slate-500">{booking.email}</p></div>
+                          <StatusBadge status={booking.status} />
+                        </div>
+                        <p className="mt-4 text-sm text-slate-600">{booking.date ? formatDate(parseBookingDate(booking.date)) : 'Data a definir'} · {booking.guests} convidados</p>
+                        <p className="mt-2 font-semibold text-[#b06a45]">{formatCurrency(booking.customQuote?.finalAmount ?? booking.customQuote?.estimatedAmount ?? booking.total)}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Contacts Tab */}
         {activeTab === 'contacts' && (
           <div className="space-y-6">
@@ -1810,7 +1829,7 @@ export default function DashboardPage() {
         )}
 
         {/* Settings Tab */}
-        {activeTab === 'settings' && (
+        {(activeTab === 'settings' || activeTab === 'catalog') && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
             <Card>
@@ -2445,6 +2464,7 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+      </main>
     </div>
   )
 }

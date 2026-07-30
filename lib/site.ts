@@ -1,10 +1,10 @@
 export const siteConfig = {
-  appName: 'Venue Eventos',
+  appName: 'Villa Aurora',
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-  demoLabel: 'Demonstração funcional criada pela LPeM Software',
+  demoLabel: 'Demonstração funcional — LPeM Software · dados e imagens ilustrativos',
   appDescription:
-    'Plataforma operacional para divulgar espaços de eventos, receber reservas qualificadas e acompanhar a agenda do anfitrião.',
-  venueName: 'Venue Eventos',
+    'Um espaço de eventos exclusivo na Serra da Cantareira, preparado para celebrações de até 250 convidados.',
+  venueName: 'Villa Aurora',
   shortPitch:
     'Reservas online para espaços de eventos com vitrine pública, cálculo de orçamento, agenda e painel do anfitrião.',
   longPitch:
@@ -12,26 +12,26 @@ export const siteConfig = {
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'contato@lpemsoftware.com.br',
   phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || '',
   whatsappPhone: process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '',
-  address: 'Projeto demonstrativo da LPeM Software',
-  city: 'Atendimento nacional',
-  capacity: 150,
+  address: 'Serra da Cantareira · Mairiporã, SP',
+  city: 'Mairiporã, SP',
+  capacity: 250,
   area: '5.000 m²',
   parkingSpots: 30,
   cleaningFee: 150,
   heroImage: '/gallery/venue-exterior.jpg',
   keywords:
-    'reservas para eventos, gestão de espaços, aluguel de espaço para eventos, agenda de reservas, painel do anfitrião',
+    'espaço para eventos Mairiporã, casamento Serra da Cantareira, Villa Aurora, chácara para eventos, reserva de espaço para festas',
 }
 
 export const bookingPackages = [
   {
     id: 'essencial',
     name: 'Essencial',
-    price: 800,
-    duration: '8 horas',
-    capacity: 50,
-    extraPerGuest: 20,
-    description: 'Para encontros menores com infraestrutura organizada',
+    price: 4500,
+    duration: '6 horas',
+    capacity: 80,
+    extraPerGuest: 65,
+    description: 'Para celebrações intimistas com toda a estrutura necessária.',
     features: [
       'Uso do espaço por 8 horas',
       'Até 50 pessoas',
@@ -47,11 +47,11 @@ export const bookingPackages = [
   {
     id: 'celebracao',
     name: 'Celebração',
-    price: 1200,
-    duration: '12 horas',
-    capacity: 100,
-    extraPerGuest: 18,
-    description: 'O plano mais equilibrado para festas e confraternizações',
+    price: 7900,
+    duration: '10 horas',
+    capacity: 150,
+    extraPerGuest: 55,
+    description: 'Tempo e liberdade na medida certa para viver o dia por inteiro.',
     features: [
       'Uso do espaço por 12 horas',
       'Até 100 pessoas',
@@ -66,13 +66,13 @@ export const bookingPackages = [
     popular: true,
   },
   {
-    id: 'producao',
-    name: 'Produção',
-    price: 1800,
-    duration: '24 horas',
-    capacity: 150,
-    extraPerGuest: 15,
-    description: 'Para eventos maiores com montagem, permanência e suporte',
+    id: 'assinatura-aurora',
+    name: 'Assinatura Aurora',
+    price: 12500,
+    duration: '14 horas',
+    capacity: 250,
+    extraPerGuest: 48,
+    description: 'A experiência completa, da preparação ao último convidado.',
     features: [
       'Uso do espaço por 24 horas',
       'Até 150 pessoas',

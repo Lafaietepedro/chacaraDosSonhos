@@ -1,10 +1,26 @@
 import type { Metadata, Viewport } from 'next'
+import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
 import './globals.css'
 import { siteConfig } from '@/lib/site'
 
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-cormorant',
+  display: 'swap',
+})
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
-  title: `${siteConfig.appName} - Reservas para espaços de eventos`,
+  title: 'Villa Aurora — espaço de eventos na Serra da Cantareira',
   description: siteConfig.appDescription,
   keywords: siteConfig.keywords,
   authors: [{ name: siteConfig.appName }],
@@ -19,10 +35,10 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: `${siteConfig.appName} - Reservas para espaços de eventos`,
+    title: 'Villa Aurora — um lugar inteiro para o seu dia',
     description: siteConfig.appDescription,
     url: siteConfig.siteUrl,
-    siteName: siteConfig.appName,
+    siteName: 'Villa Aurora',
     type: 'website',
     locale: 'pt_BR',
     images: [
@@ -30,13 +46,13 @@ export const metadata: Metadata = {
         url: '/og.png',
         width: 1200,
         height: 630,
-        alt: 'Venue Eventos — reservas, agenda e operação em um só lugar',
+        alt: 'Villa Aurora — espaço de eventos na Serra da Cantareira',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${siteConfig.appName} - Reservas para espaços de eventos`,
+    title: 'Villa Aurora — um lugar inteiro para o seu dia',
     description: siteConfig.appDescription,
     images: ['/og.png'],
   },
@@ -57,7 +73,7 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body>
+      <body className={`${cormorant.variable} ${dmSans.variable}`}>
         {children}
       </body>
     </html>

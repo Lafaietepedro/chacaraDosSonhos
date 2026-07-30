@@ -1,11 +1,11 @@
 {
-  "name": "Venue Eventos",
-  "short_name": "Venue",
-  "description": "Plataforma para divulgar espaços de eventos, receber reservas qualificadas e acompanhar a agenda do anfitrião.",
+  "name": "Villa Aurora",
+  "short_name": "Villa Aurora",
+  "description": "Um espaço inteiro para celebrar histórias que ficam para sempre.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#020617",
+  "background_color": "#f7f3ec",
+  "theme_color": "#241f19",
   "orientation": "portrait-primary",
   "icons": [
     {
