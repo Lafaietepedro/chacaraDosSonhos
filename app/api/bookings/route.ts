@@ -45,12 +45,23 @@ export async function POST(request: Request) {
     })
   } catch (e) {
     if (e instanceof BookingServiceError) {
-      const status = e.code === 'DATE_UNAVAILABLE' ? 409 : e.code === 'DATABASE_UNAVAILABLE' ? 500 : 400
+      const status = e.code === 'DATE_UNAVAILABLE' || e.code === 'CATALOG_CHANGED'
+        ? 409
+        : e.code === 'DATABASE_UNAVAILABLE'
+          ? 500
+          : 400
       return NextResponse.json({ error: e.message, code: e.code }, { status })
     }
 
-    console.error('POST /api/bookings error:', e)
-    const message = e instanceof Error ? e.message : 'Server error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    const incidentId = crypto.randomUUID()
+    console.error(`POST /api/bookings error [${incidentId}]:`, e)
+    return NextResponse.json(
+      {
+        error: 'Não foi possível processar a solicitação. Tente novamente em instantes.',
+        code: 'INTERNAL_ERROR',
+        incidentId,
+      },
+      { status: 500 }
+    )
   }
 }

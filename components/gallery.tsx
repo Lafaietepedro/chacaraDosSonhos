@@ -24,18 +24,6 @@ const images = [
     alt: 'Piscina integrada ao jardim e à área de convivência',
     category: 'Lazer',
   },
-  {
-    id: 4,
-    src: '/gallery/venue-interior.jpg',
-    alt: 'Ambiente interno de apoio aos convidados',
-    category: 'Interior',
-  },
-  {
-    id: 5,
-    src: '/gallery/landscaping.jpg',
-    alt: 'Jardim amplo com paisagismo para celebrações',
-    category: 'Exterior',
-  },
 ]
 
 export function Gallery() {

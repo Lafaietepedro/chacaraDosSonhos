@@ -2,13 +2,13 @@ import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { parseLocalDate } from '@/lib/utils'
 import { checkDateAvailability } from '@/lib/services/availability'
-import { calculateBookingPrice } from '@/lib/services/pricing'
+import { calculateBookingPrice, isGuestCountWithinCapacity, pricesMatch } from '@/lib/services/pricing'
 import { ensureDefaultProperty } from '@/lib/services/property.service'
 import { buildCustomQuoteDraft } from '@/lib/services/custom-quote.service'
 
 export class BookingServiceError extends Error {
   constructor(
-    public code: 'DATABASE_UNAVAILABLE' | 'PACKAGE_NOT_FOUND' | 'DATE_UNAVAILABLE' | 'INVALID_INPUT',
+    public code: 'DATABASE_UNAVAILABLE' | 'PACKAGE_NOT_FOUND' | 'DATE_UNAVAILABLE' | 'INVALID_INPUT' | 'CATALOG_CHANGED',
     message: string
   ) {
     super(message)
@@ -25,6 +25,7 @@ export type CreateBookingInput = {
   date: string
   guests: number
   packageId: string
+  expectedTotal: number
   addons?: Array<{
     id: string
     quantity: number
@@ -54,61 +55,67 @@ export async function createBookingRequest(input: CreateBookingInput) {
     throw new BookingServiceError('INVALID_INPUT', 'Invalid booking payload')
   }
 
-  const property = await ensureDefaultProperty(database)
-  const selectedPackage = property.packages.find(
-    (pkg) => pkg.id === input.packageId || pkg.slug === input.packageId
-  )
-
-  if (!selectedPackage) {
-    throw new BookingServiceError('PACKAGE_NOT_FOUND', 'Selected package was not found')
-  }
-
-  const addonQuantities = new Map<string, number>()
-  for (const requestedAddon of input.addons ?? []) {
-    addonQuantities.set(
-      requestedAddon.id,
-      (addonQuantities.get(requestedAddon.id) ?? 0) + requestedAddon.quantity
-    )
-  }
-
-  const selectedAddons = Array.from(addonQuantities.entries()).map(([addonId, quantity]) => {
-    if (quantity > 20) {
-      throw new BookingServiceError('INVALID_INPUT', 'Selected add-on quantity is too high')
-    }
-
-    const addon = property.extras.find((item) => item.id === addonId && item.isActive)
-
-    if (!addon) {
-      throw new BookingServiceError('INVALID_INPUT', 'Selected add-on was not found')
-    }
-
-    return {
-      id: addon.id,
-      name: addon.name,
-      price: addon.price,
-      quantity,
-    }
-  })
-
   const bookingDate = parseLocalDate(input.date)
-  const quote = calculateBookingPrice({
-    package: selectedPackage,
-    guestCount: input.guests,
-    operationalFee: property.operationalFee,
-    addons: selectedAddons,
-  })
-  const customQuoteDraft = buildCustomQuoteDraft({
-    notes: input.customer.notes,
-    packageName: selectedPackage.name,
-    basePrice: selectedPackage.basePrice,
-    operationalFee: property.operationalFee,
-    extraGuests: quote.extraGuests,
-    extraGuestFee: selectedPackage.extraGuestFee,
-    addons: selectedAddons,
-  })
 
   const createBookingInTransaction = () =>
     database.$transaction(async (tx) => {
+      const property = await ensureDefaultProperty(tx)
+      if (!isGuestCountWithinCapacity(input.guests, property.capacity)) {
+        throw new BookingServiceError(
+          'INVALID_INPUT',
+          `O espaço comporta no máximo ${property.capacity} convidados.`
+        )
+      }
+
+      const selectedPackage = property.packages.find(
+        (pkg) => pkg.id === input.packageId || pkg.slug === input.packageId
+      )
+      if (!selectedPackage) {
+        throw new BookingServiceError('PACKAGE_NOT_FOUND', 'Selected package was not found')
+      }
+
+      const addonQuantities = new Map<string, number>()
+      for (const requestedAddon of input.addons ?? []) {
+        addonQuantities.set(
+          requestedAddon.id,
+          (addonQuantities.get(requestedAddon.id) ?? 0) + requestedAddon.quantity
+        )
+      }
+
+      const selectedAddons = Array.from(addonQuantities.entries()).map(([addonId, quantity]) => {
+        if (quantity > 20) {
+          throw new BookingServiceError('INVALID_INPUT', 'Selected add-on quantity is too high')
+        }
+        const addon = property.extras.find((item) => item.id === addonId && item.isActive)
+        if (!addon) {
+          throw new BookingServiceError('INVALID_INPUT', 'Selected add-on was not found')
+        }
+        return { id: addon.id, name: addon.name, price: addon.price, quantity }
+      })
+
+      const quote = calculateBookingPrice({
+        package: selectedPackage,
+        guestCount: input.guests,
+        operationalFee: property.operationalFee,
+        addons: selectedAddons,
+      })
+      if (!pricesMatch(input.expectedTotal, quote.totalAmount)) {
+        throw new BookingServiceError(
+          'CATALOG_CHANGED',
+          'Os valores do catálogo foram atualizados. Revise a estimativa e envie novamente.'
+        )
+      }
+
+      const customQuoteDraft = buildCustomQuoteDraft({
+        notes: input.customer.notes,
+        packageName: selectedPackage.name,
+        basePrice: selectedPackage.basePrice,
+        operationalFee: property.operationalFee,
+        extraGuests: quote.extraGuests,
+        extraGuestFee: selectedPackage.extraGuestFee,
+        addons: selectedAddons,
+      })
+
       const availability = await checkDateAvailability(tx, property.id, bookingDate)
       if (!availability.available) {
         throw new BookingServiceError('DATE_UNAVAILABLE', availability.reason)
@@ -183,7 +190,7 @@ export async function createBookingRequest(input: CreateBookingInput) {
         })
       }
 
-      return tx.booking.findUniqueOrThrow({
+      const booking = await tx.booking.findUniqueOrThrow({
         where: { id: createdBooking.id },
         include: {
           user: true,
@@ -197,15 +204,17 @@ export async function createBookingRequest(input: CreateBookingInput) {
           },
         },
       })
+
+      return { booking, selectedPackage, quote }
     }, {
       isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
     })
 
-  let booking: Awaited<ReturnType<typeof createBookingInTransaction>> | null = null
+  let result: Awaited<ReturnType<typeof createBookingInTransaction>> | null = null
 
   for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt += 1) {
     try {
-      booking = await createBookingInTransaction()
+      result = await createBookingInTransaction()
       break
     } catch (error) {
       if (!isRetryableTransactionConflict(error)) throw error
@@ -218,13 +227,13 @@ export async function createBookingRequest(input: CreateBookingInput) {
     }
   }
 
-  if (!booking) {
+  if (!result) {
     throw new BookingServiceError('DATE_UNAVAILABLE', 'Não foi possível garantir a disponibilidade da data.')
   }
 
   return {
-    booking,
-    package: selectedPackage,
-    quote,
+    booking: result.booking,
+    package: result.selectedPackage,
+    quote: result.quote,
   }
 }

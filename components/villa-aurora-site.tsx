@@ -20,69 +20,20 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { fallbackPackageOptions } from '@/lib/catalog'
+import { fallbackAddonOptions, fallbackPackageOptions, isExpectedCatalogIdentity } from '@/lib/catalog'
+import { buildPublicBookingSelection, reconcileSelectedPackageId } from '@/lib/public-booking'
+import { siteConfig } from '@/lib/site'
 import { formatCurrency } from '@/lib/utils'
-import type { CatalogResponse, PackageOption } from '@/types/booking'
+import type { AddonOption, CatalogResponse, PackageOption } from '@/types/booking'
 
 const gallery = [
-  { src: '/gallery/landscaping.jpg', name: 'Jardim cerimonial', description: 'Um cenário natural para votos, encontros e fotografias.' },
   { src: '/gallery/reception-hall.jpg', name: 'Salão principal', description: 'Amplitude e flexibilidade para receber cada detalhe da celebração.' },
   { src: '/gallery/pool-garden.jpg', name: 'Deck da piscina', description: 'Luz, paisagem e uma atmosfera perfeita para receber.' },
-  { src: '/gallery/venue-exterior.jpg', name: 'Varanda gourmet', description: 'Integração entre o serviço, a festa e a área externa.' },
-  { src: '/gallery/venue-interior.jpg', name: 'Lounge interno', description: 'Conforto para pausas, conversas e momentos especiais.' },
+  { src: '/gallery/venue-exterior.jpg', name: 'Área externa', description: 'Integração entre a celebração e a paisagem.' },
 ]
 
-const packageDesign = [
-  {
-    slug: 'essencial',
-    name: 'Essencial',
-    description: 'Para celebrações intimistas com toda a estrutura necessária.',
-    price: 4500,
-    duration: '6 horas',
-    capacity: 80,
-    extraPerGuest: 65,
-    popular: false,
-    features: ['Uso exclusivo do espaço', 'Salão e jardim cerimonial', 'Cozinha de apoio', 'Estacionamento e segurança'],
-    notIncluded: ['Produção e decoração'],
-  },
-  {
-    slug: 'celebracao',
-    name: 'Celebração',
-    description: 'Tempo e liberdade na medida certa para viver o dia por inteiro.',
-    price: 7900,
-    duration: '10 horas',
-    capacity: 150,
-    extraPerGuest: 55,
-    popular: true,
-    features: ['Tudo do pacote Essencial', 'Deck da piscina e lounge', 'Mobiliário base', 'Equipe de apoio durante o evento'],
-    notIncluded: ['Cerimonial e decoração floral'],
-  },
-  {
-    slug: 'assinatura-aurora',
-    name: 'Assinatura Aurora',
-    description: 'A experiência completa, da preparação ao último convidado.',
-    price: 12500,
-    duration: '14 horas',
-    capacity: 250,
-    extraPerGuest: 48,
-    popular: false,
-    features: ['Todos os ambientes', 'Mobiliário completo', 'Suíte de preparação', 'Coordenação operacional dedicada'],
-    notIncluded: ['Fornecedores de alimentação e bebidas'],
-  },
-]
-
-const addonDesign = [
-  { key: 'decoracao', name: 'Decoração floral', description: 'Composição para cerimônia e mesas', price: 1850 },
-  { key: 'dj', name: 'Sonorização e DJ', description: 'Som profissional para toda a celebração', price: 1400 },
-  { key: 'luz', name: 'Iluminação cênica', description: 'Projeto de luz para ambientes e pista', price: 980 },
-  { key: 'lounge', name: 'Mobiliário lounge', description: 'Poltronas, mesas e pontos de convivência', price: 1200 },
-  { key: 'limpeza', name: 'Limpeza pós-evento', description: 'Equipe completa após a desmontagem', price: 450 },
-  { key: 'hora', name: 'Hora adicional', description: 'Extensão do período contratado', price: 380 },
-  { key: 'apoio', name: 'Equipe de apoio extra', description: 'Profissionais adicionais para a operação', price: 620 },
-  { key: 'cerimonial', name: 'Cerimonialista', description: 'Coordenação do roteiro e dos fornecedores', price: 2400 },
-]
 
 const eventTypes = ['Casamento', 'Aniversário', 'Confraternização', 'Evento corporativo', 'Formatura', 'Ensaio', 'Celebração familiar', 'Outro']
 
@@ -102,7 +53,7 @@ type BookingForm = {
   date: string
   eventType: string
   guests: number
-  packageIndex: number
+  packageId: string
   addons: string[]
   name: string
   phone: string
@@ -115,7 +66,7 @@ const initialBooking: BookingForm = {
   date: '',
   eventType: 'Casamento',
   guests: 80,
-  packageIndex: 1,
+  packageId: reconcileSelectedPackageId(fallbackPackageOptions, ''),
   addons: [],
   name: '',
   phone: '',
@@ -159,8 +110,41 @@ function MiniCalendar({ value, onChange, dark = false }: { value: string; onChan
     next.setMonth(next.getMonth() + 1)
     return new Date(next.getFullYear(), next.getMonth(), 1)
   })
+  const monthKey = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`
+  const [availability, setAvailability] = useState<{
+    month: string
+    status: 'loading' | 'ready' | 'error'
+    dates: Set<string>
+  }>({ month: monthKey, status: 'loading', dates: new Set() })
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setAvailability({ month: monthKey, status: 'loading', dates: new Set() })
+
+    fetch(`/api/availability?month=${monthKey}`, {
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('availability unavailable')
+        return response.json() as Promise<{ unavailableDates?: string[] }>
+      })
+      .then((result) => {
+        const dates = new Set(result.unavailableDates ?? [])
+        setAvailability({ month: monthKey, status: 'ready', dates })
+        if (value && dates.has(value)) onChange('')
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        setAvailability({ month: monthKey, status: 'error', dates: new Set() })
+      })
+
+    return () => controller.abort()
+    // `value` is intentionally read only when a month response arrives.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthKey])
+
   const first = new Date(month.getFullYear(), month.getMonth(), 1)
-  const last = new Date(month.getFullYear(), month.getMonth() + 1, 0)
   const cells = Array.from({ length: 42 }, (_, index) => {
     const date = new Date(first)
     date.setDate(index - first.getDay() + 1)
@@ -168,9 +152,10 @@ function MiniCalendar({ value, onChange, dark = false }: { value: string; onChan
   })
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const currentStatus = availability.month === monthKey ? availability.status : 'loading'
 
   return (
-    <div className={`va-calendar ${dark ? 'is-dark' : ''}`}>
+    <div className={`va-calendar ${dark ? 'is-dark' : ''}`} aria-busy={currentStatus === 'loading'}>
       <div className="va-calendar-head">
         <button type="button" aria-label="Mês anterior" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}><ChevronLeft /></button>
         <strong>{new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(month)}</strong>
@@ -184,14 +169,26 @@ function MiniCalendar({ value, onChange, dark = false }: { value: string; onChan
           const dateIso = isoDate(date)
           const otherMonth = date.getMonth() !== month.getMonth()
           const past = date < today
-          const disabled = otherMonth || past
+          const unavailable = availability.dates.has(dateIso)
+          const disabled = otherMonth || past || unavailable || currentStatus !== 'ready'
+          const title = unavailable
+            ? 'Data indisponível'
+            : past
+              ? 'Data passada'
+              : otherMonth
+                ? 'Fora do mês atual'
+                : currentStatus === 'error'
+                  ? 'Disponibilidade temporariamente indisponível'
+                  : currentStatus === 'loading'
+                    ? 'Consultando disponibilidade'
+                    : 'Data livre para solicitação'
           return (
             <button
               type="button"
               key={dateIso}
-              className={value === dateIso ? 'is-selected' : ''}
+              className={`${value === dateIso ? 'is-selected' : ''} ${unavailable ? 'is-unavailable' : ''}`.trim()}
               disabled={disabled}
-              title={past ? 'Data indisponível' : otherMonth ? 'Fora do mês atual' : 'Data livre para solicitação'}
+              title={title}
               onClick={() => onChange(dateIso)}
             >
               {date.getDate()}
@@ -199,6 +196,11 @@ function MiniCalendar({ value, onChange, dark = false }: { value: string; onChan
           )
         })}
       </div>
+      <p className="va-field-note" role="status">
+        {currentStatus === 'loading' && 'Consultando datas disponíveis...'}
+        {currentStatus === 'error' && 'Não foi possível consultar a agenda. Tente novamente em instantes.'}
+        {currentStatus === 'ready' && 'Datas desabilitadas não estão disponíveis para solicitação.'}
+      </p>
     </div>
   )
 }
@@ -207,7 +209,8 @@ export function VillaAuroraSite() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [galleryIndex, setGalleryIndex] = useState(0)
   const touchStart = useRef(0)
-  const [packages, setPackages] = useState<PackageOption[]>(fallbackPackageOptions)
+  const [catalog, setCatalog] = useState<CatalogResponse | null>(null)
+  const [catalogStatus, setCatalogStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [form, setForm] = useState<BookingForm>(initialBooking)
   const [step, setStep] = useState(1)
   const [flow, setFlow] = useState<'steps' | 'single'>('steps')
@@ -218,14 +221,35 @@ export function VillaAuroraSite() {
   const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
   const [quoteStatus, setQuoteStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
 
-  useEffect(() => {
-    fetch('/api/catalog')
-      .then(async (response) => response.ok ? response.json() as Promise<CatalogResponse> : null)
-      .then((catalog) => {
-        if (catalog?.packages?.length) setPackages(catalog.packages)
-      })
-      .catch(() => undefined)
+  const loadCatalog = useCallback(async () => {
+    setCatalogStatus('loading')
+    try {
+      const response = await fetch('/api/catalog', { cache: 'no-store' })
+      if (!response.ok) throw new Error('catalog unavailable')
+      const nextCatalog = await response.json() as CatalogResponse
+      if (!nextCatalog.packages?.length || !Array.isArray(nextCatalog.addons)) {
+        throw new Error('invalid catalog')
+      }
+      if (!isExpectedCatalogIdentity(nextCatalog.property, siteConfig.venueName)) {
+        throw new Error('unexpected property identity')
+      }
+      setCatalog(nextCatalog)
+      setCatalogStatus('ready')
+      setForm((current) => ({
+        ...current,
+        packageId: reconcileSelectedPackageId(nextCatalog.packages, current.packageId),
+        addons: current.addons.filter((id) => nextCatalog.addons.some((addon) => addon.id === id)),
+      }))
+      return nextCatalog
+    } catch (error) {
+      setCatalogStatus('error')
+      throw error
+    }
   }, [])
+
+  useEffect(() => {
+    void loadCatalog().catch(() => undefined)
+  }, [loadCatalog])
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -236,23 +260,34 @@ export function VillaAuroraSite() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  const chosenPackage = packageDesign[form.packageIndex]
-  const extraGuests = Math.max(0, form.guests - chosenPackage.capacity)
-  const addonsTotal = addonDesign.filter((addon) => form.addons.includes(addon.key)).reduce((sum, addon) => sum + addon.price, 0)
-  const subtotal = chosenPackage.price + extraGuests * chosenPackage.extraPerGuest + addonsTotal
-  const fee = Math.round(subtotal * 0.08)
-  const total = subtotal + fee
-
-  const apiPackage = useMemo(
-    () => packages[form.packageIndex] ?? packages.find((item) => item.popular) ?? packages[0],
-    [form.packageIndex, packages]
+  const packages: PackageOption[] = catalog?.packages?.length ? catalog.packages : fallbackPackageOptions
+  const addons: AddonOption[] = catalog ? catalog.addons : fallbackAddonOptions
+  const operationalFee = catalog?.property.operationalFee ?? siteConfig.cleaningFee
+  const maxCapacity = catalog?.property.capacity ?? siteConfig.capacity
+  const chosenPackage = packages.find((item) => item.id === form.packageId) ?? packages.find((item) => item.popular) ?? packages[0]
+  const bookingSelection = useMemo(
+    () => buildPublicBookingSelection({
+      package: chosenPackage,
+      addons,
+      selectedAddonIds: form.addons,
+      guestCount: form.guests,
+      operationalFee,
+    }),
+    [addons, chosenPackage, form.addons, form.guests, operationalFee]
   )
+  const extraGuests = bookingSelection.extraGuests
+  const addonsTotal = bookingSelection.addonsCost
+  const fee = operationalFee
+  const total = bookingSelection.totalAmount
+  const contactEmail = catalog?.property.contactEmail || siteConfig.email
+  const contactPhone = catalog?.property.contactPhone || siteConfig.phone
+  const contactAddress = catalog?.property.address || siteConfig.address
 
   const updateForm = <K extends keyof BookingForm>(key: K, value: BookingForm[K]) => setForm((current) => ({ ...current, [key]: value }))
-  const toggleAddon = (key: string) => updateForm('addons', form.addons.includes(key) ? form.addons.filter((item) => item !== key) : [...form.addons, key])
+  const toggleAddon = (id: string) => updateForm('addons', form.addons.includes(id) ? form.addons.filter((item) => item !== id) : [...form.addons, id])
 
-  const selectPackage = (index: number, moveToBooking = false) => {
-    updateForm('packageIndex', index)
+  const selectPackage = (packageId: string, moveToBooking = false) => {
+    updateForm('packageId', packageId)
     if (moveToBooking) {
       setStep(2)
       document.querySelector('#reservar')?.scrollIntoView({ behavior: 'smooth' })
@@ -283,7 +318,7 @@ export function VillaAuroraSite() {
       setBookingMessage('Informe nome, e-mail e telefone para enviar a solicitação.')
       return
     }
-    if (!apiPackage) {
+    if (catalogStatus !== 'ready') {
       setBookingStatus('error')
       setBookingMessage('O catálogo está temporariamente indisponível. Tente novamente em instantes.')
       return
@@ -291,7 +326,7 @@ export function VillaAuroraSite() {
 
     setBookingStatus('sending')
     setBookingMessage('')
-    const selectedNames = addonDesign.filter((addon) => form.addons.includes(addon.key)).map((addon) => addon.name)
+    const selectedNames = bookingSelection.selectedAddons.map((addon) => addon.name)
     const notes = [
       `Tipo de evento: ${form.eventType}`,
       `Pacote de referência: ${chosenPackage.name}`,
@@ -307,13 +342,20 @@ export function VillaAuroraSite() {
         body: JSON.stringify({
           date: form.date,
           guests: form.guests,
-          packageId: apiPackage.id,
-          addons: [],
+          packageId: chosenPackage.id,
+          addons: bookingSelection.addonPayload,
+          expectedTotal: total,
           customer: { name: form.name, email: form.email, phone: form.phone, notes },
         }),
       })
       const data = await response.json().catch(() => null)
-      if (!response.ok) throw new Error(data?.error || 'Não foi possível enviar a solicitação.')
+      if (!response.ok) {
+        if (data?.code === 'CATALOG_CHANGED') {
+          await loadCatalog().catch(() => undefined)
+          throw new Error('O catálogo foi atualizado. Confira a nova estimativa antes de enviar novamente.')
+        }
+        throw new Error(data?.error || 'Não foi possível enviar a solicitação.')
+      }
       setProtocol(`VA-${String(data.bookingId || Date.now()).slice(-6).toUpperCase()}`)
       setBookingStatus('success')
     } catch (error) {
@@ -324,6 +366,10 @@ export function VillaAuroraSite() {
 
   const submitContact = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (catalogStatus !== 'ready') {
+      setContactStatus('error')
+      return
+    }
     setContactStatus('sending')
     const fields = new FormData(event.currentTarget)
     try {
@@ -350,18 +396,28 @@ export function VillaAuroraSite() {
     event.preventDefault()
     setQuoteStatus('sending')
     const fields = new FormData(event.currentTarget)
+    if (catalogStatus !== 'ready') return setQuoteStatus('error')
     const base = packages.find((item) => item.popular) ?? packages[0]
     if (!base) return setQuoteStatus('error')
     try {
       const description = String(fields.get('description') || '')
+      const guests = Number(fields.get('guests'))
+      const selection = buildPublicBookingSelection({
+        package: base,
+        addons,
+        selectedAddonIds: [],
+        guestCount: guests,
+        operationalFee,
+      })
       const response = await fetch('/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           date: fields.get('date'),
-          guests: Number(fields.get('guests')),
+          guests,
           packageId: base.id,
           addons: [],
+          expectedTotal: selection.totalAmount,
           customer: {
             name: fields.get('name'),
             email: fields.get('email'),
@@ -370,7 +426,11 @@ export function VillaAuroraSite() {
           },
         }),
       })
-      if (!response.ok) throw new Error()
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        if (data?.code === 'CATALOG_CHANGED') await loadCatalog().catch(() => undefined)
+        throw new Error()
+      }
       setQuoteStatus('success')
       event.currentTarget.reset()
     } catch {
@@ -390,13 +450,13 @@ export function VillaAuroraSite() {
     <div className="va-form-block">
       <div className="va-form-heading"><span>02</span><div><h3>Escolha o pacote</h3><p>Você poderá ajustar todos os detalhes antes da confirmação.</p></div></div>
       <div className="va-choice-list">
-        {packageDesign.map((item, index) => (
-          <button type="button" key={item.name} className={form.packageIndex === index ? 'is-selected' : ''} onClick={() => updateForm('packageIndex', index)}>
+        {packages.map((item) => (
+          <button type="button" key={item.id} className={form.packageId === item.id ? 'is-selected' : ''} onClick={() => updateForm('packageId', item.id)}>
             <span className="va-radio" /><span><strong>{item.name}</strong><small>{item.duration} · até {item.capacity} convidados</small></span><b>{formatCurrency(item.price)}</b>
           </button>
         ))}
       </div>
-      <label>Número de convidados<input type="number" min="1" max="250" value={form.guests} onChange={(event) => updateForm('guests', Math.max(1, Number(event.target.value)))} /></label>
+      <label>Número de convidados<input type="number" min="1" max={maxCapacity} value={form.guests} onChange={(event) => updateForm('guests', Math.min(maxCapacity, Math.max(1, Number(event.target.value))))} /></label>
       {extraGuests > 0 && <p className="va-field-note">{extraGuests} convidado(s) adicional(is) entram na estimativa.</p>}
     </div>
   )
@@ -405,9 +465,9 @@ export function VillaAuroraSite() {
     <div className="va-form-block">
       <div className="va-form-heading"><span>03</span><div><h3>Complete a experiência</h3><p>Selecione somente o que fizer sentido para o seu evento.</p></div></div>
       <div className="va-form-addons">
-        {addonDesign.map((addon) => (
-          <button type="button" key={addon.key} className={form.addons.includes(addon.key) ? 'is-selected' : ''} onClick={() => toggleAddon(addon.key)}>
-            <span>{form.addons.includes(addon.key) && <Check />}</span><div><strong>{addon.name}</strong><small>{formatCurrency(addon.price)}</small></div>
+        {addons.map((addon) => (
+          <button type="button" key={addon.id} className={form.addons.includes(addon.id) ? 'is-selected' : ''} onClick={() => toggleAddon(addon.id)} disabled={catalogStatus !== 'ready'}>
+            <span>{form.addons.includes(addon.id) && <Check />}</span><div><strong>{addon.name}</strong><small>{formatCurrency(addon.price)}</small></div>
           </button>
         ))}
       </div>
@@ -448,13 +508,13 @@ export function VillaAuroraSite() {
         <div className="va-container">
           <span className="va-eyebrow">Serra da Cantareira · até 250 convidados</span>
           <h1>O dia mais importante<br />da sua vida merece<br /><em>um lugar inteiro</em></h1>
-          <p>Um espaço exclusivo, cercado pela natureza e preparado<br />para celebrar histórias que ficam para sempre.</p>
+          <p>Um espaço exclusivo, cercado pela natureza e preparado<br /> para celebrar histórias que ficam para sempre.</p>
           <div className="va-actions">
             <a className="va-button is-dark" href="#disponibilidade">Ver datas disponíveis</a>
             <a className="va-button is-outline" href="#pacotes">Conhecer pacotes</a>
           </div>
           <div className="va-hero-deck" aria-label="Ambientes da Villa Aurora">
-            {[gallery[3], gallery[1], gallery[2]].map((item, index) => (
+            {gallery.map((item, index) => (
               <div className={`va-hero-photo photo-${index + 1}`} key={item.name}>
                 <Image src={item.src} alt={item.name} fill sizes="(max-width: 800px) 75vw, 34vw" priority={index === 1} />
               </div>
@@ -528,8 +588,9 @@ export function VillaAuroraSite() {
       <section className="va-packages" id="pacotes">
         <div className="va-container">
           <SectionIntro eyebrow="Pacotes" title="Escolha o ritmo da sua celebração." text="Três pontos de partida. Todos podem ser ajustados depois da sua solicitação." />
+          {catalogStatus === 'error' && <p className="va-form-error" role="alert">O catálogo está temporariamente indisponível. Os valores abaixo são apenas uma referência local e o envio foi desabilitado. <button type="button" onClick={() => void loadCatalog().catch(() => undefined)}>Tentar novamente</button></p>}
           <div className="va-package-grid">
-            {packageDesign.map((item, index) => (
+            {packages.map((item) => (
               <article key={item.name} className={item.popular ? 'is-popular' : ''}>
                 {item.popular && <span className="va-popular-tag">Mais escolhido</span>}
                 <h3>{item.name}</h3><p>{item.description}</p>
@@ -540,7 +601,7 @@ export function VillaAuroraSite() {
                   <div><dt>Convidado adicional</dt><dd>{formatCurrency(item.extraPerGuest)}</dd></div>
                 </dl>
                 <ul>{item.features.map((feature) => <li key={feature}><Check />{feature}</li>)}{item.notIncluded.map((feature) => <li className="is-muted" key={feature}><span>—</span>{feature}</li>)}</ul>
-                <button type="button" className={`va-button ${item.popular ? 'is-accent' : 'is-dark'}`} onClick={() => selectPackage(index, true)}>Escolher {item.name}</button>
+                <button type="button" className={`va-button ${item.popular ? 'is-accent' : 'is-dark'}`} onClick={() => selectPackage(item.id, true)}>Escolher {item.name}</button>
               </article>
             ))}
           </div>
@@ -552,9 +613,9 @@ export function VillaAuroraSite() {
         <div className="va-container va-addons-layout">
           <div><SectionIntro eyebrow="Serviços adicionais" title="Os detalhes que completam a experiência." /><div className="va-addons-total"><span>Total selecionado</span><strong>{formatCurrency(addonsTotal)}</strong></div></div>
           <div className="va-addon-grid">
-            {addonDesign.map((addon) => (
-              <button type="button" key={addon.key} className={form.addons.includes(addon.key) ? 'is-selected' : ''} onClick={() => toggleAddon(addon.key)}>
-                <span className="va-checkbox">{form.addons.includes(addon.key) && <Check />}</span><span><strong>{addon.name}</strong><small>{addon.description}</small></span><b>{formatCurrency(addon.price)}</b>
+            {addons.map((addon) => (
+              <button type="button" key={addon.id} className={form.addons.includes(addon.id) ? 'is-selected' : ''} onClick={() => toggleAddon(addon.id)} disabled={catalogStatus !== 'ready'}>
+                <span className="va-checkbox">{form.addons.includes(addon.id) && <Check />}</span><span><strong>{addon.name}</strong><small>{addon.description}</small></span><b>{formatCurrency(addon.price)}</b>
               </button>
             ))}
           </div>
@@ -565,7 +626,7 @@ export function VillaAuroraSite() {
         <div className="va-container va-availability-grid">
           <div>
             <SectionIntro eyebrow="Disponibilidade" title="Sua data está livre?" text="Escolha uma data para começar. A disponibilidade é verificada novamente no envio da solicitação." />
-            <div className="va-legend"><span><i className="free" />Livre</span><span><i className="pending" />Em análise</span><span><i className="booked" />Confirmada</span><span><i className="blocked" />Indisponível</span></div>
+            <div className="va-legend"><span><i className="free" />Livre para solicitação</span><span><i className="blocked" />Indisponível</span></div>
             <div className="va-selected-date"><CalendarDays /><div><span>Data escolhida</span><strong>{longDate(form.date)}</strong></div></div>
             <a href="#reservar" className="va-button is-dark" onClick={() => setStep(1)}>Continuar a solicitação</a>
           </div>
@@ -593,13 +654,13 @@ export function VillaAuroraSite() {
                 {bookingStatus === 'error' && <p className="va-form-error" role="alert">{bookingMessage}</p>}
                 <div className="va-form-actions">
                   {flow === 'steps' && step > 1 && <button type="button" className="va-button is-dark-outline" onClick={() => setStep(step - 1)}><ChevronLeft />Voltar</button>}
-                  {flow === 'steps' && step < 4 ? <button type="button" className="va-button is-accent" onClick={nextStep}>Avançar<ChevronRight /></button> : <button type="submit" className="va-button is-accent" disabled={bookingStatus === 'sending'}>{bookingStatus === 'sending' ? 'Enviando...' : 'Enviar solicitação'}</button>}
+                  {flow === 'steps' && step < 4 ? <button type="button" className="va-button is-accent" onClick={nextStep}>Avançar<ChevronRight /></button> : <button type="submit" className="va-button is-accent" disabled={bookingStatus === 'sending' || catalogStatus !== 'ready'}>{bookingStatus === 'sending' ? 'Enviando...' : catalogStatus === 'loading' ? 'Carregando catálogo...' : 'Enviar solicitação'}</button>}
                 </div>
               </form>
               <aside className="va-estimate">
                 <span className="va-eyebrow">Sua estimativa</span>
                 <h3>{chosenPackage.name}</h3>
-                <dl><div><dt>Pacote</dt><dd>{formatCurrency(chosenPackage.price)}</dd></div><div><dt>Convidados adicionais ({extraGuests})</dt><dd>{formatCurrency(extraGuests * chosenPackage.extraPerGuest)}</dd></div><div><dt>Adicionais ({form.addons.length})</dt><dd>{formatCurrency(addonsTotal)}</dd></div><div><dt>Taxa operacional (8%)</dt><dd>{formatCurrency(fee)}</dd></div></dl>
+                <dl><div><dt>Pacote</dt><dd>{formatCurrency(chosenPackage.price)}</dd></div><div><dt>Convidados adicionais ({extraGuests})</dt><dd>{formatCurrency(bookingSelection.extraGuestsCost)}</dd></div><div><dt>Adicionais ({bookingSelection.selectedAddons.length})</dt><dd>{formatCurrency(addonsTotal)}</dd></div><div><dt>Taxa operacional</dt><dd>{formatCurrency(fee)}</dd></div></dl>
                 <div className="va-estimate-total"><span>Total estimado</span><strong>{formatCurrency(total)}</strong></div>
                 <p>Valor de referência, não contratual. A equipe confirma todos os itens antes da proposta.</p>
                 <div className="va-estimate-meta"><span><CalendarDays />{form.date ? longDate(form.date) : 'Data a escolher'}</span><span><Sparkles />{form.eventType}</span><span><Users />{form.guests} convidados</span></div>
@@ -615,10 +676,11 @@ export function VillaAuroraSite() {
           <form onSubmit={submitQuote} className="va-light-form">
             <div className="va-field-grid"><label>Nome<input name="name" required minLength={2} /></label><label>Telefone / WhatsApp<input name="phone" required /></label></div>
             <div className="va-field-grid"><label>E-mail<input name="email" type="email" required /></label><label>Data pretendida<input name="date" type="date" min={isoDate(new Date())} required /></label></div>
-            <label>Número de convidados<input name="guests" type="number" min="1" max="250" required /></label>
+            <label>Número de convidados<input name="guests" type="number" min="1" max={maxCapacity} required /></label>
             <label>Descreva o evento<textarea name="description" rows={5} minLength={10} required placeholder="Formato, duração, ambientes, fornecedores e tudo o que considera importante." /></label>
+            <p className="va-field-note">A solicitação entra no painel como reserva em análise e mantém a data indisponível até a avaliação da equipe.</p>
             {quoteStatus === 'error' && <p className="va-form-error">Não foi possível enviar agora. Tente novamente.</p>}
-            <button className="va-button is-dark" disabled={quoteStatus === 'sending'}>{quoteStatus === 'sending' ? 'Enviando...' : 'Pedir orçamento personalizado'}</button>
+            <button className="va-button is-dark" disabled={quoteStatus === 'sending' || catalogStatus !== 'ready'}>{quoteStatus === 'sending' ? 'Enviando...' : catalogStatus === 'loading' ? 'Carregando catálogo...' : 'Enviar solicitação sob medida'}</button>
           </form>
         </div>
       </section>
@@ -634,14 +696,14 @@ export function VillaAuroraSite() {
         <div className="va-container va-contact-grid">
           <div>
             <SectionIntro eyebrow="Contato" title="Conheça a Villa Aurora de perto." text="As visitas são feitas com hora marcada para que você explore cada ambiente com calma." />
-            <address><span><MapPin />Serra da Cantareira · Mairiporã, SP</span><span><Phone />(11) 99999-0000</span><span><Mail />contato@lpemsoftware.com.br</span><span><Clock3 />Visitas de terça a sábado, com agendamento</span></address>
+            <address><span><MapPin />{contactAddress}</span>{contactPhone && <span><Phone />{contactPhone}</span>}<span><Mail />{contactEmail}</span><span><Clock3 />Visitas de terça a sábado, com agendamento</span></address>
           </div>
           <form onSubmit={submitContact} className="va-light-form">
             <div className="va-field-grid"><label>Nome<input name="name" required minLength={2} /></label><label>E-mail<input name="email" type="email" required /></label></div>
             <label>Telefone<input name="phone" /></label><label>Mensagem<textarea name="message" rows={5} minLength={10} required /></label>
             {contactStatus === 'success' && <p className="va-inline-success"><Check />Mensagem enviada. Retornaremos em breve.</p>}
             {contactStatus === 'error' && <p className="va-form-error">Não foi possível enviar agora. Tente novamente.</p>}
-            <button className="va-button is-dark" disabled={contactStatus === 'sending'}>{contactStatus === 'sending' ? 'Enviando...' : 'Enviar mensagem'}</button>
+            <button className="va-button is-dark" disabled={contactStatus === 'sending' || catalogStatus !== 'ready'}>{contactStatus === 'sending' ? 'Enviando...' : catalogStatus === 'loading' ? 'Carregando catálogo...' : 'Enviar mensagem'}</button>
           </form>
         </div>
       </section>
@@ -650,7 +712,7 @@ export function VillaAuroraSite() {
         <div className="va-container va-footer-grid">
           <div><Wordmark light /><p>Um espaço inteiro para celebrar histórias que ficam para sempre.</p></div>
           <div><strong>Navegue</strong><a href="#espaco">O espaço</a><a href="#ambientes">Ambientes</a><a href="#pacotes">Pacotes</a><a href="#disponibilidade">Disponibilidade</a></div>
-          <div><strong>Equipe</strong><Link href="/dashboard">Painel administrativo</Link><a href="mailto:contato@lpemsoftware.com.br">contato@lpemsoftware.com.br</a><span>Atendimento com hora marcada</span></div>
+          <div><strong>Equipe</strong><Link href="/dashboard">Painel administrativo</Link><a href={`mailto:${contactEmail}`}>{contactEmail}</a><span>Atendimento com hora marcada</span></div>
         </div>
         <div className="va-container va-footer-bottom"><p>Demonstração funcional desenvolvida pela LPeM Software. Villa Aurora é uma marca fictícia; dados, valores e imagens são ilustrativos.</p><span>© 2026 LPeM Software</span></div>
       </footer>

@@ -1,4 +1,8 @@
-# Overview Para Segunda Proposta De Design
+# Arquivo histórico — visão anterior do Venue Eventos
+
+> Este briefing descreve a identidade anterior à demonstração Villa Aurora. Ele é mantido apenas como registro de evolução de design e não define a marca, os textos ou os fluxos públicos atuais.
+
+## Overview Para Segunda Proposta De Design
 
 Este documento descreve o estado visual original do projeto Venue Eventos antes do redesign aplicado no repositório. A ideia é permitir que outro assistente proponha uma direção alternativa de UI/branding para comparação.
 

@@ -19,6 +19,7 @@ const REQUEST_HEADERS = [
 
 const ALLOWED_API_ROOTS = new Set([
   'auth',
+  'availability',
   'bookings',
   'catalog',
   'contact',

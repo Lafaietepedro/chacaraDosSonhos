@@ -1,67 +1,72 @@
-# Venue Eventos
+# Venue Eventos — demonstração Villa Aurora
 
-Venue Eventos é uma aplicação web para operação de espaços de eventos: vitrine pública, solicitação de reserva, validação de disponibilidade, calendário administrativo, gestão de pacotes e acompanhamento de contatos.
+Venue Eventos é uma base full stack para operação de espaços de eventos. A interface pública atual usa a marca fictícia **Villa Aurora** para demonstrar o produto com dados, valores e imagens ilustrativos.
 
-O projeto começou como um site específico para uma propriedade, mas foi reposicionado como um produto reaproveitável para salões, chácaras, áreas de lazer e pequenas operações que precisam sair de planilhas, mensagens soltas e controle manual de agenda.
+Este é um projeto próprio da LPeM Software & Automation para portfólio técnico. Não representa um cliente, espaço ou operação comercial real.
 
-## Case
+## O problema demonstrado
 
-### Problema
+Pedidos recebidos por canais dispersos, cálculos manuais e agendas separadas aumentam o risco de:
 
-Operadores de espaços de eventos normalmente recebem pedidos por WhatsApp, calculam valores manualmente e verificam a agenda em ferramentas separadas. Isso cria três riscos recorrentes:
+- conflito de datas;
+- preços inconsistentes;
+- perda de contexto de contatos e solicitações;
+- ausência de histórico operacional.
 
-- Reserva duplicada para a mesma data.
-- Preço inconsistente entre pacotes, taxas e convidados extras.
-- Falta de histórico centralizado de contatos, pedidos e decisões.
+## O fluxo implementado
 
-### Solução
+### Área pública
 
-O Venue Eventos centraliza o fluxo mínimo de operação:
+- vitrine responsiva da Villa Aurora;
+- catálogo carregado do backend;
+- pacotes, capacidade, taxa e adicionais vindos da mesma fonte de dados;
+- estimativa calculada pela mesma regra pura usada no backend;
+- seleção de adicionais com IDs e quantidades reais;
+- consulta mensal de datas indisponíveis sem exposição de dados pessoais;
+- nova verificação transacional da data no envio;
+- rejeição quando o catálogo muda entre carregamento e envio;
+- formulário de contato;
+- solicitação de reserva em etapas;
+- solicitação sob medida registrada como reserva em análise.
 
-- Página pública para apresentar o espaço, pacotes e canais de contato.
-- Formulário de reserva em etapas, com pacote, adicionais, data, convidados e dados do cliente.
-- Regra de preço isolada em serviço testável.
-- Validação de disponibilidade no backend antes de criar reservas.
-- Dashboard para aprovar, recusar, cancelar, concluir e excluir reservas.
-- Proposta sob medida persistida, editável e exportável em PDF.
-- Bloqueio manual de datas no calendário administrativo.
-- Configuração editável de propriedade, taxa operacional, pacotes e adicionais.
+### Área administrativa
 
-### Resultado Atual
+- login com senha protegida por `scrypt`;
+- sessão em cookie HttpOnly assinada por HMAC;
+- indicadores operacionais;
+- reservas paginadas e filtráveis;
+- transições de status validadas;
+- calendário de reservas e bloqueios;
+- contatos;
+- edição de propriedade, pacotes e adicionais;
+- proposta sob medida;
+- geração de proposta/contrato em PDF;
+- troca de senha.
 
-O projeto já está em nível apresentável para portfólio técnico: tem domínio claro, regras de negócio fora da UI, persistência real, autenticação administrativa, dashboard funcional, testes automatizados e build de produção validado.
+## Consistência e segurança do fluxo
 
-Ainda não é um SaaS pronto para clientes pagantes. Os principais pontos antes de produção real são deploy com PostgreSQL, gestão de fotos, pagamento de sinal e melhoria visual final do dashboard.
+O frontend não relaciona pacotes por posição no array. O mesmo objeto de catálogo fornece:
 
-## Preview
+- nome e preço exibidos;
+- capacidade incluída;
+- tarifa por convidado adicional;
+- ID enviado ao backend;
+- adicionais e quantidades;
+- taxa operacional fixa.
 
-Página pública:
+O backend recalcula o total e compara com `expectedTotal`. Se o catálogo tiver mudado, retorna conflito e não cria a reserva silenciosamente com outro preço.
 
-![Página pública do Venue Eventos](docs/screenshots/home.png)
+Datas passadas, datas bloqueadas e conflitos com reservas `PENDING` ou `CONFIRMED` são rejeitados no servidor. O número de convidados também é limitado pela capacidade da propriedade.
 
-Fluxo de reserva:
+Os endpoints GET de catálogo e disponibilidade são somente leitura. Inicialização e reconciliação de dados ficam no seed explícito.
 
-![Fluxo de solicitação de reserva](docs/screenshots/booking.png)
+## Identidade da demonstração
 
-Login administrativo:
+- **Produto/base técnica:** Venue Eventos
+- **Marca fictícia pública:** Villa Aurora
+- **Autoria:** LPeM Software & Automation
 
-![Login administrativo](docs/screenshots/dashboard-login.png)
-
-Dashboard administrativo:
-
-![Dashboard administrativo do Venue Eventos](docs/screenshots/dashboard-overview.png)
-
-Tour rápido do dashboard: [`docs/media/dashboard-tour.mp4`](docs/media/dashboard-tour.mp4)
-
-## Design
-
-O redesign atual reposiciona a interface pública como produto operacional premium para espaços de eventos. Para comparar com uma proposta externa, use o briefing em [`docs/design/original-project-overview.md`](docs/design/original-project-overview.md), que descreve o design anterior, pontos fracos e restrições para uma segunda leitura.
-
-A identidade visual usa uma marca vetorial própria em [`public/brand/venue-eventos-logo.svg`](public/brand/venue-eventos-logo.svg), com símbolo aplicado no header, footer, login, dashboard e favicons.
-
-## Modelo De Negócio
-
-A evolução recomendada é um modelo híbrido de pacotes fixos e orçamento sob medida. A proposta completa está em [`docs/business/custom-packages-model.md`](docs/business/custom-packages-model.md), com impacto no fluxo, modelo de dados sugerido e roadmap incremental.
+O frontend valida a identidade `Villa Aurora` recebida do backend antes de habilitar formulários. Isso impede que uma interface de uma propriedade grave dados em outra base por configuração incorreta de `BACKEND_BASE_URL`.
 
 ## Stack
 
@@ -71,310 +76,105 @@ A evolução recomendada é um modelo híbrido de pacotes fixos e orçamento sob
 - Tailwind CSS
 - Prisma ORM
 - SQLite em desenvolvimento
-- Schema alternativo para Supabase/PostgreSQL
-- API routes do próprio Next.js
-- ESLint 9 flat config
+- PostgreSQL/Supabase no schema de produção
+- API Routes
+- ESLint 9
+- testes com `node:test`
 - Node 24 recomendado
-- Testes com `node:test`
 
-Node 25 é uma release Current e apresentou instabilidade na geração do Prisma Client neste ambiente. Para desenvolvimento e build, use Node 24.
+## Estrutura principal
 
-## Funcionalidades
-
-### Público
-
-- Página responsiva com hero, proposta de valor, galeria demonstrativa, pacotes, FAQ e contato.
-- Catálogo público carregado do banco, com fallback inicial de configuração.
-- Formulário de contato persistido no banco.
-- Solicitação de reserva em 3 etapas.
-- Cálculo automático de pacote, taxa operacional, convidados extras e adicionais.
-- Rate limiting em memória nos endpoints públicos.
-- Notificação opcional por email via Resend.
-- Notificação opcional por WhatsApp via webhook ou CallMeBot.
-
-### Administrativo
-
-- Login administrativo.
-- Usuário administrador persistido no banco.
-- Senha com hash usando `scrypt`.
-- Sessão assinada por HMAC.
-- Dashboard com indicadores de reservas, receita mensal e ocupação.
-- Lista paginada de reservas com filtros.
-- Detalhes de reserva.
-- Transições de status validadas no backend.
-- Calendário com reservas e bloqueios.
-- Bloqueios de data persistidos.
-- Gestão de mensagens de contato.
-- Configuração do espaço: nome, descrição, capacidade, taxa, contato e endereço.
-- Gestão de pacotes: preço, duração, capacidade, convidado extra, itens incluídos, destaque, ordem e ativação.
-- Gestão de adicionais: nome, descrição, preço e ativação.
-- Visualização de adicionais selecionados e briefing sob medida nas reservas.
-- Proposta sob medida com valor estimado, valor final editável, status e composição por itens.
-- Contrato/proposta em PDF gerado sob demanda pelo painel.
-- Troca de senha pelo painel.
-
-## Decisões Técnicas
-
-### Next.js Como Aplicação Full Stack
-
-O projeto permanece em Next.js porque ainda é uma operação de escopo concentrado. Separar backend agora adicionaria deploy, autenticação entre serviços e duplicação operacional sem ganho proporcional.
-
-As API routes são suficientes para o estágio atual, desde que regras críticas fiquem em `lib/services`.
-
-### Prisma Como Camada de Persistência
-
-O Prisma mantém o modelo de dados explícito e facilita a migração futura para PostgreSQL. SQLite é mantido para desenvolvimento local, mas não deve ser o banco final de demonstração pública.
-
-### Regras de Negócio em Serviços
-
-Preço, disponibilidade, criação de reserva e transições de status ficam fora dos componentes React. Isso reduz acoplamento e permite testes rápidos sem subir a aplicação inteira.
-
-### Snapshots de Pacote
-
-Reservas gravam nome, preço base, taxa operacional e valor por convidado extra no momento da criação. Assim, alterações futuras em pacotes não corrompem o histórico financeiro.
-
-## Arquitetura
-
-```txt
+```text
 app/
-  api/                         Rotas de autenticação, catálogo, contato, reservas e dashboard
-  booking/                     Fluxo público de solicitação de reserva
-  dashboard/                   Painel administrativo
-  page.tsx                     Página pública
+  api/availability/              Datas públicas indisponíveis
+  api/bookings/                  Criação e operação de reservas
+  api/catalog/                   Catálogo público somente leitura
+  api/contact/                   Contatos
+  backend-proxy/                 Proxy opcional para backend separado
+  dashboard/                     Painel administrativo
 components/
-  auth/                        Login administrativo
-  ui/                          Componentes base
-  *.tsx                        Seções públicas, calendário e partes do dashboard
+  villa-aurora-site.tsx          Interface pública
+config/
+  villa-aurora.json              Fonte canônica da demonstração
 lib/
-  services/
-    availability.ts            Regra de disponibilidade
-    addon.service.ts           Criação e edição administrativa de adicionais
-    booking.service.ts         Criação transacional de reserva
-    booking-status.ts          Fluxo permitido de status
-    custom-quote.service.ts    Geração de proposta sob medida
-    notification.service.ts    Email transacional opcional
-    pricing.ts                 Cálculo de preço
-    property.service.ts        Bootstrap e consulta da propriedade padrão
-  pdf/
-    simple-pdf.ts              Gerador leve de contrato/proposta em PDF
-  api-auth.ts                  Validação de sessão administrativa
-  auth-crypto.ts               Hash de senha e assinatura
-  catalog.ts                   Catálogo público
-  prisma.ts                    Cliente Prisma
-  rate-limit.ts                Rate limit em memória
-  site.ts                      Fallback de marca e seed inicial
+  public-booking.ts              Estimativa e payload da UI
+  services/availability.ts       Disponibilidade e intervalos
+  services/booking.service.ts    Criação transacional
+  services/pricing.ts            Regra pura de preço
+  services/property.service.ts   Consulta e bootstrap explícito
 prisma/
-  schema.prisma                Schema local com SQLite
-  schema-production.prisma     Referência para PostgreSQL
-  seed.js                      Seed idempotente
-tests/
-  availability.test.ts
-  booking-status.test.ts
-  pricing.test.ts
-  rate-limit.test.ts
+  schema.prisma                  SQLite local
+  schema-production.prisma       PostgreSQL
+  seed.js                        Sincronização explícita da demo
 ```
 
-## Qualidade
+## Desenvolvimento local
 
-Cobertura automatizada atual:
+Requisitos:
 
-- Cálculo de preço com convidados extras e adicionais.
-- Geração de proposta sob medida.
-- Geração de PDF simples.
-- Rate limiting.
-- Disponibilidade de datas.
-- Transições de status de reserva.
-
-Checks usados durante o desenvolvimento:
-
-```bash
-npm test
-npm run lint
-./node_modules/.bin/tsc --noEmit
-npm audit
-npx -p node@24 npm run build
-```
-
-Último estado validado: testes, lint, TypeScript, auditoria das dependências de produção e build de produção passando.
-
-## Como Rodar
-
-Instale dependências:
+- Node.js 24
+- npm
 
 ```bash
 npm install
-```
-
-Copie o arquivo de exemplo e ajuste os valores:
-
-```bash
 cp .env.example .env
-```
-
-Configure `.env` ou `.env.local`:
-
-```env
-DATABASE_URL="file:./dev.db"
-# Para Supabase em produção:
-# DATABASE_URL="postgresql://postgres.PROJECT_REF:SENHA@REGION.pooler.supabase.com:6543/postgres?pgbouncer=true"
-# DIRECT_URL="postgresql://postgres:SENHA@db.PROJECT_REF.supabase.co:5432/postgres"
-DASHBOARD_USERNAME="admin"
-DASHBOARD_PASSWORD="troque-esta-senha"
-AUTH_SECRET="gere-uma-string-longa-e-aleatoria"
-NEXT_PUBLIC_SITE_URL="http://localhost:3000"
-NEXT_PUBLIC_CONTACT_EMAIL="contato@lpemsoftware.com.br"
-NEXT_PUBLIC_CONTACT_PHONE=""
-NEXT_PUBLIC_WHATSAPP_PHONE=""
-RESEND_API_KEY=""
-RESEND_FROM_EMAIL="Venue Eventos <reservas@seudominio.com.br>"
-WHATSAPP_WEBHOOK_URL=""
-CALLMEBOT_API_KEY=""
-MERCADO_PAGO_ACCESS_TOKEN=""
-MERCADO_PAGO_WEBHOOK_SECRET=""
-```
-
-Prepare o banco:
-
-```bash
 npm run db:generate
 npm run db:push
 npm run db:seed
-```
-
-Para validar e aplicar o schema em Supabase/PostgreSQL usando `.env.local`:
-
-```bash
-npm run db:validate:prod
-npm run db:generate:prod
-npm run db:push:prod
-npm run db:seed:prod
-```
-
-Rode em desenvolvimento:
-
-```bash
 npm run dev
 ```
 
 A aplicação abre em `http://localhost:3000`.
 
-Rode validações:
+`npm run db:seed` sincroniza propriedade, preços, pacotes e adicionais com `config/villa-aurora.json`. Ele pode sobrescrever edições administrativas da demonstração. Por segurança, o comando aborta se encontrar uma propriedade ativa que não seja Villa Aurora nem uma identidade legada conhecida; não o execute contra bancos de clientes ou outras operações.
+
+As credenciais padrão `admin` / `admin123` existem somente fora de produção. Configure `DASHBOARD_USERNAME`, `DASHBOARD_PASSWORD` e um `AUTH_SECRET` longo antes de qualquer ambiente compartilhado.
+
+## Validação
 
 ```bash
 npm test
 npm run lint
-npm run build
-```
-
-Se estiver usando Node 25 e o Prisma Client não gerar corretamente, execute os comandos com Node 24:
-
-```bash
+./node_modules/.bin/tsc --noEmit
+npm audit --omit=dev
 npx -p node@24 npm run build
 ```
 
-## Deploy Recomendado
+A suíte cobre preço, adicionais, capacidade, catálogo, datas passadas, intervalos indisponíveis, reservas ativas, validação de payload, status, rate limiting, propostas e PDF.
 
-Para uma demonstração pública de portfólio:
+## Produção
 
-- Vercel para aplicação Next.js.
-- Supabase para PostgreSQL gerenciado.
-- `schema-production.prisma` como base da migração.
-- `DATABASE_URL` apontando para o Transaction Pooler do Supabase.
-- `DIRECT_URL` apontando para conexão direta ou Session Pooler.
-- `AUTH_SECRET` obrigatório em produção.
-- Seed inicial rodado uma vez no ambiente remoto.
+A demonstração pode operar de duas formas:
 
-SQLite local é aceitável para desenvolvimento, mas é um ponto fraco para demo pública porque não resolve concorrência real e não representa uma operação em produção.
+1. uma aplicação Next.js com PostgreSQL configurado diretamente; ou
+2. uma Vercel de frontend com `BACKEND_BASE_URL` encaminhando `/api/*` a outra implantação do mesmo backend.
 
-O checklist operacional está em [`docs/deployment.md`](docs/deployment.md).
+No segundo modelo, frontend e backend precisam ser publicados juntos. A origem deve executar conscientemente a sincronização do seed antes de habilitar os formulários públicos, após backup e confirmação de que o banco pertence à demonstração Villa Aurora.
 
-## Trade-Offs
+Variáveis obrigatórias ou recomendadas:
 
-- Autenticação customizada mantém o projeto simples, mas NextAuth/Auth.js pode fazer sentido quando houver múltiplos administradores, recuperação de senha e sessões mais robustas.
-- Rate limiting em memória funciona para desenvolvimento e deploy simples, mas deve virar Upstash Redis ou alternativa persistente em produção serverless.
-- Email via Resend está pronto como integração opcional, mas o projeto ainda não mantém histórico de envio.
-- PDF de proposta/contrato é gerado sob demanda pelo próprio app. Para contrato juridicamente robusto, ainda faltam cláusulas configuráveis, versionamento e assinatura eletrônica.
-- Não há multitenancy. A decisão é intencional: primeiro consolidar uma operação bem feita, depois generalizar para múltiplas propriedades.
-- Não há pagamento de sinal. Mercado Pago é provavelmente a melhor próxima escolha para o mercado brasileiro.
+- `DATABASE_URL` e `DIRECT_URL` para PostgreSQL;
+- `AUTH_SECRET`;
+- `DASHBOARD_USERNAME` e `DASHBOARD_PASSWORD` no primeiro seed;
+- `NEXT_PUBLIC_SITE_URL`;
+- `BACKEND_BASE_URL`, somente quando houver backend separado;
+- Resend e WhatsApp, opcionais e vazios por padrão.
 
-## Roadmap
+Nunca versione `.env`, bancos SQLite, cookies, tokens ou credenciais.
 
-Prioridade alta:
+## Limitações deliberadas
 
-- Deploy público com PostgreSQL.
-- Upload e ordenação de fotos.
-- Histórico de notificações.
-- Testes para criação de reserva com transação e snapshots.
+- demonstração de uma única propriedade, sem multitenancy;
+- rate limiting em memória;
+- sem pagamento de sinal;
+- sem assinatura eletrônica;
+- imagens ilustrativas, não fotografias de um espaço real;
+- proposta PDF não substitui contrato jurídico revisado.
 
-Prioridade média:
+## Imagens
 
-- Pagamento de sinal via Mercado Pago.
-- Exportação de agenda.
-- Relatórios de receita, ocupação, conversão e ticket médio.
-- Gestão de múltiplos administradores.
+Somente imagens com origem documentada são usadas. Atribuições estão em [`public/gallery/README.md`](public/gallery/README.md). A licença das fotografias não concede licença sobre o código.
 
-Prioridade futura:
+## Licença
 
-- Assinatura eletrônica.
-- WhatsApp Business API oficial.
-- Motor de preços por temporada, feriado e regras customizadas.
-- Multiunidade ou multitenancy.
-- Auditoria e permissões granulares.
-
-## Prompt Para Segunda Opinião
-
-Use este prompt para pedir uma avaliação crítica a outro assistente:
-
-```txt
-Analise este projeto como se fosse um produto real chamado Venue Eventos.
-
-Contexto: ele começou como um site específico para aluguel de uma propriedade, mas foi renomeado e reposicionado para virar uma base profissional de gestão de reservas para espaços de eventos. Quero remover qualquer traço de projeto pessoal antigo e decidir se vale manter esta arquitetura ou fazer uma refatoração maior.
-
-Stack atual:
-- Next.js 16 App Router
-- React 18
-- TypeScript
-- Tailwind CSS
-- Prisma
-- SQLite em desenvolvimento
-- Schema alternativo para Supabase/PostgreSQL
-- API routes do Next.js
-- Autenticação administrativa com senha hasheada por scrypt e sessão assinada por HMAC
-- Testes com node:test
-
-Funcionalidades implementadas:
-- Página pública com seções comerciais.
-- Fluxo de solicitação de reserva.
-- Cálculo de preço por pacote, taxa operacional e convidados extras.
-- Adicionais selecionáveis no fluxo público e editáveis no painel.
-- Persistência de reservas com Prisma.
-- Validação de disponibilidade no backend.
-- Datas bloqueadas persistidas.
-- Pacotes e configurações do espaço editáveis pelo painel.
-- Proposta sob medida persistida com itens, status e valor final editável.
-- Contrato/proposta PDF gerado sob demanda no dashboard.
-- Email transacional opcional para cliente e anfitrião via Resend.
-- Dashboard com login, estatísticas, paginação, filtros, detalhes, aprovação, recusa, cancelamento, conclusão e exclusão.
-- Calendário visual.
-- Testes para preço, disponibilidade, rate limit e transições de status.
-
-Funcionalidades desejadas:
-- Deploy público com PostgreSQL.
-- Pagamento de sinal via PIX/cartão.
-- Gestão real de fotos.
-- Gestão de múltiplos administradores.
-- Relatórios melhores.
-- Histórico de notificações.
-- Refresh token, rotação de sessão e permissões granulares.
-- Possível multiunidade ou multitenancy no futuro.
-
-Quero que você proponha:
-1. Uma estratégia de refatoração realista em fases.
-2. O que deve ser mantido, removido ou reescrito.
-3. O modelo de dados ideal para reservas, propriedades, pacotes, bloqueios, pagamentos e contratos.
-4. A arquitetura recomendada para continuar em Next.js ou separar backend.
-5. Riscos técnicos e pontos frágeis do projeto atual.
-6. Um plano de implementação com prioridades para transformar isso em produto profissional.
-
-Seja crítico, mas pragmático. Não proponha uma reescrita total se uma refatoração incremental resolver melhor.
-```
+Código proprietário. Consulte [`LICENSE`](LICENSE). Nenhuma permissão de reutilização, redistribuição ou exploração comercial é concedida sem autorização escrita.

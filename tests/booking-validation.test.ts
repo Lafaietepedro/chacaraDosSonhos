@@ -1,11 +1,12 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { bookingRequestSchema } from '../lib/validation/booking'
+import { bookingRequestSchema, isBookableLocalDate } from '../lib/validation/booking'
 
 const validPayload = {
-  date: '2026-06-12',
+  date: '2027-06-12',
   guests: 80,
   packageId: 'celebracao',
+  expectedTotal: 10900,
   customer: {
     name: 'Cliente Teste',
     email: 'CLIENTE@EXEMPLO.COM',
@@ -20,6 +21,7 @@ test('bookingRequestSchema normalizes valid booking payloads', () => {
   assert.equal(parsed.customer.email, 'cliente@exemplo.com')
   assert.equal(parsed.customer.phone, '5561999999999')
   assert.equal(parsed.guests, 80)
+  assert.equal(parsed.expectedTotal, 10900)
 })
 
 test('bookingRequestSchema accepts numeric guest values as strings', () => {
@@ -42,6 +44,15 @@ test('bookingRequestSchema accepts selected add-ons with quantities', () => {
   assert.deepEqual(parsed.addons, [
     { id: 'addon-1', quantity: 2 },
   ])
+})
+
+test('bookingRequestSchema rejects invalid expected totals', () => {
+  const result = bookingRequestSchema.safeParse({
+    ...validPayload,
+    expectedTotal: -1,
+  })
+
+  assert.equal(result.success, false)
 })
 
 test('bookingRequestSchema accepts structured custom package notes', () => {
@@ -68,4 +79,13 @@ test('bookingRequestSchema rejects invalid dates, guests and customer email', ()
   })
 
   assert.equal(result.success, false)
+})
+
+test('isBookableLocalDate rejects past dates in the business timezone', () => {
+  const now = new Date('2026-07-30T15:00:00.000Z')
+
+  assert.equal(isBookableLocalDate('2026-07-29', now), false)
+  assert.equal(isBookableLocalDate('2026-07-30', now), true)
+  assert.equal(isBookableLocalDate('2026-07-31', now), true)
+  assert.equal(isBookableLocalDate('2026-02-31', now), false)
 })

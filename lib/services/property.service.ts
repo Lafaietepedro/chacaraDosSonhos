@@ -89,6 +89,22 @@ export function mapPropertyToCatalog(property: PropertyWithPackages): CatalogRes
   }
 }
 
+export async function getActiveProperty(db: DbClient): Promise<PropertyWithPackages | null> {
+  return db.property.findFirst({
+    where: { isActive: true },
+    include: {
+      packages: {
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' },
+      },
+      extras: {
+        where: { isActive: true },
+        orderBy: { name: 'asc' },
+      },
+    },
+  })
+}
+
 async function ensureDefaultAddons(db: DbClient, propertyId: string) {
   const existingAddons = await db.extra.findMany({
     where: { propertyId },
@@ -116,19 +132,7 @@ async function ensureDefaultAddons(db: DbClient, propertyId: string) {
 }
 
 export async function ensureDefaultProperty(db: DbClient): Promise<PropertyWithPackages> {
-  let property = await db.property.findFirst({
-    where: { isActive: true },
-    include: {
-      packages: {
-        where: { isActive: true },
-        orderBy: { sortOrder: 'asc' },
-      },
-      extras: {
-        where: { isActive: true },
-        orderBy: { name: 'asc' },
-      },
-    },
-  })
+  let property = await getActiveProperty(db)
 
   if (!property) {
     property = await db.property.create({
@@ -140,7 +144,7 @@ export async function ensureDefaultProperty(db: DbClient): Promise<PropertyWithP
         operationalFee: siteConfig.cleaningFee,
         contactEmail: siteConfig.email,
         contactPhone: siteConfig.phone,
-        address: `${siteConfig.address} - ${siteConfig.city}`,
+        address: siteConfig.address,
         packages: {
           create: bookingPackages.map((pkg, index) => ({
             slug: pkg.id,

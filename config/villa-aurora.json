@@ -1,0 +1,107 @@
+{
+  "property": {
+    "name": "Villa Aurora",
+    "description": "Um espaço de eventos exclusivo na Serra da Cantareira, preparado para celebrações de até 250 convidados.",
+    "address": "Serra da Cantareira · Mairiporã, SP",
+    "city": "Mairiporã, SP",
+    "capacity": 250,
+    "area": "5.000 m²",
+    "parkingSpots": 30,
+    "operationalFee": 150
+  },
+  "packages": [
+    {
+      "id": "essencial",
+      "name": "Essencial",
+      "price": 4500,
+      "duration": "6 horas",
+      "capacity": 80,
+      "extraPerGuest": 65,
+      "description": "Para celebrações intimistas com toda a estrutura necessária.",
+      "features": [
+        "Uso exclusivo do espaço",
+        "Salão e jardim cerimonial",
+        "Cozinha de apoio",
+        "Estacionamento e segurança"
+      ],
+      "notIncluded": ["Produção e decoração"],
+      "popular": false
+    },
+    {
+      "id": "celebracao",
+      "name": "Celebração",
+      "price": 7900,
+      "duration": "10 horas",
+      "capacity": 150,
+      "extraPerGuest": 55,
+      "description": "Tempo e liberdade na medida certa para viver o dia por inteiro.",
+      "features": [
+        "Tudo do pacote Essencial",
+        "Deck da piscina e lounge",
+        "Mobiliário base",
+        "Equipe de apoio durante o evento"
+      ],
+      "notIncluded": ["Cerimonial e decoração floral"],
+      "popular": true
+    },
+    {
+      "id": "assinatura-aurora",
+      "name": "Assinatura Aurora",
+      "price": 12500,
+      "duration": "14 horas",
+      "capacity": 250,
+      "extraPerGuest": 48,
+      "description": "A experiência completa, da preparação ao último convidado.",
+      "features": [
+        "Todos os ambientes",
+        "Mobiliário completo",
+        "Suíte de preparação",
+        "Coordenação operacional dedicada"
+      ],
+      "notIncluded": ["Fornecedores de alimentação e bebidas"],
+      "popular": false
+    }
+  ],
+  "addons": [
+    {
+      "name": "Decoração floral",
+      "description": "Composição para cerimônia e mesas",
+      "price": 1850
+    },
+    {
+      "name": "Sonorização e DJ",
+      "description": "Som profissional para toda a celebração",
+      "price": 1400
+    },
+    {
+      "name": "Iluminação cênica",
+      "description": "Projeto de luz para ambientes e pista",
+      "price": 980
+    },
+    {
+      "name": "Mobiliário lounge",
+      "description": "Poltronas, mesas e pontos de convivência",
+      "price": 1200
+    },
+    {
+      "name": "Limpeza pós-evento",
+      "description": "Equipe completa após a desmontagem",
+      "price": 450
+    },
+    {
+      "name": "Hora adicional",
+      "description": "Extensão do período contratado",
+      "price": 380
+    },
+    {
+      "name": "Equipe de apoio extra",
+      "description": "Profissionais adicionais para a operação",
+      "price": 620
+    },
+    {
+      "name": "Cerimonialista",
+      "description": "Coordenação do roteiro e dos fornecedores",
+      "price": 2400
+    }
+  ]
+}

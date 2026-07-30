@@ -1,27 +1,25 @@
-# Publicação Para LinkedIn
+# Rascunho factual para LinkedIn
 
-Transformei um projeto antigo em um produto de portfólio mais maduro: o Venue Eventos, uma plataforma para operação de espaços de eventos.
+Transformei uma base antiga em uma demonstração de produto mais consistente: o Venue Eventos, apresentado publicamente pela marca fictícia Villa Aurora.
 
-A ideia saiu de um site simples para aluguel de espaço e virou uma aplicação full stack com fluxo real de negócio:
+É um projeto próprio da LPeM Software & Automation para mostrar como uma operação de espaços de eventos pode centralizar:
 
-- vitrine pública responsiva;
-- solicitação de reserva com pacotes, adicionais e briefing sob medida;
-- validação de disponibilidade no backend;
-- dashboard administrativo com filtros, calendário, contatos e status de reservas;
-- propostas sob medida com valor final editável;
-- geração de PDF de proposta/contrato;
-- Prisma + Supabase/PostgreSQL preparados para produção;
-- testes automatizados para regras críticas.
+- vitrine e catálogo;
+- pacotes, adicionais e estimativa;
+- consulta e validação de disponibilidade;
+- solicitações de reserva;
+- contatos e briefing sob medida;
+- calendário, bloqueios e status;
+- painel administrativo;
+- proposta em PDF.
 
-O ponto mais interessante do projeto foi sair do “site bonito” e entrar no que realmente sustenta um produto: regras de negócio isoladas, snapshots de preço, transições de status, persistência de bloqueios e uma operação que pode evoluir sem reescrever tudo.
+Na parte técnica, o foco foi garantir que o pacote e o preço vistos na interface sejam os mesmos validados pelo backend. A aplicação usa uma fonte canônica de catálogo, envia IDs reais dos adicionais, recalcula o total no servidor e impede criação silenciosa quando o catálogo muda.
 
-Stack:
+Stack: Next.js 16, React 18, TypeScript, Tailwind CSS, Prisma, PostgreSQL/Supabase, API Routes e testes com node:test.
 
-Next.js 16, React 18, TypeScript, Tailwind CSS, Prisma, Supabase/PostgreSQL, API routes, Node test e Vercel.
+A Villa Aurora é fictícia; valores, dados e imagens são ilustrativos. O projeto não representa um cliente ou espaço real.
 
-Ainda há próximos passos, como pagamento de sinal, upload real de fotos e relatórios mais completos, mas o projeto já está em um estágio bem mais profissional e apresentável.
+Demo: https://venue-eventos.vercel.app/
+Portfólio: https://www.lpemsoftware.com.br/projetos
 
-Repositório: https://github.com/Lafaietepedro/chacaraDosSonhos  
-Demo: coloque aqui o link da Vercel
-
-#nextjs #typescript #prisma #supabase #react #webdevelopment #portfolio #fullstack
+#nextjs #typescript #prisma #react #automacao #portfolio #fullstack

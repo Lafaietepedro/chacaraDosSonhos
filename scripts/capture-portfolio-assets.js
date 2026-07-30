@@ -5,9 +5,14 @@ const { join } = require('path')
 const { spawn } = require('child_process')
 
 const baseUrl = process.env.CAPTURE_BASE_URL || 'http://127.0.0.1:3000'
+const publicOnly = process.env.CAPTURE_PUBLIC_ONLY === '1'
 const screenshotDir = join(process.cwd(), 'docs', 'screenshots')
 const frameDir = join(process.cwd(), 'docs', 'media', 'dashboard-frames')
 const browserPort = Number(process.env.CAPTURE_DEBUG_PORT || 9223)
+const macChrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+const browserExecutable = process.env.CAPTURE_BROWSER || (
+  process.platform === 'darwin' && existsSync(macChrome) ? macChrome : 'chromium'
+)
 
 function parseEnvFile(filePath) {
   if (!existsSync(filePath)) return {}
@@ -85,7 +90,7 @@ async function getDashboardSessionToken() {
 function launchBrowser() {
   rmSync('/tmp/venue-eventos-capture', { recursive: true, force: true })
 
-  return spawn('chromium', [
+  return spawn(browserExecutable, [
     '--headless=new',
     '--disable-gpu',
     '--no-sandbox',
@@ -155,12 +160,12 @@ function createCdpClient(webSocketDebuggerUrl) {
   }
 }
 
-async function capturePage(client, url, outputPath, waitMs = 2500) {
+async function capturePage(client, url, outputPath, waitMs = 2500, captureBeyondViewport = true) {
   await client.send('Page.navigate', { url })
   await delay(waitMs)
   const screenshot = await client.send('Page.captureScreenshot', {
     format: 'png',
-    captureBeyondViewport: true,
+    captureBeyondViewport,
     fromSurface: true,
   })
   writeFileSync(outputPath, Buffer.from(screenshot.data, 'base64'))
@@ -181,11 +186,13 @@ async function clickTab(client, label) {
 
 async function main() {
   mkdirSync(screenshotDir, { recursive: true })
-  rmSync(frameDir, { recursive: true, force: true })
-  mkdirSync(frameDir, { recursive: true })
+  if (!publicOnly) {
+    rmSync(frameDir, { recursive: true, force: true })
+    mkdirSync(frameDir, { recursive: true })
+  }
 
   await waitForServer()
-  const sessionToken = await getDashboardSessionToken()
+  const sessionToken = publicOnly ? null : await getDashboardSessionToken()
   const browser = launchBrowser()
 
   try {
@@ -203,8 +210,13 @@ async function main() {
     })
 
     await capturePage(client, `${baseUrl}/`, join(screenshotDir, 'home.png'), 3000)
-    await capturePage(client, `${baseUrl}/booking`, join(screenshotDir, 'booking.png'), 3000)
+    await capturePage(client, `${baseUrl}/#reservar`, join(screenshotDir, 'booking.png'), 3000, false)
     await capturePage(client, `${baseUrl}/dashboard`, join(screenshotDir, 'dashboard-login.png'), 4000)
+
+    if (publicOnly) {
+      client.close()
+      return
+    }
 
     const captureUrl = new URL(baseUrl)
     await client.send('Network.setCookie', {

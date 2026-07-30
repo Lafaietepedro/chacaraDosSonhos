@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { calculateBookingPrice } from '../lib/services/pricing'
+import { calculateBookingPrice, isGuestCountWithinCapacity, pricesMatch } from '../lib/services/pricing'
 
 const packageOption = {
   basePrice: 1200,
@@ -55,4 +55,16 @@ test('calculateBookingPrice includes selected add-ons', () => {
     addonsCost: 810,
     totalAmount: 2160,
   })
+})
+
+test('pricesMatch compares monetary values in cents', () => {
+  assert.equal(pricesMatch(10900, 10900), true)
+  assert.equal(pricesMatch(10900.001, 10900), true)
+  assert.equal(pricesMatch(10900.01, 10900), false)
+})
+
+test('isGuestCountWithinCapacity enforces the property limit', () => {
+  assert.equal(isGuestCountWithinCapacity(1, 250), true)
+  assert.equal(isGuestCountWithinCapacity(250, 250), true)
+  assert.equal(isGuestCountWithinCapacity(251, 250), false)
 })

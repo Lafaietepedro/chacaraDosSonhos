@@ -1,41 +1,15 @@
-# Favicons - Venue Eventos
+# Favicons — Villa Aurora
 
-## Arquivos de Favicon Criados
+Os favicons e o manifesto representam a marca fictícia Villa Aurora usada na demonstração pública do Venue Eventos.
 
-### Arquivos na pasta `public/`:
+Arquivos principais em `public/`:
 
-- **`favicon.ico`** - Favicon tradicional (32x32px)
-- **`favicon.svg`** - Favicon vetorial moderno (32x32px)
-- **`favicon-16x16.svg`** - Favicon pequeno (16x16px)
-- **`apple-touch-icon.png`** - Ícone para dispositivos Apple (180x180px)
-- **`manifest.json`** - Manifesto PWA com configurações dos ícones
+- `favicon.ico`
+- `favicon.svg`
+- `favicon-16x16.svg`
+- `apple-touch-icon.png`
+- `manifest.json`
 
-## Design do Favicon
+A configuração fica em `app/layout.tsx` e contempla navegadores modernos, dispositivos móveis e manifesto instalável.
 
-O favicon representa:
-- **Espaço de eventos** - Simboliza a vitrine e a agenda do local
-- **Cor verde** - Representa natureza e tranquilidade
-- **Design limpo** - Fácil identificação em qualquer tamanho
-- **Gradiente** - Visual moderno e profissional
-
-## Configuração
-
-O favicon está configurado no `app/layout.tsx` com:
-- Suporte a múltiplos formatos (ICO, SVG)
-- Diferentes tamanhos para diferentes dispositivos
-- Manifesto PWA para instalação como app
-- Meta tags para redes sociais
-
-## Compatibilidade
-
-- Navegadores modernos (Chrome, Firefox, Safari, Edge)
-- Dispositivos móveis (iOS, Android)
-- PWA (Progressive Web App)
-- Redes sociais (Open Graph)
-
-## Benefícios
-
-- **Identidade visual** consistente
-- **Profissionalismo** na marca
-- **Reconhecimento** fácil pelos usuários
-- **Compatibilidade** universal
+Esses ativos fazem parte da identidade demonstrativa e não representam uma marca ou espaço de eventos real.

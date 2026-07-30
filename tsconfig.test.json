@@ -8,6 +8,7 @@
     "outDir": ".test-build",
     "rootDir": ".",
     "noEmit": false,
+    "allowJs": true,
     "incremental": false,
     "types": ["node"]
   },
@@ -18,7 +19,10 @@
     "lib/pdf/simple-pdf.ts",
     "lib/services/custom-quote.service.ts",
     "lib/services/pricing.ts",
+    "lib/public-booking.ts",
+    "lib/site.ts",
     "lib/validation/booking.ts",
-    "lib/validation/contact.ts"
+    "lib/validation/contact.ts",
+    "prisma/seed-safety.js"
   ]
 }

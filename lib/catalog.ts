@@ -1,5 +1,12 @@
-import { bookingAddons, bookingPackages } from '@/lib/site'
-import type { AddonOption, PackageOption } from '@/types/booking'
+import { bookingAddons, bookingPackages } from './site'
+import type { AddonOption, PackageOption } from '../types/booking'
+
+export function isExpectedCatalogIdentity(
+  property: { name?: string | null } | null | undefined,
+  expectedName: string
+) {
+  return property?.name === expectedName
+}
 
 export const fallbackPackageOptions: PackageOption[] = bookingPackages.map((pkg) => ({
   id: pkg.id,

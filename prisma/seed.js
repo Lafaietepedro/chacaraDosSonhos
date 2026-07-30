@@ -1,115 +1,24 @@
 const { randomBytes, scryptSync } = require('crypto')
 const { PrismaClient } = require('@prisma/client')
+const demoCatalog = require('../config/villa-aurora.json')
+const { classifyExistingProperty } = require('./seed-safety')
 
 const prisma = new PrismaClient()
 
 const siteConfig = {
-  venueName: 'Venue Eventos',
-  appDescription:
-    'Plataforma operacional para divulgar espaços de eventos, receber reservas qualificadas e acompanhar a agenda do anfitrião.',
+  venueName: demoCatalog.property.name,
+  appDescription: demoCatalog.property.description,
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'contato@lpemsoftware.com.br',
   phone: process.env.NEXT_PUBLIC_CONTACT_PHONE || null,
-  address: 'Projeto demonstrativo da LPeM Software',
-  city: 'Atendimento nacional',
-  capacity: 150,
-  cleaningFee: 150,
+  address: demoCatalog.property.address,
+  city: demoCatalog.property.city,
+  capacity: demoCatalog.property.capacity,
+  cleaningFee: demoCatalog.property.operationalFee,
 }
 
-const packages = [
-  {
-    slug: 'essencial',
-    name: 'Essencial',
-    price: 800,
-    duration: '8 horas',
-    capacity: 50,
-    extraPerGuest: 20,
-    description: 'Para encontros menores com infraestrutura organizada',
-    features: [
-      'Uso do espaço por 8 horas',
-      'Até 50 pessoas',
-      'Área gourmet equipada',
-      'Estacionamento para 15 veículos',
-      'Wi-Fi para convidados',
-      'Área externa para convivência',
-      'Piscina inclusa',
-    ],
-    notIncluded: ['Decoração personalizada'],
-    popular: false,
-  },
-  {
-    slug: 'celebracao',
-    name: 'Celebração',
-    price: 1200,
-    duration: '12 horas',
-    capacity: 100,
-    extraPerGuest: 18,
-    description: 'O plano mais equilibrado para festas e confraternizações',
-    features: [
-      'Uso do espaço por 12 horas',
-      'Até 100 pessoas',
-      'Área gourmet equipada',
-      'Estacionamento para 25 veículos',
-      'Wi-Fi para convidados',
-      'Sistema de som básico',
-      'Área externa para convivência',
-      'Piscina inclusa',
-    ],
-    notIncluded: ['Decoração premium'],
-    popular: true,
-  },
-  {
-    slug: 'producao',
-    name: 'Produção',
-    price: 1800,
-    duration: '24 horas',
-    capacity: 150,
-    extraPerGuest: 15,
-    description: 'Para eventos maiores com montagem, permanência e suporte',
-    features: [
-      'Uso do espaço por 24 horas',
-      'Até 150 pessoas',
-      'Área gourmet equipada',
-      'Estacionamento para 30 veículos',
-      'Wi-Fi para convidados',
-      'Som ambiente',
-      'Decoração base incluída',
-      'Área externa para convivência',
-      'Piscina inclusa',
-      'Apoio operacional no dia',
-    ],
-    notIncluded: ['Produção cenográfica sob medida'],
-    popular: false,
-  },
-]
+const packages = demoCatalog.packages.map((pkg) => ({ ...pkg, slug: pkg.id }))
+const addons = demoCatalog.addons
 
-const addons = [
-  {
-    name: 'Hora extra',
-    description: 'Extensão de uso do espaço para eventos que precisam passar do horário contratado.',
-    price: 180,
-  },
-  {
-    name: 'Apoio operacional',
-    description: 'Profissional de apoio para recepção, organização de acesso e acompanhamento do evento.',
-    price: 320,
-  },
-  {
-    name: 'Limpeza reforçada',
-    description: 'Equipe adicional para eventos maiores, montagem prolongada ou uso intenso de áreas comuns.',
-    price: 260,
-  },
-  {
-    name: 'Som e iluminação base',
-    description: 'Estrutura básica para cerimônias, confraternizações e apresentações de pequeno porte.',
-    price: 450,
-  },
-]
-
-const legacyPropertyNames = new Set([
-  'Chácara dos Sonhos',
-  'Chacara dos Sonhos',
-  'ReservaNexa',
-])
 
 function stringifyList(items) {
   return JSON.stringify(items)
@@ -148,32 +57,33 @@ async function seedPropertyAndPackages() {
         operationalFee: siteConfig.cleaningFee,
         contactEmail: siteConfig.email,
         contactPhone: siteConfig.phone,
-        address: `${siteConfig.address} - ${siteConfig.city}`,
+        address: siteConfig.address,
       },
     })
 
     console.log(`Property criada: ${property.name}`)
   } else {
-    let renamedLegacyProperty = false
-
-    if (legacyPropertyNames.has(property.name)) {
-      property = await prisma.property.update({
-        where: { id: property.id },
-        data: {
-          name: siteConfig.venueName,
-          description: siteConfig.appDescription,
-          contactEmail: siteConfig.email,
-          contactPhone: siteConfig.phone,
-        },
-      })
-
-      console.log(`Property legada renomeada para: ${property.name}`)
-      renamedLegacyProperty = true
+    if (classifyExistingProperty(property.name) === 'reject') {
+      throw new Error(
+        `Seed abortado: a propriedade ativa "${property.name}" não pertence à demonstração Villa Aurora.`
+      )
     }
 
-    if (!renamedLegacyProperty) {
-      console.log(`Property existente mantida: ${property.name}`)
-    }
+    property = await prisma.property.update({
+      where: { id: property.id },
+      data: {
+        name: siteConfig.venueName,
+        description: siteConfig.appDescription,
+        capacity: siteConfig.capacity,
+        basePrice: packages[0].price,
+        operationalFee: siteConfig.cleaningFee,
+        contactEmail: siteConfig.email,
+        contactPhone: siteConfig.phone,
+        address: siteConfig.address,
+      },
+    })
+
+    console.log(`Property demonstrativa sincronizada: ${property.name}`)
   }
 
   for (const [index, pkg] of packages.entries()) {
@@ -184,7 +94,19 @@ async function seedPropertyAndPackages() {
           slug: pkg.slug,
         },
       },
-      update: {},
+      update: {
+        name: pkg.name,
+        description: pkg.description,
+        basePrice: pkg.price,
+        duration: pkg.duration,
+        includedGuests: pkg.capacity,
+        extraGuestFee: pkg.extraPerGuest,
+        features: stringifyList(pkg.features),
+        notIncluded: stringifyList(pkg.notIncluded),
+        isPopular: pkg.popular,
+        isActive: true,
+        sortOrder: index,
+      },
       create: {
         propertyId: property.id,
         slug: pkg.slug,
@@ -202,6 +124,15 @@ async function seedPropertyAndPackages() {
     })
   }
 
+  await prisma.bookingPackage.updateMany({
+    where: {
+      propertyId: property.id,
+      slug: { notIn: packages.map((pkg) => pkg.slug) },
+      isActive: true,
+    },
+    data: { isActive: false },
+  })
+
   console.log(`Pacotes verificados: ${packages.length}`)
 
   for (const addon of addons) {
@@ -212,7 +143,16 @@ async function seedPropertyAndPackages() {
       },
     })
 
-    if (!existing) {
+    if (existing) {
+      await prisma.extra.update({
+        where: { id: existing.id },
+        data: {
+          description: addon.description,
+          price: addon.price,
+          isActive: true,
+        },
+      })
+    } else {
       await prisma.extra.create({
         data: {
           propertyId: property.id,
@@ -223,6 +163,15 @@ async function seedPropertyAndPackages() {
       })
     }
   }
+
+  await prisma.extra.updateMany({
+    where: {
+      propertyId: property.id,
+      name: { notIn: addons.map((addon) => addon.name) },
+      isActive: true,
+    },
+    data: { isActive: false },
+  })
 
   console.log(`Adicionais verificados: ${addons.length}`)
 }
