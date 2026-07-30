@@ -32,7 +32,6 @@ const gallery = [
   { src: '/gallery/pool-garden.jpg', name: 'Deck da piscina', description: 'Luz, paisagem e uma atmosfera perfeita para receber.' },
   { src: '/gallery/venue-exterior.jpg', name: 'Varanda gourmet', description: 'Integração entre o serviço, a festa e a área externa.' },
   { src: '/gallery/venue-interior.jpg', name: 'Lounge interno', description: 'Conforto para pausas, conversas e momentos especiais.' },
-  { src: '/gallery/logo.jpg', name: 'Alameda de entrada', description: 'Uma chegada marcante, cercada pelo verde da Cantareira.' },
 ]
 
 const packageDesign = [

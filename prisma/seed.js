@@ -106,7 +106,6 @@ const addons = [
 ]
 
 const legacyPropertyNames = new Set([
-  'Espaço Vip JR',
   'Chácara dos Sonhos',
   'Chacara dos Sonhos',
   'ReservaNexa',
