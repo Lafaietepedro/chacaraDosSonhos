@@ -53,11 +53,18 @@ const prismaBin = process.platform === 'win32'
   ? join(rootDir, 'node_modules', '.bin', 'prisma.cmd')
   : join(rootDir, 'node_modules', '.bin', 'prisma')
 
+const commandEnv = {
+  ...fileEnv,
+  ...process.env,
+}
+
+commandEnv.DATABASE_URL ||= commandEnv.POSTGRES_PRISMA_URL
+commandEnv.DIRECT_URL ||= commandEnv.POSTGRES_URL_NON_POOLING
+
 const result = spawnSync(prismaBin, prismaArgs, {
   cwd: rootDir,
   env: {
-    ...fileEnv,
-    ...process.env,
+    ...commandEnv,
     NODE_ENV: process.env.NODE_ENV || 'production',
   },
   stdio: 'inherit',

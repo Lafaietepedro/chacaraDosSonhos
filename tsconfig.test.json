@@ -20,6 +20,7 @@
     "lib/services/custom-quote.service.ts",
     "lib/services/pricing.ts",
     "lib/public-booking.ts",
+    "lib/database-env.ts",
     "lib/site.ts",
     "lib/validation/booking.ts",
     "lib/validation/contact.ts",

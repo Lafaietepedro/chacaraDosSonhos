@@ -5,13 +5,16 @@ echo "Starting build process..."
 if [ "$NODE_ENV" = "production" ]; then
   echo "Production build detected"
 
+  export DATABASE_URL="${DATABASE_URL:-$POSTGRES_PRISMA_URL}"
+  export DIRECT_URL="${DIRECT_URL:-$POSTGRES_URL_NON_POOLING}"
+
   if [ -n "$BACKEND_BASE_URL" ]; then
     echo "Backend proxy configured; database access will remain in the origin deployment"
   elif [ -z "$DATABASE_URL" ]; then
-    echo "DATABASE_URL must be configured for production builds"
+    echo "DATABASE_URL or POSTGRES_PRISMA_URL must be configured for production builds"
     exit 1
   elif [ -z "$DIRECT_URL" ]; then
-    echo "DIRECT_URL must be configured for Prisma production schema"
+    echo "DIRECT_URL or POSTGRES_URL_NON_POOLING must be configured for Prisma production schema"
     exit 1
   else
     echo "DATABASE_URL and DIRECT_URL found, using PostgreSQL"
